@@ -169,7 +169,7 @@ function AnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
                   <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#A3A3A3" }} angle={-25} textAnchor="end" height={70} interval={0} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#A3A3A3" }} />
-                  <Tooltip contentStyle={{ background: "#262626", border: "1px solid #334155", color: "#F5F5F5" }} />
+                  <Tooltip contentStyle={{ background: "#262626", border: "1px solid #3A3A3A", color: "#F5F5F5" }} />
                   <Bar dataKey="slaCompliancePct" name="SLA %" radius={[4, 4, 0, 0]}>
                     {activeRows.slice(0, 12).map((r, i) => (
                       <Cell
@@ -198,7 +198,7 @@ function AnalyticsPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
                     <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#A3A3A3" }} angle={-25} textAnchor="end" height={70} interval={0} />
                     <YAxis tick={{ fontSize: 11, fill: "#A3A3A3" }} />
-                    <Tooltip contentStyle={{ background: "#262626", border: "1px solid #334155", color: "#F5F5F5" }} />
+                    <Tooltip contentStyle={{ background: "#262626", border: "1px solid #3A3A3A", color: "#F5F5F5" }} />
                     <Line type="monotone" dataKey="hours" stroke="#FFFFFF" strokeWidth={2} dot={{ fill: "#FFFFFF" }} />
                   </LineChart>
                 </ResponsiveContainer>
@@ -225,7 +225,7 @@ function AnalyticsPage() {
                       ))}
                     </Pie>
                     <Legend wrapperStyle={{ fontSize: 10, color: "#A3A3A3" }} />
-                    <Tooltip contentStyle={{ background: "#262626", border: "1px solid #334155", color: "#F5F5F5" }} />
+                    <Tooltip contentStyle={{ background: "#262626", border: "1px solid #3A3A3A", color: "#F5F5F5" }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
