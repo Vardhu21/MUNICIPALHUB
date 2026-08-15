@@ -127,6 +127,45 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+
+  /* Every button gets soft, physical feedback by default */
+  button,
+  [role="button"] {
+    transition:
+      transform 520ms var(--ease-scoop),
+      filter 520ms var(--ease-soft),
+      background-color 520ms var(--ease-soft),
+      border-color 520ms var(--ease-soft),
+      color 520ms var(--ease-soft),
+      opacity 520ms var(--ease-soft),
+      box-shadow 520ms var(--ease-soft);
+  }
+
+  button:not(:disabled):hover,
+  [role="button"]:not([aria-disabled="true"]):hover {
+    transform: translateY(-1.5px);
+    filter: brightness(1.08);
+  }
+
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: translateY(1px) scale(0.974);
+    filter: brightness(0.94);
+    transition-duration: 120ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button,
+    [role="button"] {
+      transition-duration: 120ms;
+    }
+    button:hover,
+    button:active,
+    [role="button"]:hover,
+    [role="button"]:active {
+      transform: none;
+    }
+  }
 }
 
 @utility civic-card {
