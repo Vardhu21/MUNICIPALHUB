@@ -71,7 +71,7 @@ function Portal() {
               className="mx-auto flex size-20 items-center justify-center rounded-2xl border border-border bg-card p-2 transition-transform hover:scale-105 lg:mx-0"
               aria-label="Replay portal animation"
             >
-              <img src={emblem} alt="TN SmartMunicipality emblem" width={512} height={512} className="size-full object-contain" />
+              <img src={emblem} alt="TN SmartMunicipality emblem" width={512} height={512} className="grayscale contrast-125 size-full object-contain" />
             </button>
 
             <div className="space-y-3">

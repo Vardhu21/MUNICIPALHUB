@@ -92,7 +92,7 @@ function ConsentPage() {
     <main className="grid min-h-screen place-items-center bg-background px-4 py-10">
       <section className="w-full max-w-lg">
         <div className="mb-6 flex items-center justify-center gap-3">
-          <img src={emblem} alt="Tamil Nadu state emblem" className="size-12" />
+          <img src={emblem} alt="Tamil Nadu state emblem" className="grayscale contrast-125 size-12" />
           <div><p className="font-display text-base font-bold">Community Hub Connect</p><p className="text-xs text-muted-foreground">TN SmartMunicipality agent authorization</p></div>
         </div>
         <div className="civic-card overflow-hidden shadow-[var(--shadow-elevated)]">
