@@ -48,7 +48,7 @@ function Portal() {
       <Starfield className="pointer-events-none absolute inset-0 size-full" />
       <div
         key={`atmos-${zoomKey}`}
-        className="animate-atmos-fade pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,#2563EB55,transparent_60%),radial-gradient(circle_at_50%_90%,#15803D44,transparent_55%)]"
+        className="animate-atmos-fade pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,#FFFFFF22,transparent_60%),radial-gradient(circle_at_50%_90%,#FFFFFF12,transparent_55%)]"
       />
 
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-6">
@@ -71,7 +71,7 @@ function Portal() {
               className="mx-auto flex size-20 items-center justify-center rounded-2xl border border-border bg-card p-2 transition-transform hover:scale-105 lg:mx-0"
               aria-label="Replay portal animation"
             >
-              <img src={emblem} alt="TN SmartMunicipality emblem" width={512} height={512} className="size-full object-contain" />
+              <img src={emblem} alt="TN SmartMunicipality emblem" width={512} height={512} className="grayscale contrast-125 size-full object-contain" />
             </button>
 
             <div className="space-y-3">

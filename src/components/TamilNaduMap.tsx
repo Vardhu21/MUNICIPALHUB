@@ -10,8 +10,8 @@ export function TamilNaduMap({
     <svg viewBox="0 0 300 420" className={className} role="img" aria-label="Map of Tamil Nadu">
       <defs>
         <linearGradient id="tn-fill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2563EB" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#15803D" stopOpacity="0.55" />
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#909090" stopOpacity="0.55" />
         </linearGradient>
         <filter id="tn-glow" x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation="7" result="b" />
@@ -24,7 +24,7 @@ export function TamilNaduMap({
       <path
         filter="url(#tn-glow)"
         fill="url(#tn-fill)"
-        stroke="#93C5FD"
+        stroke="#B5B5B5"
         strokeWidth="2.5"
         strokeLinejoin="round"
         d="M120 18 L152 26 L171 48 L196 52 L214 74 L228 108 L221 138 L236 160 L244 196 L232 232

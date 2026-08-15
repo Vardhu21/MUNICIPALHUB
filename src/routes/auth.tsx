@@ -273,7 +273,7 @@ function AuthPage() {
       <div className="mx-auto grid max-w-md gap-5 px-4 py-8">
         <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
           <Link to="/" className="shrink-0">
-            <img src={emblem} alt="" width={512} height={512} className="size-10" />
+            <img src={emblem} alt="" width={512} height={512} className="grayscale contrast-125 size-10" />
           </Link>
           <div className="min-w-0">
             <h1 className="truncate text-lg font-bold">{t("appName")}</h1>
