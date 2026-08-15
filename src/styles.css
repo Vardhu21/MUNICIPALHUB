@@ -137,9 +137,83 @@
 
 @utility grid-noise {
   background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px);
+    linear-gradient(to right, oklch(1 0 0 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(1 0 0 / 0.07) 1px, transparent 1px);
   background-size: 48px 48px;
+}
+
+/* Frosted surface for overlays and sticky chrome */
+@utility glass-surface {
+  background-color: color-mix(in oklab, var(--color-card) 72%, transparent);
+  backdrop-filter: blur(18px) saturate(120%);
+  border: 1px solid var(--color-border);
+}
+
+/* Physical button feedback: hover lift, press compression, soft release */
+@utility btn-physical {
+  transition:
+    transform 520ms var(--ease-scoop),
+    filter 520ms var(--ease-soft),
+    background-color 520ms var(--ease-soft),
+    border-color 520ms var(--ease-soft),
+    box-shadow 520ms var(--ease-soft);
+  will-change: transform;
+
+  &:hover {
+    transform: translateY(-1.5px);
+    filter: brightness(1.08);
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.972);
+    filter: brightness(0.94);
+    transition-duration: 120ms;
+  }
+}
+
+@keyframes scoop-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0) scale(0.985) rotate(-0.35deg);
+    filter: blur(10px);
+    clip-path: ellipse(120% 0% at 50% 100%);
+  }
+  55% {
+    opacity: 1;
+    filter: blur(2px);
+    clip-path: ellipse(150% 90% at 50% 70%);
+  }
+  80% {
+    transform: translate3d(0, -3px, 0) scale(1.004) rotate(0.08deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+    clip-path: ellipse(220% 200% at 50% 50%);
+  }
+}
+
+@keyframes scoop-out {
+  0% {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+    clip-path: ellipse(220% 200% at 50% 50%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -18px, 0) scale(0.99) rotate(0.4deg);
+    filter: blur(8px);
+    clip-path: ellipse(140% 0% at 50% 0%);
+  }
+}
+
+.animate-scoop-in {
+  animation: scoop-in 1100ms var(--ease-scoop) both;
+}
+.animate-scoop-out {
+  animation: scoop-out 620ms var(--ease-soft) both;
 }
 
 @keyframes portal-zoom {
