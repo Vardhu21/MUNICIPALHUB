@@ -1,0 +1,257 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { CheckCircle2, MapPin, ShieldAlert } from "lucide-react";
+import { TopBar } from "@/components/TopBar";
+import { GeoCamera, type Capture } from "@/components/GeoCamera";
+import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { supabase } from "@/integrations/supabase/client";
+import { useLang } from "@/lib/i18n";
+import { useSession } from "@/lib/session";
+import { useGeolocation } from "@/lib/useGeolocation";
+import { CATEGORIES, slaRow } from "@/lib/sla";
+import { BAND_LABEL, BAND_TONE, triage } from "@/lib/triage";
+import { fetchWards, logEvent, officerForTier, resolveWard, ULB_LABEL, type Ward } from "@/lib/data";
+
+export const Route = createFileRoute("/report")({
+  head: () => ({
+    meta: [
+      { title: "Report a Civic Issue — TN SmartMunicipality" },
+      {
+        name: "description",
+        content:
+          "Submit a grievance with a live anti-spoofing geotagged camera capture, auto-resolved ward routing and an SLA-bound officer assignment.",
+      },
+      { property: "og:title", content: "Report a Civic Issue — TN SmartMunicipality" },
+      {
+        property: "og:description",
+        content: "Live hardware capture only — gallery uploads and mock locations are rejected.",
+      },
+    ],
+  }),
+  component: ReportPage,
+});
+
+function ReportPage() {
+  const { lang } = useLang();
+  const navigate = useNavigate();
+  const { user } = useSession();
+  const { fix } = useGeolocation(true);
+  const [wards, setWards] = useState<Ward[]>([]);
+  const [capture, setCapture] = useState<Capture | null>(null);
+  const [categoryId, setCategoryId] = useState(CATEGORIES[4].id);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [street, setStreet] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    fetchWards().then(setWards).catch(() => undefined);
+  }, []);
+
+  const ward = useMemo(() => resolveWard(wards, capture ?? fix), [wards, capture, fix]);
+  
+  // Priority is never chosen by the citizen — it is derived from a health-impact score.
+  const assessment = useMemo(
+    () => triage({ category: categoryId, title, description }),
+    [categoryId, title, description],
+  );
+  const sla = slaRow(assessment.priority);
+
+
+  const submit = async () => {
+    if (!user) return toast.error("Sign in with DigiLocker verification before reporting.");
+    if (!capture) return toast.error("A live geotagged capture is required.");
+    if (title.trim().length < 6) return toast.error("Give the issue a clear title (min 6 characters).");
+    if (description.trim().length < 12) return toast.error("Describe the issue in a little more detail.");
+
+    setBusy(true);
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("pseudonym, digilocker_verified, frozen")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!profile?.digilocker_verified) throw new Error("DigiLocker verification required to publish.");
+      if (profile.frozen) throw new Error("Your account is frozen pending a fraud investigation.");
+
+      const { data, error } = await supabase
+        .from("complaints")
+        .insert({
+          author_id: user.id,
+          author_pseudonym: profile.pseudonym,
+          title: title.trim(),
+          description: description.trim(),
+          category: categoryId,
+          priority: assessment.priority,
+          status: "assigned",
+          current_tier: "field",
+          sla_hours: sla.hours,
+          assigned_officer: officerForTier("field"),
+          ward_id: ward?.id ?? null,
+          lat: capture.lat,
+          lng: capture.lng,
+          street_address: street.trim() || null,
+          photo_url: capture.dataUrl,
+          captured_at: capture.capturedAt,
+          geo_verified: capture.geoVerified,
+        })
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        await logEvent(
+          data.id,
+          "assignment",
+          "Dynamic Spatial Router",
+          `Reverse-geocoded to ${ward ? `Ward ${ward.ward_number}, ${ward.ulb_name_en}` : "nearest ULB"} · assigned to ${sla.fieldTier.en} with a ${sla.hours}h SLA.`,
+        );
+      }
+      toast.success("Grievance published to the public feed");
+      navigate({ to: "/feed" });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Submission failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <TopBar />
+      <main className="mx-auto max-w-2xl space-y-4 px-4 py-5">
+        <div>
+          <h1 className="text-xl font-bold">{lang === "ta" ? "புகார் அளி" : "Report an issue"}</h1>
+          <p className="text-sm text-muted-foreground">
+            {lang === "ta"
+              ? "நேரடி கேமரா படம் மட்டுமே ஏற்கப்படும். கேலரி பதிவேற்றம் நிராகரிக்கப்படும்."
+              : "Live camera evidence only. Gallery uploads and spoofed GPS are rejected by the EXIF inspector."}
+          </p>
+        </div>
+
+        <section className="civic-card space-y-3 p-4">
+          {capture ? (
+            <div className="space-y-3">
+              <img
+                src={capture.dataUrl}
+                alt="Geotagged evidence"
+                className="w-full rounded-lg border border-success/50"
+              />
+              <p className="flex items-center gap-2 text-xs font-semibold text-success">
+                <CheckCircle2 className="size-4 shrink-0" />
+                Authentic capture accepted · {capture.lat.toFixed(6)}, {capture.lng.toFixed(6)}
+              </p>
+              <button
+                onClick={() => setCapture(null)}
+                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold"
+              >
+                Retake capture
+              </button>
+            </div>
+          ) : (
+            <GeoCamera
+              wardLabel={
+                ward ? `Ward ${ward.ward_number} · ${ward.ward_name_en}` : "Ward: resolving from GPS…"
+              }
+              zoneLabel={ward ? `${ward.ulb_name_en} · ${ward.zone}` : "Zone: resolving…"}
+              onCapture={setCapture}
+            />
+          )}
+        </section>
+
+        <section className="civic-card space-y-3 p-4">
+          <div className="flex items-start gap-2 rounded-lg border border-primary/40 bg-primary/10 p-3 text-xs">
+            <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
+            <span className="min-w-0">
+              <strong className="block">Auto reverse-geocoded ULB routing</strong>
+              {ward ? (
+                <>
+                  {lang === "ta" ? ward.ulb_name_ta : ward.ulb_name_en} ·{" "}
+                  {ULB_LABEL[ward.ulb_type][lang]} · Ward {ward.ward_number} (
+                  {lang === "ta" ? ward.ward_name_ta : ward.ward_name_en}) · {ward.zone}
+                </>
+              ) : (
+                "Waiting for a GPS fix to resolve your ward…"
+              )}
+            </span>
+          </div>
+
+          <label className="block space-y-1.5">
+            <span className="text-xs font-semibold text-muted-foreground">Category</span>
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id} className="bg-card">
+                  {lang === "ta" ? c.ta : c.en}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className={`space-y-1.5 rounded-lg border p-3 text-xs ${BAND_TONE[assessment.band]}`}>
+            <p className="flex items-center gap-2 font-semibold">
+              <ShieldAlert className="size-4 shrink-0" />
+              AI health-impact triage · {BAND_LABEL[assessment.band][lang]} ({assessment.score}/100)
+            </p>
+            <ul className="ml-6 list-disc space-y-0.5 opacity-90">
+              {assessment.reasons.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
+            <p className="opacity-80">
+              Auto-assigned {sla.hours}h SLA · first responder {sla.fieldTier[lang]} · escalates to{" "}
+              {sla.escalateTo[lang]}. You cannot set priority — the algorithm ranks health and odour
+              hazards first.
+            </p>
+          </div>
+
+
+          <label className="block space-y-1.5">
+            <span className="text-xs font-semibold text-muted-foreground">Title</span>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={120}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </label>
+
+          <label className="block space-y-1.5">
+            <span className="text-xs font-semibold text-muted-foreground">Description</span>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={1000}
+              rows={4}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </label>
+
+          <label className="block space-y-1.5">
+            <span className="text-xs font-semibold text-muted-foreground">Street / landmark (optional)</span>
+            <input
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
+              maxLength={160}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </label>
+
+          <button
+            onClick={submit}
+            disabled={busy || !capture}
+            className="w-full rounded-xl bg-success px-4 py-3 text-sm font-semibold text-success-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {busy ? "Publishing…" : "Publish grievance"}
+          </button>
+        </section>
+      </main>
+      <VoiceAssistant />
+    </div>
+  );
+}
