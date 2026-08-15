@@ -48,7 +48,7 @@ function Portal() {
       <Starfield className="pointer-events-none absolute inset-0 size-full" />
       <div
         key={`atmos-${zoomKey}`}
-        className="animate-atmos-fade pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,#2563EB55,transparent_60%),radial-gradient(circle_at_50%_90%,#15803D44,transparent_55%)]"
+        className="animate-atmos-fade pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,#FFFFFF22,transparent_60%),radial-gradient(circle_at_50%_90%,#FFFFFF12,transparent_55%)]"
       />
 
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-6">

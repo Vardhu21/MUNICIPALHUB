@@ -358,7 +358,7 @@ export function VoiceAssistant() {
 
                     {showSources && m.role === "bot" && m.uncited && (
                       <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-dashed border-border bg-secondary/30 p-2 text-[11px] text-muted-foreground">
-                        <AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-500" />
+                        <AlertTriangle className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
                         <span>{UNCITED[lang]}</span>
                       </div>
                     )}

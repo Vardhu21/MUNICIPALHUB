@@ -64,7 +64,7 @@ export function CinematicIntro() {
       }`}
       role="presentation"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,#2563EB33,transparent_62%),radial-gradient(circle_at_50%_95%,#15803D2e,transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,#FFFFFF20,transparent_62%),radial-gradient(circle_at_50%_95%,#FFFFFF14,transparent_55%)]" />
       <div className="grid-noise pointer-events-none absolute inset-0 opacity-[0.14]" />
 
       <svg
@@ -74,12 +74,12 @@ export function CinematicIntro() {
       >
         <defs>
           <linearGradient id="ci-india" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#2563EB" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#15803D" stopOpacity="0.28" />
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#8A8A8A" stopOpacity="0.28" />
           </linearGradient>
           <linearGradient id="ci-tn" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#22C55E" stopOpacity="0.9" />
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#C4C4C4" stopOpacity="0.9" />
           </linearGradient>
           <filter id="ci-glow" x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="6" result="b" />
@@ -102,7 +102,7 @@ export function CinematicIntro() {
           <path
             d={INDIA_D}
             fill="url(#ci-india)"
-            stroke="#93C5FD"
+            stroke="#B5B5B5"
             strokeWidth={zooming ? 0.9 : 2}
             strokeLinejoin="round"
             style={{ transition: "stroke-width 2.6s ease" }}
