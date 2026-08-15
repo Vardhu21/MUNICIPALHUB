@@ -61,7 +61,7 @@ export const Route = createFileRoute("/analytics")({
 
 type Scope = "ward" | "department" | "officer";
 
-const CHART_COLORS = ["#2563EB", "#15803D", "#DC2626", "#F59E0B", "#8B5CF6", "#0EA5E9", "#EC4899", "#10B981"];
+const CHART_COLORS = ["#FFFFFF", "#D4D4D4", "#ABABAB", "#8A8A8A", "#6E6E6E", "#565656", "#3F3F3F", "#2B2B2B"];
 
 function AnalyticsPage() {
   const { lang } = useLang();
@@ -166,15 +166,15 @@ function AnalyticsPage() {
             <div ref={ref} className="bg-card p-2">
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={activeRows.slice(0, 12)}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#94A3B8" }} angle={-25} textAnchor="end" height={70} interval={0} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#94A3B8" }} />
-                  <Tooltip contentStyle={{ background: "#1E293B", border: "1px solid #334155", color: "#F1F5F9" }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#A3A3A3" }} angle={-25} textAnchor="end" height={70} interval={0} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#A3A3A3" }} />
+                  <Tooltip contentStyle={{ background: "#262626", border: "1px solid #334155", color: "#F5F5F5" }} />
                   <Bar dataKey="slaCompliancePct" name="SLA %" radius={[4, 4, 0, 0]}>
                     {activeRows.slice(0, 12).map((r, i) => (
                       <Cell
                         key={r.key}
-                        fill={r.slaCompliancePct >= 75 ? "#15803D" : r.slaCompliancePct >= 50 ? "#F59E0B" : "#DC2626"}
+                        fill={r.slaCompliancePct >= 75 ? "#FFFFFF" : r.slaCompliancePct >= 50 ? "#9A9A9A" : "#4D4D4D"}
                         opacity={0.85 - (i % 5) * 0.05}
                       />
                     ))}
@@ -195,11 +195,11 @@ function AnalyticsPage() {
               <div ref={ref} className="bg-card p-2">
                 <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={activeRows.slice(0, 10).map((r) => ({ ...r, hours: r.avgResolutionHours ?? 0 }))}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                    <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#94A3B8" }} angle={-25} textAnchor="end" height={70} interval={0} />
-                    <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} />
-                    <Tooltip contentStyle={{ background: "#1E293B", border: "1px solid #334155", color: "#F1F5F9" }} />
-                    <Line type="monotone" dataKey="hours" stroke="#2563EB" strokeWidth={2} dot={{ fill: "#2563EB" }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#A3A3A3" }} angle={-25} textAnchor="end" height={70} interval={0} />
+                    <YAxis tick={{ fontSize: 11, fill: "#A3A3A3" }} />
+                    <Tooltip contentStyle={{ background: "#262626", border: "1px solid #334155", color: "#F5F5F5" }} />
+                    <Line type="monotone" dataKey="hours" stroke="#FFFFFF" strokeWidth={2} dot={{ fill: "#FFFFFF" }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -218,14 +218,14 @@ function AnalyticsPage() {
                       cx="50%"
                       cy="50%"
                       outerRadius={95}
-                      label={{ fontSize: 10, fill: "#F1F5F9" }}
+                      label={{ fontSize: 10, fill: "#F5F5F5" }}
                     >
                       {activeRows.slice(0, 8).map((_, i) => (
                         <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Legend wrapperStyle={{ fontSize: 10, color: "#94A3B8" }} />
-                    <Tooltip contentStyle={{ background: "#1E293B", border: "1px solid #334155", color: "#F1F5F9" }} />
+                    <Legend wrapperStyle={{ fontSize: 10, color: "#A3A3A3" }} />
+                    <Tooltip contentStyle={{ background: "#262626", border: "1px solid #334155", color: "#F5F5F5" }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -289,7 +289,7 @@ function ChartCard({
     if (!ref.current) return;
     setBusy(true);
     try {
-      const dataUrl = await toPng(ref.current, { backgroundColor: "#1E293B", pixelRatio: 2 });
+      const dataUrl = await toPng(ref.current, { backgroundColor: "#262626", pixelRatio: 2 });
       const a = document.createElement("a");
       a.href = dataUrl;
       a.download = `${filename}.png`;
