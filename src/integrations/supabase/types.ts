@@ -354,6 +354,47 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          read_at: string | null
+          report_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          read_at?: string | null
+          report_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          read_at?: string | null
+          report_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "sla_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -426,6 +467,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sla_reports: {
+        Row: {
+          avg_resolution_hours: number | null
+          breached_tickets: number
+          created_at: string
+          department_csv: string
+          escalated_tickets: number
+          generated_by: string
+          id: string
+          officer_csv: string
+          period_end: string
+          period_label: string
+          period_start: string
+          resolved_tickets: number
+          sla_compliance_pct: number
+          total_tickets: number
+          ward_csv: string
+        }
+        Insert: {
+          avg_resolution_hours?: number | null
+          breached_tickets?: number
+          created_at?: string
+          department_csv?: string
+          escalated_tickets?: number
+          generated_by?: string
+          id?: string
+          officer_csv?: string
+          period_end: string
+          period_label: string
+          period_start: string
+          resolved_tickets?: number
+          sla_compliance_pct?: number
+          total_tickets?: number
+          ward_csv?: string
+        }
+        Update: {
+          avg_resolution_hours?: number | null
+          breached_tickets?: number
+          created_at?: string
+          department_csv?: string
+          escalated_tickets?: number
+          generated_by?: string
+          id?: string
+          officer_csv?: string
+          period_end?: string
+          period_label?: string
+          period_start?: string
+          resolved_tickets?: number
+          sla_compliance_pct?: number
+          total_tickets?: number
+          ward_csv?: string
+        }
+        Relationships: []
       }
       user_identities: {
         Row: {
