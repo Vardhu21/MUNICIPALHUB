@@ -282,4 +282,20 @@
   .animate-ticker {
     animation: none !important;
   }
+
+  .animate-scoop-in,
+  .animate-scoop-out {
+    animation: fade-in 180ms ease-out both !important;
+    clip-path: none !important;
+    filter: none !important;
+  }
+
+  .btn-physical {
+    transition-duration: 120ms !important;
+
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
 }
