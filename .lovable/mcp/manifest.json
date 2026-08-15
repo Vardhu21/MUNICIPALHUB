@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.2",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://ltqliqsboouoxaqnwuly.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "community-hub-connect",
+      "version": "0.1.0",
+      "title": "Community Hub Connect"
+    },
+    "tools": [
+      {
+        "name": "list_complaints",
+        "title": "Search complaints",
+        "description": "Search municipal complaints by text, ward, status, or category and return the newest matching records.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Optional words from the complaint title or description.",
+              "type": "string"
+            },
+            "wardId": {
+              "description": "Optional ward UUID.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "submitted",
+                "assigned",
+                "in_progress",
+                "verification",
+                "resolved",
+                "escalated",
+                "joint_task_force",
+                "rejected"
+              ]
+            },
+            "category": {
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_complaint",
+        "title": "Get complaint details",
+        "description": "Read one complaint and its chronological public audit events without exposing sealed citizen identity data.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "complaintId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "Complaint UUID."
+            }
+          },
+          "required": [
+            "complaintId"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_officer_queue",
+        "title": "Get officer health-risk queue",
+        "description": "Return active complaints for the signed-in officer, ranked by health hazards such as sewage, odour, stagnant water, and disease exposure.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_sla_analytics",
+        "title": "Get SLA analytics",
+        "description": "Summarize complaint volume, SLA compliance, breaches, escalations, and resolution performance for commissioner oversight.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "groupBy": {
+              "default": "ward",
+              "type": "string",
+              "enum": [
+                "ward",
+                "department",
+                "officer"
+              ]
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_complaint_status",
+        "title": "Update complaint status",
+        "description": "Update a complaint workflow status as the signed-in municipal officer and append an immutable audit event.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "complaintId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "assigned",
+                "in_progress",
+                "verification",
+                "resolved",
+                "escalated",
+                "joint_task_force",
+                "rejected"
+              ]
+            },
+            "note": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 500,
+              "description": "Reason or work note recorded in the audit timeline."
+            }
+          },
+          "required": [
+            "complaintId",
+            "status",
+            "note"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
