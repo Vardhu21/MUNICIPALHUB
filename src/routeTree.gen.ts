@@ -25,6 +25,7 @@ import { Route as TrackIdRouteImport } from './routes/track.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicHooksGenerateSlaReportRouteImport } from './routes/api/public/hooks/generate-sla-report'
+import { Route as ApiPublicHooksWorkflowSweepRouteImport } from './routes/api/public/hooks/workflow-sweep'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -110,6 +111,12 @@ const ApiPublicHooksGenerateSlaReportRoute =
     path: '/api/public/hooks/generate-sla-report',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksWorkflowSweepRoute =
+  ApiPublicHooksWorkflowSweepRouteImport.update({
+    id: '/api/public/hooks/workflow-sweep',
+    path: '/api/public/hooks/workflow-sweep',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/hooks/generate-sla-report': typeof ApiPublicHooksGenerateSlaReportRoute
+  '/api/public/hooks/workflow-sweep': typeof ApiPublicHooksWorkflowSweepRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -146,6 +154,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/hooks/generate-sla-report': typeof ApiPublicHooksGenerateSlaReportRoute
+  '/api/public/hooks/workflow-sweep': typeof ApiPublicHooksWorkflowSweepRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -165,6 +174,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/hooks/generate-sla-report': typeof ApiPublicHooksGenerateSlaReportRoute
+  '/api/public/hooks/workflow-sweep': typeof ApiPublicHooksWorkflowSweepRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/hooks/generate-sla-report'
+    | '/api/public/hooks/workflow-sweep'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/hooks/generate-sla-report'
+    | '/api/public/hooks/workflow-sweep'
   id:
     | '__root__'
     | '/'
@@ -221,6 +233,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/hooks/generate-sla-report'
+    | '/api/public/hooks/workflow-sweep'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -240,6 +253,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicHooksGenerateSlaReportRoute: typeof ApiPublicHooksGenerateSlaReportRoute
+  ApiPublicHooksWorkflowSweepRoute: typeof ApiPublicHooksWorkflowSweepRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -356,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateSlaReportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/workflow-sweep': {
+      id: '/api/public/hooks/workflow-sweep'
+      path: '/api/public/hooks/workflow-sweep'
+      fullPath: '/api/public/hooks/workflow-sweep'
+      preLoaderRoute: typeof ApiPublicHooksWorkflowSweepRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -377,6 +398,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicHooksGenerateSlaReportRoute: ApiPublicHooksGenerateSlaReportRoute,
+  ApiPublicHooksWorkflowSweepRoute: ApiPublicHooksWorkflowSweepRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
