@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { ArrowRight, Globe, ShieldCheck, Settings2, BarChart3, Users } from "lucide-react";
 import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { useLang } from "@/lib/i18n";
