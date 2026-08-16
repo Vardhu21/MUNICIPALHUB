@@ -75,20 +75,9 @@ const SCRIPT: {
   },
 ];
 
-const GREETING = {
-  en: "Vanakkam. I'm the civic voice assistant, trained on the full TN SmartMunicipality portal — identity gateway, geotag camera, SLA escalation matrix, GCC routing, anonymity and closure voting. Ask me anything, in English or Tamil.",
-  ta: "வணக்கம். நான் TN SmartMunicipality போர்ட்டல் முழுவதும் பயிற்சி பெற்ற குடிமை குரல் உதவியாளர். ஆங்கிலம் அல்லது தமிழில் எதையும் கேளுங்கள்.",
-};
-
-const FALLBACK = {
-  en: "I can help with filing a geotagged grievance, tracking and escalation, DigiLocker/IFHRMS registration, SLA and GCC routing rules, anonymity, or closure voting.",
-  ta: "புகார் அளித்தல், கண்காணிப்பு, டிஜிலாக்கர்/IFHRMS பதிவு, SLA & GCC விதிகள், அநாமதேயம், முடிவு வாக்கெடுப்பு — உதவ முடியும்.",
-};
-
-const UNCITED = {
-  en: "No matching municipality policy reference was found for this answer — treat it as general guidance and confirm with the SLA report archive or your ward office before acting.",
-  ta: "இந்த பதிலுக்கு பொருந்தும் நகராட்சி கொள்கை ஆதாரம் கிடைக்கவில்லை — இதை பொதுவான வழிகாட்டுதலாகக் கருதி, SLA அறிக்கை காப்பகம் அல்லது வார்டு அலுவலகத்தில் உறுதிப்படுத்தவும்.",
-};
+const GREETING_KEY = "assistant.greeting";
+const FALLBACK_KEY = "assistant.fallback";
+const UNCITED_KEY = "assistant.uncited";
 
 /**
  * Citation coverage check: keeps only references the reply can actually be
@@ -140,7 +129,7 @@ export function VoiceAssistant() {
   }, [speakBack]);
 
   useEffect(() => {
-    setMsgs([{ role: "bot", text: GREETING[lang] }]);
+    setMsgs([{ role: "bot", text: t(GREETING_KEY) }]);
   }, [lang]);
 
   useEffect(() => {
@@ -178,7 +167,7 @@ export function VoiceAssistant() {
           messages: history.slice(-12).map((m) => ({ role: m.role, text: m.text })),
         },
       });
-      const reply = res.text || (hit ? hit.reply[lang] : FALLBACK[lang]);
+      const reply = res.text || (hit ? hit.reply[lang] : t(FALLBACK_KEY));
       const rawRefs = res.text ? res.refs : (hit?.refs ?? []);
       const action = res.text ? res.action : (hit?.action ?? "none");
       const { refs, uncited } = checkCoverage(reply, rawRefs, hit?.refs ?? []);
@@ -186,7 +175,7 @@ export function VoiceAssistant() {
 
       speak(reply);
     } catch {
-      const reply = hit ? hit.reply[lang] : FALLBACK[lang];
+      const reply = hit ? hit.reply[lang] : t(FALLBACK_KEY);
       const { refs, uncited } = checkCoverage(reply, hit?.refs ?? [], hit?.refs ?? []);
       setMsgs((m) => [
         ...m,
@@ -243,10 +232,7 @@ export function VoiceAssistant() {
         ...m,
         {
           role: "bot",
-          text:
-            lang === "ta"
-              ? "இந்த உலாவியில் பேச்சு அங்கீகாரம் இல்லை. தட்டச்சு செய்யவும்."
-              : "Speech recognition isn't available in this browser — please type instead.",
+          text: t("assistant.noSpeechRecognition"),
         },
       ]);
       return;
@@ -291,15 +277,16 @@ export function VoiceAssistant() {
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">{t("voiceAssist")}</p>
               <p className="truncate text-[11px] text-muted-foreground">
-                {lang === "ta" ? "தமிழ் / English" : "English / தமிழ்"} · Gemini AI
-                {handsFree ? (lang === "ta" ? " · கை-இல்லா" : " · hands-free") : ""}
+                {t("assistant.langLabelTaFirst")}
+                {t("assistant.poweredByGemini")}
+                {handsFree ? t("assistant.handsFreeSuffix") : ""}
               </p>
             </div>
             <button
               onClick={() => setShowSources((s) => !s)}
               aria-pressed={showSources}
-              aria-label={showSources ? "Hide sources" : "Show sources"}
-              title={lang === "ta" ? "ஆதாரங்களைக் காட்டு" : "Show sources"}
+              aria-label={showSources ? t("assistant.hideSources") : t("assistant.showSources")}
+              title={t("assistant.showSources")}
               className={`shrink-0 rounded-lg p-1.5 ${showSources ? "text-primary" : "text-muted-foreground"}`}
             >
               {showSources ? <BookOpen className="size-4" /> : <BookX className="size-4" />}
@@ -309,13 +296,13 @@ export function VoiceAssistant() {
                 if (speakBack && typeof window !== "undefined") window.speechSynthesis?.cancel();
                 setSpeakBack((s) => !s);
               }}
-              aria-label={speakBack ? "Mute voice replies" : "Unmute voice replies"}
+              aria-label={speakBack ? t("assistant.muteVoice") : t("assistant.unmuteVoice")}
               className={`shrink-0 rounded-lg p-1.5 ${speakBack ? "text-primary" : "text-muted-foreground"}`}
             >
               {speakBack ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
             </button>
 
-            <button onClick={() => setOpen(false)} aria-label="Close" className="shrink-0 p-1 text-muted-foreground hover:text-foreground">
+            <button onClick={() => setOpen(false)} aria-label={t("action.close")} className="shrink-0 p-1 text-muted-foreground hover:text-foreground">
               <X className="size-4" />
             </button>
           </header>
@@ -338,7 +325,7 @@ export function VoiceAssistant() {
                       <div className="mt-2 rounded-lg border border-border bg-secondary/40 p-2">
                         <p className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                           <BookOpen className="size-3" />
-                          {lang === "ta" ? "மேற்கோள்கள்" : "References"}
+                          {t("assistant.references")}
                         </p>
                         <ul className="space-y-1">
                           {m.refs.map((r) => (
@@ -359,7 +346,7 @@ export function VoiceAssistant() {
                     {showSources && m.role === "bot" && m.uncited && (
                       <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-dashed border-border bg-secondary/30 p-2 text-[11px] text-muted-foreground">
                         <AlertTriangle className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
-                        <span>{UNCITED[lang]}</span>
+                        <span>{t(UNCITED_KEY)}</span>
                       </div>
                     )}
 
@@ -378,16 +365,14 @@ export function VoiceAssistant() {
               );
             })}
             {thinking && (
-              <p className="text-sm text-muted-foreground">
-                {lang === "ta" ? "யோசிக்கிறேன்…" : "Thinking…"}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("assistant.thinking")}</p>
             )}
           </div>
 
           <div className="grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-2 border-t border-border p-2">
             <button
               onClick={toggleMic}
-              aria-label="Toggle microphone"
+              aria-label={t("assistant.toggleMic")}
               className={`grid size-9 shrink-0 place-items-center rounded-lg transition-colors ${
                 listening ? "bg-destructive text-destructive-foreground" : "bg-secondary text-foreground"
               }`}
@@ -396,8 +381,8 @@ export function VoiceAssistant() {
             </button>
             <button
               onClick={toggleHandsFree}
-              aria-label="Toggle hands-free conversation"
-              title={lang === "ta" ? "கை-இல்லா உரையாடல்" : "Hands-free conversation"}
+              aria-label={t("assistant.toggleHandsFree")}
+              title={t("assistant.toggleHandsFree")}
               className={`grid size-9 shrink-0 place-items-center rounded-lg text-[10px] font-bold transition-colors ${
                 handsFree ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
               }`}
@@ -408,12 +393,12 @@ export function VoiceAssistant() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder={lang === "ta" ? "கேளுங்கள்…" : "Ask anything…"}
+              placeholder={t("assistant.placeholder")}
               className="min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
             />
             <button
               onClick={send}
-              aria-label="Send"
+              aria-label={t("assistant.send")}
               className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground"
             >
               <Send className="size-4" />

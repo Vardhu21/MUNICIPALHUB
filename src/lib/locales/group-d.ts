@@ -20,6 +20,19 @@ export const groupd: Locale = {
     ta: "இந்த உலாவியில் பேச்சு அங்கீகாரம் இல்லை. தட்டச்சு செய்யவும்.",
   },
   "assistant.references": { en: "References", ta: "மேற்கோள்கள்" },
+  "assistant.greeting": {
+    en: "Vanakkam. I'm the civic voice assistant, trained on the full TN SmartMunicipality portal — identity gateway, geotag camera, SLA escalation matrix, GCC routing, anonymity and closure voting. Ask me anything, in English or Tamil.",
+    ta: "வணக்கம். நான் TN SmartMunicipality போர்ட்டல் முழுவதும் பயிற்சி பெற்ற குடிமை குரல் உதவியாளர். ஆங்கிலம் அல்லது தமிழில் எதையும் கேளுங்கள்.",
+  },
+  "assistant.fallback": {
+    en: "I can help with filing a geotagged grievance, tracking and escalation, DigiLocker/IFHRMS registration, SLA and GCC routing rules, anonymity, or closure voting.",
+    ta: "புகார் அளித்தல், கண்காணிப்பு, டிஜிலாக்கர்/IFHRMS பதிவு, SLA & GCC விதிகள், அநாமதேயம், முடிவு வாக்கெடுப்பு — உதவ முடியும்.",
+  },
+  "assistant.uncited": {
+    en: "No matching municipality policy reference was found for this answer — treat it as general guidance and confirm with the SLA report archive or your ward office before acting.",
+    ta: "இந்த பதிலுக்கு பொருந்தும் நகராட்சி கொள்கை ஆதாரம் கிடைக்கவில்லை — இதை பொதுவான வழிகாட்டுதலாகக் கருதி, SLA அறிக்கை காப்பகம் அல்லது வார்டு அலுவலகத்தில் உறுதிப்படுத்தவும்.",
+  },
+  "assistant.poweredByGemini": { en: " · Gemini AI", ta: " · Gemini AI" },
 
   // notif.*
   "notif.markAllRead": { en: "Mark all read", ta: "அனைத்தையும் படித்ததாக" },
@@ -129,6 +142,7 @@ export const groupd: Locale = {
     ta: "டிஜிலாக்கர் · தமிழ்நாடு அரசு சேவைச் சான்றிதழ்",
   },
   "badge.scanVerify": { en: "Scan on-site to verify identity", ta: "அடையாளத்தை சரிபார்க்க இடத்திலேயே ஸ்கேன் செய்யவும்" },
+  "badge.emblemAlt": { en: "Tamil Nadu State Emblem", ta: "தமிழ்நாடு அரசு சின்னம்" },
   "badge.disclaimerPrefix": {
     en: "This badge is a demo credential. In production the QR resolves to a signed MAWS attestation at",
     ta: "இந்த அட்டை ஒரு டெமோ சான்றாகும். நடைமுறையில் QR குறியீடு கையொப்பமிடப்பட்ட MAWS உறுதிமொழிக்கு இணைக்கும்",

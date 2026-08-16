@@ -5,29 +5,30 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchComplaints, fetchWards } from "@/lib/data";
 import { writeActiveRole, type AppRole } from "@/lib/session";
+import { useLang } from "@/lib/i18n";
 
 const DEMO_PASSWORD = "TnSmDemo!2026";
 
 type DemoPersona = {
   role: AppRole;
-  label: string;
+  labelKey: string;
   ifhrms?: string;
   aadhaarTag: string;
   to: "/feed" | "/officer" | "/analytics" | "/dashboard";
 };
 
 const PERSONAS: DemoPersona[] = [
-  { role: "citizen", label: "Citizen", aadhaarTag: "@CivicGuard_42", to: "/feed" },
-  { role: "field_officer", label: "Field Officer", ifhrms: "20241203045", aadhaarTag: "@CivicGuard_11", to: "/officer" },
+  { role: "citizen", labelKey: "demo.citizen", aadhaarTag: "@CivicGuard_42", to: "/feed" },
+  { role: "field_officer", labelKey: "demo.fieldOfficer", ifhrms: "20241203045", aadhaarTag: "@CivicGuard_11", to: "/officer" },
   {
     role: "zonal_commissioner",
-    label: "Zonal AC",
+    labelKey: "demo.zonalAc",
     ifhrms: "20241203046",
     aadhaarTag: "@CivicGuard_12",
     to: "/officer",
   },
-  { role: "commissioner", label: "Commissioner", ifhrms: "20241203047", aadhaarTag: "@CivicGuard_13", to: "/analytics" },
-  { role: "councillor", label: "Ward Councillor", ifhrms: "20241203048", aadhaarTag: "@CivicGuard_14", to: "/dashboard" },
+  { role: "commissioner", labelKey: "demo.commissioner", ifhrms: "20241203047", aadhaarTag: "@CivicGuard_13", to: "/analytics" },
+  { role: "councillor", labelKey: "demo.wardCouncillor", ifhrms: "20241203048", aadhaarTag: "@CivicGuard_14", to: "/dashboard" },
 ];
 
 function demoEmail(role: AppRole) {
@@ -36,6 +37,7 @@ function demoEmail(role: AppRole) {
 
 export function DemoBypass({ returnTo }: { returnTo?: string }) {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [busy, setBusy] = useState<AppRole | null>(null);
 
   const enter = async (p: DemoPersona) => {
@@ -61,7 +63,7 @@ export function DemoBypass({ returnTo }: { returnTo?: string }) {
       }
 
       const uid = signIn.data.user?.id;
-      if (!uid) throw new Error("Demo session could not be created.");
+      if (!uid) throw new Error(t("demo.sessionFailed"));
 
       // Put demo officers in a ward that actually has live tickets to work on.
       const [wards, complaints] = await Promise.all([
@@ -85,13 +87,15 @@ export function DemoBypass({ returnTo }: { returnTo?: string }) {
       }
 
       writeActiveRole(p.role);
-      toast.success(`Test mode — signed in as ${p.label}`, {
-        description: p.ifhrms ? `Simulated IFHRMS ${p.ifhrms}` : "Simulated Aadhaar citizen persona",
+      toast.success(t("demo.signedInTemplate").replace("{label}", t(p.labelKey)), {
+        description: p.ifhrms
+          ? t("demo.simulatedIfhrmsTemplate").replace("{id}", p.ifhrms)
+          : t("demo.simulatedAadhaar"),
       });
       if (returnTo?.startsWith("/") && !returnTo.startsWith("//")) window.location.assign(returnTo);
       else navigate({ to: p.to });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Demo sign-in failed.");
+      toast.error(e instanceof Error ? e.message : t("demo.signInFailed"));
     } finally {
       setBusy(null);
     }
@@ -102,10 +106,8 @@ export function DemoBypass({ returnTo }: { returnTo?: string }) {
       <div className="flex items-start gap-2">
         <FlaskConical className="mt-0.5 size-4 shrink-0 text-warning" />
         <div className="min-w-0">
-          <h2 className="text-sm font-bold">Test mode — skip DigiLocker</h2>
-          <p className="text-[11px] text-muted-foreground">
-            One-tap demo sign-in. Bypasses Aadhaar / IFHRMS OTP binding for evaluation only.
-          </p>
+          <h2 className="text-sm font-bold">{t("demo.title")}</h2>
+          <p className="text-[11px] text-muted-foreground">{t("demo.subtitle")}</p>
         </div>
       </div>
 
@@ -125,9 +127,9 @@ export function DemoBypass({ returnTo }: { returnTo?: string }) {
               <ShieldCheck className="size-4 shrink-0 text-primary" />
             )}
             <span className="min-w-0">
-              <span className="block truncate">{p.label}</span>
+              <span className="block truncate">{t(p.labelKey)}</span>
               <span className="block truncate text-[10px] font-normal text-muted-foreground">
-                {p.ifhrms ? `IFHRMS ${p.ifhrms}` : p.aadhaarTag}
+                {p.ifhrms ? t("demo.ifhrmsTemplate").replace("{id}", p.ifhrms) : p.aadhaarTag}
               </span>
             </span>
           </button>
