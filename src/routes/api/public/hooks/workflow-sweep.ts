@@ -69,8 +69,16 @@ export const Route = createFileRoute("/api/public/hooks/workflow-sweep")({
             await h.notify(sb, [a.officer_id, worker?.user_id, complaint.author_id], "workflow", "SLA expired — escalated", `"${complaint.title}" breached its SLA and was escalated.`);
             escalated++;
           } else if (now - start >= span * cfg.sla_reminder_ratio) {
-            await h.notify(sb, [a.officer_id, worker?.user_id], "workflow", "SLA approaching", `"${complaint.title}" is approaching its SLA deadline.`);
-            reminded++;
+            const { count } = await sb
+              .from("notifications")
+              .select("id", { count: "exact", head: true })
+              .eq("title", "SLA approaching")
+              .eq("user_id", a.officer_id)
+              .ilike("body", `%${complaint.title}%`);
+            if (!count) {
+              await h.notify(sb, [a.officer_id, worker?.user_id], "workflow", "SLA approaching", `"${complaint.title}" is approaching its SLA deadline.`);
+              reminded++;
+            }
           }
         }
 
