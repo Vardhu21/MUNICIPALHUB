@@ -141,7 +141,8 @@ export const myAssignments = createServerFn({ method: "POST" })
       .eq("worker_id", worker.id)
       .order("assigned_at", { ascending: false })
       .limit(40);
-    const ids = (assignments ?? []).map((a: { complaint_id: string }) => a.complaint_id);
+    const rows = (assignments ?? []) as AssignmentRow[];
+    const ids = rows.map((a) => a.complaint_id);
     const { data: complaints } = ids.length
       ? await sb
           .from("complaints")
@@ -150,7 +151,7 @@ export const myAssignments = createServerFn({ method: "POST" })
       : { data: [] };
     return {
       worker,
-      items: (assignments ?? []).map((a: { complaint_id: string }) => ({
+      items: rows.map((a) => ({
         assignment: a,
         complaint: (complaints ?? []).find((c: { id: string }) => c.id === a.complaint_id) ?? null,
       })),
