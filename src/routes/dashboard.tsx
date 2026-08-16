@@ -18,7 +18,7 @@ import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { GeoCamera, type Capture } from "@/components/GeoCamera";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { ROLE_LABEL, useActiveRole, useSession } from "@/lib/session";
+import { ROLE_LABEL, useAuthorizedRole, useSession } from "@/lib/session";
 import { computeClock, SLA_MATRIX, TIER_LABEL, type Tier } from "@/lib/sla";
 import {
   applyEscalation,
@@ -56,7 +56,7 @@ export const Route = createFileRoute("/dashboard")({
 
 function Dashboard() {
   const { lang, t } = useLang();
-  const [role] = useActiveRole();
+  const { role, roles } = useAuthorizedRole();
   const { user } = useSession();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
