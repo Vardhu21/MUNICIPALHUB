@@ -316,7 +316,7 @@ function AuthPage() {
                 onClick={() => navigate({ to: "/feed" })}
                 className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
               >
-                {t("nav.feed")}
+                {t("feed")}
               </button>
               <button
                 onClick={switchAccount}
