@@ -66,12 +66,12 @@ function Portal() {
         role="img"
         aria-label="Ripon Building, Greater Chennai Corporation headquarters"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/40 to-black/45" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/25 to-black/35" />
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 80% 55% at 50% 45%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.32) 55%, transparent 85%)",
+            "radial-gradient(ellipse 75% 50% at 50% 48%, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.20) 60%, transparent 100%)",
         }}
       />
 
@@ -89,8 +89,8 @@ function Portal() {
               className="size-8 object-contain drop-shadow-md sm:size-10"
             />
             <p
-              className="text-[11px] font-semibold uppercase leading-tight tracking-[0.11em] text-white sm:text-[13px] sm:leading-snug"
-              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.55)" }}
+              className="text-[13px] font-medium uppercase leading-tight tracking-[0.11em] text-white"
+              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.45)" }}
             >
               <span className="block">Department of Municipal</span>
               <span className="block">Administration & Water Supply</span>
@@ -115,17 +115,17 @@ function Portal() {
           </div>
         </header>
 
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 py-10 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 py-10 text-center">
           <div className="space-y-4" style={fadeUp(120)}>
             <h1
-              className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-6xl"
-              style={{ textShadow: "0 2px 14px rgba(0,0,0,0.65)" }}
+              className="text-[34px] font-semibold leading-tight tracking-tight text-white sm:text-[58px]"
+              style={{ textShadow: "0 2px 12px rgba(0,0,0,0.50)" }}
             >
               TN Smart Municipality
             </h1>
             <p
-              className="text-lg font-medium text-white/95 sm:text-2xl"
-              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.55)" }}
+              className="text-[17px] font-normal text-white/95 sm:text-[22px]"
+              style={{ textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}
             >
               Your City. Your Voice. Your Solution.
             </p>
@@ -151,10 +151,10 @@ function Portal() {
 
           <button
             onClick={() => enter("/auth")}
-            className="text-sm font-medium text-white/80 underline decoration-white/50 decoration-1 underline-offset-6 transition-colors hover:text-white"
+            className="text-[13px] font-medium text-white/70 underline decoration-white/40 decoration-1 underline-offset-6 transition-colors hover:text-white"
             style={{
               ...fadeUp(320),
-              textShadow: "0 1px 4px rgba(0,0,0,0.45)",
+              textShadow: "0 1px 4px rgba(0,0,0,0.40)",
             }}
           >
             Skip
@@ -162,7 +162,7 @@ function Portal() {
         </div>
 
         <div
-          className="mb-4 grid grid-cols-1 gap-3 rounded-2xl border border-white/15 bg-black/30 p-4 backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-white/15 sm:p-5"
+          className="mb-4 grid grid-cols-1 gap-3 rounded-2xl border border-white/15 bg-black/20 p-4 backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-white/15 sm:p-5"
           style={fadeUp(400)}
         >
           {[
@@ -185,4 +185,3 @@ function Portal() {
     </main>
   );
 }
-
