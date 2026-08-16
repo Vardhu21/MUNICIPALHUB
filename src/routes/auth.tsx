@@ -292,7 +292,7 @@ function AuthPage() {
           <span className="min-w-0">{t("auth.gatewayInfo")}</span>
         </div>
 
-        <DemoBypass returnTo={next} />
+        {import.meta.env.DEV ? <DemoBypass returnTo={next} /> : null}
 
         <div className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-card p-1">
 
