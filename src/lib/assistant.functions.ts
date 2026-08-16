@@ -146,6 +146,17 @@ export const askAssistant = createServerFn({ method: "POST" })
     const key = process.env.GEMINI_API_KEY;
     const gatewayKey = process.env.LOVABLE_API_KEY;
 
+    // Database-first grounding: fetch only the directory rows this question needs.
+    let directory: string | null = null;
+    try {
+      const lastUser = [...data.messages].reverse().find((m) => m.role === "user")?.text ?? "";
+      const { lookupDirectory } = await import("./directory.server");
+      directory = await lookupDirectory(lastUser);
+    } catch (e) {
+      console.error("directory lookup failed", e);
+    }
+    const grounding = directory ? `\n\n=== OFFICIAL DIRECTORY RECORDS (from database) ===\n${directory}` : "";
+
     const parseResult = (raw: string) => {
       let parsed: { text?: string; refs?: string[]; action?: string } = {};
       try {
@@ -177,7 +188,7 @@ export const askAssistant = createServerFn({ method: "POST" })
             messages: [
               {
                 role: "system",
-                content: `${SYSTEM}\n\nCurrent language: ${data.lang}\n\nReturn ONLY a JSON object: {"text": string, "refs": string[], "action": string}. refs entries must come from: ${REF_KEYS.join(", ")}. action must be one of: ${ACTION_KEYS.join(", ")}.`,
+                content: `${SYSTEM}${grounding}\n\nCurrent language: ${data.lang}\n\nReturn ONLY a JSON object: {"text": string, "refs": string[], "action": string}. refs entries must come from: ${REF_KEYS.join(", ")}. action must be one of: ${ACTION_KEYS.join(", ")}.`,
               },
               ...data.messages.map((m) => ({
                 role: m.role === "user" ? ("user" as const) : ("assistant" as const),
@@ -210,7 +221,7 @@ export const askAssistant = createServerFn({ method: "POST" })
           headers: { "Content-Type": "application/json", "x-goog-api-key": key },
           body: JSON.stringify({
             systemInstruction: {
-              parts: [{ text: `${SYSTEM}\n\nCurrent language: ${data.lang}` }],
+              parts: [{ text: `${SYSTEM}${grounding}\n\nCurrent language: ${data.lang}` }],
             },
             contents: data.messages.map((m) => ({
               role: m.role === "user" ? "user" : "model",
