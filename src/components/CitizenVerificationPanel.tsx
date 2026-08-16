@@ -15,6 +15,7 @@ export function CitizenVerificationPanel() {
   const [items, setItems] = useState<Item[]>([]);
   const [reasonFor, setReasonFor] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const refresh = useCallback(() => {
@@ -44,6 +45,7 @@ export function CitizenVerificationPanel() {
           verificationId,
           satisfied,
           reason: satisfied ? undefined : reason,
+          photoDataUrl: satisfied ? undefined : (photo ?? undefined),
           lat: pos?.coords.latitude,
           lng: pos?.coords.longitude,
         },
@@ -58,6 +60,7 @@ export function CitizenVerificationPanel() {
             : "The complaint has been reopened for officer review.",
       );
       setReason("");
+      setPhoto(null);
       setReasonFor(null);
       refresh();
     } catch (e) {
@@ -83,13 +86,33 @@ export function CitizenVerificationPanel() {
           </p>
 
           {reasonFor === verification.id && (
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder={lang === "ta" ? "என்ன இன்னும் சரி செய்யப்படவில்லை?" : "What is still unresolved?"}
-              className="w-full rounded-xl border border-input bg-background p-2 text-xs outline-none focus:border-primary"
-              rows={3}
-            />
+            <div className="space-y-2">
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder={lang === "ta" ? "என்ன இன்னும் சரி செய்யப்படவில்லை?" : "What is still unresolved?"}
+                className="w-full rounded-xl border border-input bg-background p-2 text-xs outline-none focus:border-primary"
+                rows={3}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setPhoto(String(reader.result));
+                  reader.readAsDataURL(f);
+                }}
+                className="w-full text-[11px]"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                {lang === "ta"
+                  ? "விருப்பம்: தற்போதைய நிலையைக் காட்டும் புகைப்படம்."
+                  : "Optional: attach a photo of the current condition."}
+              </p>
+            </div>
           )}
 
           <div className="flex flex-wrap gap-2">
