@@ -74,7 +74,7 @@ function Portal() {
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col items-center justify-start gap-8 pt-12 pb-8 text-center sm:pt-16 md:pt-24 lg:pt-32">
+        <div className="flex flex-1 flex-col items-center justify-start gap-8 pt-12 pb-8 text-center sm:pt-16 md:pt-24 lg:pt-40">
           <div className="flex size-24 items-center justify-center p-3">
             <img
               src={emblem}
