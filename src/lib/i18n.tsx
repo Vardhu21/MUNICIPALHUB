@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { RESOURCES } from "./locales";
 
 export type Lang = "en" | "ta";
 
@@ -72,7 +73,8 @@ type Ctx = {
   lang: Lang;
   setLang: (l: Lang) => void;
   toggle: () => void;
-  t: (key: keyof typeof DICT) => string;
+  /** Translate a key from DICT or the centralized locale resources. */
+  t: (key: keyof typeof DICT | (string & {}), fallback?: string) => string;
   pick: (pair: { en: string; ta: string } | undefined) => string;
 };
 
@@ -97,7 +99,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       lang,
       setLang,
       toggle: () => setLang(lang === "en" ? "ta" : "en"),
-      t: (key) => DICT[key]?.[lang] ?? String(key),
+      t: (key, fallback) =>
+        DICT[key as string]?.[lang] ?? RESOURCES[key as string]?.[lang] ?? fallback ?? String(key),
       pick: (pair) => (pair ? pair[lang] : ""),
     }),
     [lang, setLang],
