@@ -143,6 +143,62 @@ export const askAssistant = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const empty = { text: "", refs: [] as ReferenceKey[], action: "none" as ActionKey };
     const key = process.env.GEMINI_API_KEY;
+    const gatewayKey = process.env.LOVABLE_API_KEY;
+
+    const parseResult = (raw: string) => {
+      let parsed: { text?: string; refs?: string[]; action?: string } = {};
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        parsed = { text: raw };
+      }
+      const text = (parsed.text ?? "").trim();
+      if (!text) return null;
+      const refs = (parsed.refs ?? []).filter((r): r is ReferenceKey =>
+        (REF_KEYS as string[]).includes(r),
+      );
+      const action = ((ACTION_KEYS as string[]).includes(parsed.action ?? "")
+        ? parsed.action
+        : "none") as ActionKey;
+      return { text, refs: refs.slice(0, 3), action, error: null };
+    };
+
+    // Preferred path: Lovable AI gateway (no user-supplied key required).
+    if (gatewayKey) {
+      try {
+        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Lovable-API-Key": gatewayKey },
+          body: JSON.stringify({
+            model: "google/gemini-3.6-flash",
+            temperature: 0.4,
+            response_format: { type: "json_object" },
+            messages: [
+              {
+                role: "system",
+                content: `${SYSTEM}\n\nCurrent language: ${data.lang}\n\nReturn ONLY a JSON object: {"text": string, "refs": string[], "action": string}. refs entries must come from: ${REF_KEYS.join(", ")}. action must be one of: ${ACTION_KEYS.join(", ")}.`,
+              },
+              ...data.messages.map((m) => ({
+                role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+                content: m.text,
+              })),
+            ],
+          }),
+        });
+        if (res.ok) {
+          const json = (await res.json()) as {
+            choices?: { message?: { content?: string } }[];
+          };
+          const out = parseResult((json.choices?.[0]?.message?.content ?? "").trim());
+          if (out) return out;
+        } else {
+          console.error(`AI gateway failed [${res.status}]: ${await res.text()}`);
+        }
+      } catch (e) {
+        console.error("AI gateway call threw", e);
+      }
+    }
+
     if (!key) return { ...empty, error: "missing_key" as const };
 
     try {
@@ -182,24 +238,9 @@ export const askAssistant = createServerFn({ method: "POST" })
         json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
       if (!raw) return { ...empty, error: "empty" as const };
 
-      let parsed: { text?: string; refs?: string[]; action?: string } = {};
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        parsed = { text: raw };
-      }
-
-      const text = (parsed.text ?? "").trim();
-      if (!text) return { ...empty, error: "empty" as const };
-
-      const refs = (parsed.refs ?? []).filter((r): r is ReferenceKey =>
-        (REF_KEYS as string[]).includes(r),
-      );
-      const action = ((ACTION_KEYS as string[]).includes(parsed.action ?? "")
-        ? parsed.action
-        : "none") as ActionKey;
-
-      return { text, refs: refs.slice(0, 3), action, error: null };
+      const out = parseResult(raw);
+      if (!out) return { ...empty, error: "empty" as const };
+      return out;
     } catch (e) {
       console.error("Gemini call threw", e);
       return { ...empty, error: "network" as const };
