@@ -80,8 +80,10 @@ export const EVIDENCE_STATES = [
   "GPS_FAILED",
   "EXIF_VERIFIED",
   "EXIF_UNAVAILABLE",
+  "EXIF_MISMATCH",
   "AI_VERIFIED",
   "AI_FLAGGED",
+  "AI_REVIEW_UNAVAILABLE",
   "OFFICER_APPROVED",
   "OFFICER_REJECTED",
 ] as const;
@@ -93,8 +95,10 @@ export const EVIDENCE_STATE_LABEL: Record<EvidenceState, { en: string; ta: strin
   GPS_FAILED: { en: "GPS mismatch", ta: "GPS பொருந்தவில்லை" },
   EXIF_VERIFIED: { en: "Photo GPS verified", ta: "புகைப்பட GPS சரி" },
   EXIF_UNAVAILABLE: { en: "EXIF GPS unavailable", ta: "EXIF GPS இல்லை" },
+  EXIF_MISMATCH: { en: "Photo GPS outside radius", ta: "புகைப்பட GPS வரம்பிற்கு வெளியே" },
   AI_VERIFIED: { en: "AI: relevant", ta: "AI: பொருத்தமானது" },
   AI_FLAGGED: { en: "AI: flagged for review", ta: "AI: மறுஆய்வுக்கு" },
+  AI_REVIEW_UNAVAILABLE: { en: "AI review unavailable", ta: "AI மதிப்பாய்வு கிடைக்கவில்லை" },
   OFFICER_APPROVED: { en: "Officer approved", ta: "அலுவலர் ஒப்புதல்" },
   OFFICER_REJECTED: { en: "Officer rejected", ta: "அலுவலர் நிராகரிப்பு" },
 };
@@ -103,7 +107,7 @@ export const DEFAULT_CONFIG = {
   arrival_radius_m: 40,
   approach_radius_m: 250,
   nearby_radius_m: 300,
-  evidence_gps_radius_m: 75,
+  evidence_gps_radius_m: 50,
   citizen_window_hours: 6,
   sla_reminder_ratio: 0.8,
 };

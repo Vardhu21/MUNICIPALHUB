@@ -142,8 +142,19 @@ function WorkerConsole() {
   const currentPosition = () =>
     new Promise<GeolocationPosition>((resolve, reject) =>
       navigator.geolocation
-        ? navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 12_000 })
-        : reject(new Error("Geolocation unavailable")),
+        ? navigator.geolocation.getCurrentPosition(
+            resolve,
+            () =>
+              reject(
+                new Error(
+                  lang === "ta"
+                    ? "இருப்பிட அனுமதி தேவை — சான்று புகார் இடத்தில் எடுக்கப்பட்டதா என்பதை சரிபார்க்க GPS அவசியம்."
+                    : "Location permission is required — GPS proves the evidence was captured at the complaint location.",
+                ),
+              ),
+            { enableHighAccuracy: true, timeout: 12_000 },
+          )
+        : reject(new Error("Geolocation is unavailable on this device.")),
     );
 
   const runNearby = async () => {
@@ -223,7 +234,9 @@ function WorkerConsole() {
       setUploadFor(null);
       refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Evidence submission failed.");
+      // GPS_FAILED and permission errors keep the capture panel open so the
+      // worker can simply retry on site; nothing is stored as evidence.
+      toast.error(e instanceof Error ? e.message : "Evidence submission failed. Please retry.");
     } finally {
       setBusy(null);
     }

@@ -11,8 +11,9 @@ type Item = Awaited<ReturnType<typeof officerEvidenceQueue>>[number];
 function StateChip({ state }: { state: string }) {
   const { lang } = useLang();
   const label = EVIDENCE_STATE_LABEL[state as EvidenceState]?.[lang] ?? state;
-  const bad = state.endsWith("FAILED") || state === "AI_FLAGGED" || state === "OFFICER_REJECTED";
-  const soft = state === "PENDING" || state === "EXIF_UNAVAILABLE";
+  const bad =
+    state.endsWith("FAILED") || state === "AI_FLAGGED" || state === "OFFICER_REJECTED" || state === "EXIF_MISMATCH";
+  const soft = state === "PENDING" || state === "EXIF_UNAVAILABLE" || state === "AI_REVIEW_UNAVAILABLE";
   return (
     <span
       className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${

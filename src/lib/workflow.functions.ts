@@ -179,7 +179,7 @@ async function ownedAssignment(h: typeof import("./workflow.server"), sb: any, u
   if (!assignment || assignment.worker_id !== worker.id) throw new Error("Assignment not found for this worker.");
   const { data: complaint } = await sb
     .from("complaints")
-    .select("id,title,author_id,lat,lng,category,description,status")
+    .select("id,title,author_id,lat,lng,category,description,status,ward_id")
     .eq("id", assignment.complaint_id)
     .maybeSingle();
   if (!complaint) throw new Error("Complaint not found.");
@@ -264,6 +264,13 @@ export const pingWorkerLocation = createServerFn({ method: "POST" })
         await h.moveComplaint(sb, complaint.id, "arrived");
         await h.logEvent(sb, complaint.id, "arrived", worker.display_name, `Worker arrived (${Math.round(distance)} m from the complaint point).`);
         await h.notify(sb, [complaint.author_id, assignment.officer_id], "workflow", "Worker has arrived", `Worker has arrived at the complaint location for "${complaint.title}".`);
+        // Ward councillor is resolved dynamically from the complaint's ward.
+        await h.notifyWardCouncillor(
+          sb,
+          complaint,
+          "Worker arrived in your ward",
+          `A municipal worker has arrived at the complaint location for "${complaint.title}".`,
+        );
       } else if (stage === "approaching") {
         await h.notify(sb, [complaint.author_id], "workflow", "Worker approaching", `The worker is approaching the location for "${complaint.title}".`);
       }
@@ -328,7 +335,26 @@ export const submitEvidence = createServerFn({ method: "POST" })
       ? "EXIF_UNAVAILABLE"
       : exifDistance != null && exifDistance <= cfg.evidence_gps_radius_m
         ? "EXIF_VERIFIED"
-        : "GPS_FAILED";
+        : "EXIF_MISMATCH";
+
+    // Hard rule: live worker GPS outside the configured evidence radius is NOT
+    // accepted as completion evidence. Nothing is uploaded or recorded as
+    // evidence; the worker must recapture at the complaint location.
+    if (gpsState === "GPS_FAILED") {
+      await h.logEvent(
+        sb,
+        complaint.id,
+        "gps_failed",
+        worker.display_name,
+        `Evidence capture rejected: worker GPS was ${Math.round(gpsDistance!)} m from the complaint point (allowed ${cfg.evidence_gps_radius_m} m).`,
+      );
+      throw new Error(
+        `Evidence must be captured at the complaint location. You are ${Math.round(gpsDistance!)} m away (allowed ${cfg.evidence_gps_radius_m} m). Please recapture on site.`,
+      );
+    }
+    if (gpsState === "PENDING") {
+      throw new Error("This complaint has no recorded location, so evidence cannot be geo-verified. Contact your officer.");
+    }
 
     const { bytes, mime } = h.decodeDataUrl(data.imageDataUrl);
     const ext = mime.includes("png") ? "png" : "jpg";
@@ -342,7 +368,13 @@ export const submitEvidence = createServerFn({ method: "POST" })
       description: complaint.description ?? "",
       category: complaint.category ?? "",
     });
-    const aiState = !verdict ? "PENDING" : verdict.relevance === "relevant" ? "AI_VERIFIED" : "AI_FLAGGED";
+    // A Gemini outage must never reject otherwise valid evidence — it falls
+    // through to plain officer review instead.
+    const aiState = !verdict
+      ? "AI_REVIEW_UNAVAILABLE"
+      : verdict.relevance === "relevant"
+        ? "AI_VERIFIED"
+        : "AI_FLAGGED";
 
     const { data: evidence, error } = await sb
       .from("complaint_evidence")
@@ -384,8 +416,8 @@ export const submitEvidence = createServerFn({ method: "POST" })
       `Evidence uploaded. GPS ${gpsState}${gpsDistance != null ? ` (${Math.round(gpsDistance)} m)` : ""}, EXIF ${exifState}, AI ${aiState}.`,
     );
     await h.notify(sb, [assignment.officer_id], "workflow", "Evidence awaiting verification", `Completion evidence submitted for "${complaint.title}".`);
-    if (gpsState === "GPS_FAILED") {
-      await h.notify(sb, [assignment.officer_id], "workflow", "GPS verification failed", `Evidence for "${complaint.title}" was captured outside the allowed radius.`);
+    if (exifState === "EXIF_MISMATCH") {
+      await h.notify(sb, [assignment.officer_id], "workflow", "Photo GPS mismatch", `Photo EXIF GPS for "${complaint.title}" is outside the allowed radius although live worker GPS passed.`);
     }
     if (aiState === "AI_FLAGGED") {
       await h.notify(sb, [assignment.officer_id], "workflow", "AI flagged evidence", `AI could not match the photo to "${complaint.title}". Manual review required.`);

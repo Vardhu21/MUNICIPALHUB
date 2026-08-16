@@ -88,6 +88,44 @@ export async function isOfficer(sb: AnyClient, userId: string) {
   );
 }
 
+/**
+ * Resolves the ward councillor for a complaint dynamically (complaint → ward_id
+ * → councillors row) and notifies any authenticated councillor accounts that
+ * hold the councillor role for that ward. Names are never hardcoded.
+ */
+export async function notifyWardCouncillor(
+  sb: AnyClient,
+  complaint: { id: string; title?: string | null; ward_id?: string | null },
+  title: string,
+  body: string,
+) {
+  if (!complaint.ward_id) return null;
+  const { data: councillor } = await sb
+    .from("councillors")
+    .select("councillor_id,name,designation,ward_ref")
+    .eq("ward_uuid", complaint.ward_id)
+    .maybeSingle();
+
+  const { data: accounts } = await sb
+    .from("user_roles")
+    .select("user_id")
+    .eq("role", "councillor")
+    .eq("ward_id", complaint.ward_id);
+  const ids = (accounts ?? []).map((r: { user_id: string }) => r.user_id);
+  if (ids.length) await notify(sb, ids, "workflow", title, body);
+
+  await logEvent(
+    sb,
+    complaint.id,
+    "councillor_notified",
+    councillor?.name ? `${councillor.designation ?? "Ward Councillor"} — ${councillor.name}` : "Ward Councillor",
+    councillor
+      ? `Ward councillor (${councillor.ward_ref}) notified: ${body}`
+      : `No councillor on record for this ward; notification skipped.`,
+  );
+  return councillor ?? null;
+}
+
 export type AiVerdict = {
   relevance: "relevant" | "unrelated" | "unclear";
   confidence: number;
