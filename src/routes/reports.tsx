@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { useLang } from "@/lib/i18n";
 import { EmblemLoader } from "@/components/EmblemLoader";
+import { runSlaReportNow } from "@/lib/sla-report.functions";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
