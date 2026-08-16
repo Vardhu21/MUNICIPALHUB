@@ -68,7 +68,7 @@ function Feed() {
   useEffect(() => {
     load().catch((e) => {
       setLoading(false);
-      toast.error(e instanceof Error ? e.message : "Could not load the feed");
+      toast.error(e instanceof Error ? e.message : t("feed.couldNotLoad"));
     });
   }, [load]);
 
@@ -81,7 +81,7 @@ function Feed() {
 
   const requireAuth = () => {
     if (!user) {
-      toast.error(lang === "ta" ? "முதலில் உள்நுழையவும்" : "Sign in to interact with the feed");
+      toast.error(t("feed.signInInteract"));
       return false;
     }
     return true;
@@ -111,9 +111,8 @@ function Feed() {
       reason: "Citizen-reported fake incident — routed to AI inspection queue",
     });
     if (error) return toast.error(error.message);
-    toast.warning("Fake incident report filed", {
-      description:
-        "The AI inspection queue will re-score this submission. Confirmed fraud freezes the account and generates a legal disclosure packet.",
+    toast.warning(t("feed.fakeReportFiled"), {
+      description: t("feed.fakeReportDesc"),
     });
   };
 
@@ -123,14 +122,14 @@ function Feed() {
       const updated = await fastForward(c, 1);
       setComplaints((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
       if (updated.status !== c.status) {
-        toast.error(`Ticket ${updated.status.replace("_", " ").toUpperCase()}`, {
-          description: `Reassigned to ${updated.assigned_officer ?? "next tier"}.`,
+        toast.error(`${t("feed.ticketStatusUpdated", "Ticket {status}").replace("{status}", updated.status.replace("_", " ").toUpperCase())}`, {
+          description: `${t("feed.reassignedTo", "Reassigned to {officer}.").replace("{officer}", updated.assigned_officer ?? t("feed.nextTier"))}`,
         });
       } else {
-        toast.info("SLA clock advanced by 1 hour");
+        toast.info(t("feed.slaAdvanced"));
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Simulation failed");
+      toast.error(e instanceof Error ? e.message : t("feed.simulationFailed"));
     } finally {
       setBusyId(null);
     }
@@ -154,12 +153,10 @@ function Feed() {
           totalCount={complaints.length}
         />
 
-        {loading && <EmblemLoader label="Loading grievances…" />}
+        {loading && <EmblemLoader label={t("feed.loadingGrievances")} />}
         {!loading && visible.length === 0 && (
           <p className="civic-card p-6 text-center text-sm text-muted-foreground">
-            {lang === "ta"
-              ? "வடிப்பானுக்கு பொருந்தும் புகார்கள் இல்லை."
-              : "No grievances match these filters. Try broadening your search."}
+            {t("feed.noMatchFilters")}
           </p>
         )}
 

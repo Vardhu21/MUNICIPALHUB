@@ -72,6 +72,8 @@ export const groupb: Locale = {
   "dashboard.slaClockPlus": { en: "SLA clock +{h}h", ta: "SLA கடிகாரம் +{h} மணி" },
   "dashboard.simulationFailed": { en: "Simulation failed", ta: "உருவகப்படுத்தல் தோல்வியடைந்தது" },
 
+  "feed.signInInteract": { en: "Sign in to interact with the feed", ta: "ஊட்டத்துடன் தொடர்பு கொள்ள முதலில் உள்நுழையவும்" },
+  "feed.noMatchFilters": { en: "No grievances match these filters. Try broadening your search.", ta: "இந்த வடிப்பான்களுக்கு பொருந்தும் புகார்கள் இல்லை. உங்கள் தேடலை விரிவுபடுத்த முயற்சிக்கவும்." },
   "feed.couldNotLoad": { en: "Could not load the feed", ta: "ஊட்டத்தை ஏற்ற முடியவில்லை" },
   "feed.fakeReportFiled": { en: "Fake incident report filed", ta: "போலி நிகழ்வு அறிக்கை பதிவு செய்யப்பட்டது" },
   "feed.fakeReportDesc": {

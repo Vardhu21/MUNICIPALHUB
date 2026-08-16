@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Search, X, SlidersHorizontal } from "lucide-react";
 import type { Complaint, Ward } from "@/lib/data";
 import type { Priority, Status } from "@/lib/sla";
+import { useLang } from "@/lib/i18n";
 
 export type TicketFilterState = {
   q: string;
@@ -79,6 +80,7 @@ export function TicketFilters({
   resultCount: number;
   totalCount: number;
 }) {
+  const { t } = useLang();
   const activeCount = useMemo(() => {
     let n = 0;
     if (filters.q.trim()) n++;
@@ -106,7 +108,7 @@ export function TicketFilters({
   return (
     <section
       role="search"
-      aria-label={lang === "ta" ? "வடிப்பான்கள்" : "Ticket filters"}
+      aria-label={t("filters.ariaLabel")}
       className="civic-card space-y-3 p-3 sm:p-4"
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
@@ -116,19 +118,15 @@ export function TicketFilters({
             type="search"
             value={filters.q}
             onChange={(e) => set("q", e.target.value)}
-            placeholder={
-              lang === "ta"
-                ? "தலைப்பு, பகுதி, அலுவலர் தேடு…"
-                : "Search title, address, officer, category…"
-            }
+            placeholder={t("filters.searchPlaceholder")}
             className="min-w-0 bg-transparent text-sm outline-none"
-            aria-label={lang === "ta" ? "தேடல்" : "Search tickets"}
+            aria-label={t("filters.searchAria")}
           />
           {filters.q && (
             <button
               type="button"
               onClick={() => set("q", "")}
-              aria-label={lang === "ta" ? "தேடலை அழி" : "Clear search"}
+              aria-label={t("filters.clearSearch")}
               className="rounded p-0.5 text-muted-foreground hover:text-foreground"
             >
               <X className="size-3.5" />
@@ -142,7 +140,7 @@ export function TicketFilters({
           className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold disabled:opacity-40"
         >
           <SlidersHorizontal className="size-3.5" />
-          <span className="hidden sm:inline">{lang === "ta" ? "அழி" : "Reset"}</span>
+          <span className="hidden sm:inline">{t("filters.reset")}</span>
           {activeCount > 0 && (
             <span className="grid size-4 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
               {activeCount}
@@ -153,12 +151,12 @@ export function TicketFilters({
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Select
-          label={lang === "ta" ? "வார்டு" : "Ward"}
+          label={t("filters.ward")}
           value={filters.wardId}
           onChange={(v) => set("wardId", v)}
         >
           <option value="all" className="bg-card">
-            {lang === "ta" ? "அனைத்து வார்டுகள்" : "All wards"}
+            {t("filters.allWards")}
           </option>
           {wardOptions.map((w) => (
             <option key={w.id} value={w.id} className="bg-card">
@@ -169,12 +167,12 @@ export function TicketFilters({
         </Select>
 
         <Select
-          label={lang === "ta" ? "நிலை" : "Status"}
+          label={t("filters.status")}
           value={filters.status}
           onChange={(v) => set("status", v)}
         >
           <option value="all" className="bg-card">
-            {lang === "ta" ? "அனைத்து நிலைகள்" : "All statuses"}
+            {t("filters.allStatuses")}
           </option>
           {STATUS_OPTIONS.map((s) => (
             <option key={s.value} value={s.value} className="bg-card">
@@ -184,12 +182,12 @@ export function TicketFilters({
         </Select>
 
         <Select
-          label={lang === "ta" ? "முன்னுரிமை" : "Priority"}
+          label={t("filters.priority")}
           value={filters.priority}
           onChange={(v) => set("priority", v)}
         >
           <option value="all" className="bg-card">
-            {lang === "ta" ? "அனைத்து முன்னுரிமை" : "All priorities"}
+            {t("filters.allPriorities")}
           </option>
           {PRIORITY_OPTIONS.map((p) => (
             <option key={p.value} value={p.value} className="bg-card">
@@ -199,12 +197,12 @@ export function TicketFilters({
         </Select>
 
         <Select
-          label={lang === "ta" ? "துறை" : "Department"}
+          label={t("filters.department")}
           value={filters.department}
           onChange={(v) => set("department", v)}
         >
           <option value="all" className="bg-card">
-            {lang === "ta" ? "அனைத்து துறைகள்" : "All departments"}
+            {t("filters.allDepartments")}
           </option>
           {departments.map((d) => (
             <option key={d} value={d} className="bg-card">
@@ -215,9 +213,9 @@ export function TicketFilters({
       </div>
 
       <p className="text-[11px] text-muted-foreground" aria-live="polite">
-        {lang === "ta"
-          ? `${totalCount} இல் ${resultCount} புகார்கள் காட்டப்படுகின்றன`
-          : `Showing ${resultCount} of ${totalCount} tickets`}
+        {t("filters.resultsTemplate")
+          .replace("{result}", String(resultCount))
+          .replace("{total}", String(totalCount))}
       </p>
     </section>
   );

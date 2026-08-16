@@ -15,7 +15,7 @@ type Alert = {
 };
 
 export function EmergencyBanner({ position }: { position: { lat: number; lng: number } | null }) {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [dismissed, setDismissed] = useState<string[]>([]);
 
@@ -50,12 +50,12 @@ export function EmergencyBanner({ position }: { position: { lat: number; lng: nu
               {lang === "ta" ? a.title_ta : a.title_en}
             </p>
             <p className="truncate text-xs text-muted-foreground">
-              Geofenced push · within {a.radius_m} m of your position
+              {t("alert.geofencedTemplate").replace("{radius}", String(a.radius_m))}
             </p>
           </div>
           <button
             onClick={() => setDismissed((d) => [...d, a.id])}
-            aria-label="Dismiss alert"
+            aria-label={t("alert.dismiss")}
             className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <X className="size-4" />
