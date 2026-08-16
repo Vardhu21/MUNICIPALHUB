@@ -152,8 +152,10 @@ function Portal() {
           <button
             onClick={() => enter("/auth")}
             className="text-sm font-medium text-white/80 underline decoration-white/50 decoration-1 underline-offset-6 transition-colors hover:text-white"
-            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.45)" }}
-            style={fadeUp(320)}
+            style={{
+              ...fadeUp(320),
+              textShadow: "0 1px 4px rgba(0,0,0,0.45)",
+            }}
           >
             Skip
           </button>
