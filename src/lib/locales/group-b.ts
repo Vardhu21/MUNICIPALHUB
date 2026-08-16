@@ -81,6 +81,9 @@ export const groupb: Locale = {
   "dashboard.escalatedCommissionerNote": { en: "Escalated to the Corporation Commissioner", ta: "மாநகராட்சி ஆணையருக்கு மேல்நிலைப்படுத்தப்பட்டது" },
   "dashboard.jtfRaisedNote": { en: "Joint Task Force Request raised — TWAD Board & Highways Department notified", ta: "கூட்டுப் பணிக்குழு கோரிக்கை எழுப்பப்பட்டது — TWAD வாரியம் மற்றும் நெடுஞ்சாலைத் துறைக்கு தெரிவிக்கப்பட்டது" },
   "dashboard.unknownWard": { en: "Unknown", ta: "தெரியாதது" },
+  "dashboard.escalatedToZone": { en: "Escalated to zone", ta: "மண்டலத்திற்கு மேல்நிலைப்படுத்தப்பட்டது" },
+  "dashboard.slaBreaches": { en: "SLA breaches", ta: "SLA மீறல்கள்" },
+  "dashboard.zonesMonitored": { en: "Zones monitored", ta: "கண்காணிக்கப்படும் மண்டலங்கள்" },
 
   "feed.signInInteract": { en: "Sign in to interact with the feed", ta: "ஊட்டத்துடன் தொடர்பு கொள்ள முதலில் உள்நுழையவும்" },
   "feed.noMatchFilters": { en: "No grievances match these filters. Try broadening your search.", ta: "இந்த வடிப்பான்களுக்கு பொருந்தும் புகார்கள் இல்லை. உங்கள் தேடலை விரிவுபடுத்த முயற்சிக்கவும்." },
