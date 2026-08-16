@@ -65,10 +65,7 @@ function Portal() {
           ready ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
         }`}
       >
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <p className="min-w-0 truncate text-[11px] uppercase tracking-[0.2em] text-white/70">
-            {t("maws")}
-          </p>
+        <div className="flex justify-end">
           <button
             onClick={toggle}
             className="shrink-0 rounded-lg border border-white/30 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
@@ -78,13 +75,13 @@ function Portal() {
         </div>
 
         <div className="flex flex-1 flex-col items-center justify-center gap-8 py-14 text-center">
-          <div className="flex size-24 items-center justify-center rounded-3xl border border-white/25 bg-white/90 p-3 shadow-2xl">
+          <div className="flex size-24 items-center justify-center p-3">
             <img
               src={emblem}
               alt="TN SmartMunicipality emblem"
               width={512}
               height={512}
-              className="size-full object-contain"
+              className="size-full object-contain drop-shadow-2xl"
             />
           </div>
 
