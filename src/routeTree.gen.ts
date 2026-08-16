@@ -17,6 +17,7 @@ import { Route as FeedRouteImport } from './routes/feed'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as WorkerRouteImport } from './routes/worker'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as OfficerIndexRouteImport } from './routes/officer.index'
@@ -65,6 +66,11 @@ const ReportRoute = ReportRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkerRoute = WorkerRouteImport.update({
+  id: '/worker',
+  path: '/worker',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotmcpChar93ListToolsRoute =
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/report': typeof ReportRoute
   '/reports': typeof ReportsRoute
+  '/worker': typeof WorkerRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/officer/login': typeof OfficerLoginRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/report': typeof ReportRoute
   '/reports': typeof ReportsRoute
+  '/worker': typeof WorkerRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/officer/login': typeof OfficerLoginRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/report': typeof ReportRoute
   '/reports': typeof ReportsRoute
+  '/worker': typeof WorkerRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/officer/login': typeof OfficerLoginRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/report'
     | '/reports'
+    | '/worker'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/officer/login'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/report'
     | '/reports'
+    | '/worker'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/officer/login'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/report'
     | '/reports'
+    | '/worker'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/officer/login'
@@ -245,6 +257,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   ReportRoute: typeof ReportRoute
   ReportsRoute: typeof ReportsRoute
+  WorkerRoute: typeof WorkerRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   OfficerLoginRoute: typeof OfficerLoginRoute
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/worker': {
+      id: '/worker'
+      path: '/worker'
+      fullPath: '/worker'
+      preLoaderRoute: typeof WorkerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -389,6 +409,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   ReportRoute: ReportRoute,
   ReportsRoute: ReportsRoute,
+  WorkerRoute: WorkerRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
