@@ -14,6 +14,153 @@ export type Database = {
   }
   public: {
     Tables: {
+      citizen_verifications: {
+        Row: {
+          citizen_id: string
+          complaint_id: string
+          created_at: string
+          deadline_at: string
+          decided_at: string | null
+          decision: string
+          evidence_id: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          opened_at: string
+          photo_path: string | null
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          citizen_id: string
+          complaint_id: string
+          created_at?: string
+          deadline_at: string
+          decided_at?: string | null
+          decision?: string
+          evidence_id?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          opened_at?: string
+          photo_path?: string | null
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          citizen_id?: string
+          complaint_id?: string
+          created_at?: string
+          deadline_at?: string
+          decided_at?: string | null
+          decision?: string
+          evidence_id?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          opened_at?: string
+          photo_path?: string | null
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "citizen_verifications_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "citizen_verifications_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "complaint_evidence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaint_assignments: {
+        Row: {
+          accepted_at: string | null
+          active: boolean
+          arrived_at: string | null
+          assigned_at: string
+          complaint_id: string
+          completed_at: string | null
+          created_at: string
+          dest_lat: number | null
+          dest_lng: number | null
+          id: string
+          last_distance_m: number | null
+          last_ping_at: string | null
+          officer_id: string
+          sla_deadline: string
+          stage: string
+          travel_started_at: string | null
+          updated_at: string
+          work_started_at: string | null
+          worker_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          active?: boolean
+          arrived_at?: string | null
+          assigned_at?: string
+          complaint_id: string
+          completed_at?: string | null
+          created_at?: string
+          dest_lat?: number | null
+          dest_lng?: number | null
+          id?: string
+          last_distance_m?: number | null
+          last_ping_at?: string | null
+          officer_id: string
+          sla_deadline: string
+          stage?: string
+          travel_started_at?: string | null
+          updated_at?: string
+          work_started_at?: string | null
+          worker_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          active?: boolean
+          arrived_at?: string | null
+          assigned_at?: string
+          complaint_id?: string
+          completed_at?: string | null
+          created_at?: string
+          dest_lat?: number | null
+          dest_lng?: number | null
+          id?: string
+          last_distance_m?: number | null
+          last_ping_at?: string | null
+          officer_id?: string
+          sla_deadline?: string
+          stage?: string
+          travel_started_at?: string | null
+          updated_at?: string
+          work_started_at?: string | null
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_assignments_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaint_assignments_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       complaint_comments: {
         Row: {
           body: string
@@ -83,6 +230,112 @@ export type Database = {
             columns: ["complaint_id"]
             isOneToOne: false
             referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaint_evidence: {
+        Row: {
+          ai_confidence: number | null
+          ai_explanation: string | null
+          ai_observed_issue: string | null
+          ai_relevance: string | null
+          ai_state: string
+          assignment_id: string | null
+          complaint_id: string
+          created_at: string
+          description: string
+          exif_distance_m: number | null
+          exif_lat: number | null
+          exif_lng: number | null
+          exif_state: string
+          gps_distance_m: number | null
+          gps_state: string
+          id: string
+          image_path: string
+          officer_decided_at: string | null
+          officer_id: string | null
+          officer_reason: string | null
+          officer_state: string
+          updated_at: string
+          worker_id: string
+          worker_lat: number | null
+          worker_lng: number | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_explanation?: string | null
+          ai_observed_issue?: string | null
+          ai_relevance?: string | null
+          ai_state?: string
+          assignment_id?: string | null
+          complaint_id: string
+          created_at?: string
+          description?: string
+          exif_distance_m?: number | null
+          exif_lat?: number | null
+          exif_lng?: number | null
+          exif_state?: string
+          gps_distance_m?: number | null
+          gps_state?: string
+          id?: string
+          image_path: string
+          officer_decided_at?: string | null
+          officer_id?: string | null
+          officer_reason?: string | null
+          officer_state?: string
+          updated_at?: string
+          worker_id: string
+          worker_lat?: number | null
+          worker_lng?: number | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_explanation?: string | null
+          ai_observed_issue?: string | null
+          ai_relevance?: string | null
+          ai_state?: string
+          assignment_id?: string | null
+          complaint_id?: string
+          created_at?: string
+          description?: string
+          exif_distance_m?: number | null
+          exif_lat?: number | null
+          exif_lng?: number | null
+          exif_state?: string
+          gps_distance_m?: number | null
+          gps_state?: string
+          id?: string
+          image_path?: string
+          officer_decided_at?: string | null
+          officer_id?: string | null
+          officer_reason?: string | null
+          officer_state?: string
+          updated_at?: string
+          worker_id?: string
+          worker_lat?: number | null
+          worker_lng?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_evidence_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "complaint_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaint_evidence_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaint_evidence_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
             referencedColumns: ["id"]
           },
         ]
@@ -620,17 +873,106 @@ export type Database = {
         }
         Relationships: []
       }
+      workers: {
+        Row: {
+          active: boolean
+          created_at: string
+          department: string
+          display_name: string
+          id: string
+          phone_masked: string | null
+          updated_at: string
+          user_id: string
+          ward_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          department?: string
+          display_name: string
+          id?: string
+          phone_masked?: string | null
+          updated_at?: string
+          user_id: string
+          ward_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          department?: string
+          display_name?: string
+          id?: string
+          phone_masked?: string | null
+          updated_at?: string
+          user_id?: string
+          ward_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workers_ward_id_fkey"
+            columns: ["ward_id"]
+            isOneToOne: false
+            referencedRelation: "wards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_config: {
+        Row: {
+          description: string
+          key: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          description?: string
+          key: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          description?: string
+          key?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      geo_distance_m: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      nearby_unresolved_complaints: {
+        Args: {
+          _category?: string
+          _exclude?: string
+          _lat: number
+          _lng: number
+          _radius_m?: number
+        }
+        Returns: {
+          category: string
+          created_at: string
+          distance_m: number
+          id: string
+          lat: number
+          lng: number
+          priority: Database["public"]["Enums"]["complaint_priority"]
+          status: Database["public"]["Enums"]["complaint_status"]
+          title: string
+        }[]
       }
     }
     Enums: {
@@ -641,6 +983,7 @@ export type Database = {
         | "commissioner"
         | "councillor"
         | "admin"
+        | "worker"
       complaint_priority: "emergency" | "high" | "medium" | "low"
       complaint_status:
         | "submitted"
@@ -651,6 +994,16 @@ export type Database = {
         | "escalated"
         | "joint_task_force"
         | "rejected"
+        | "worker_accepted"
+        | "travelling"
+        | "arrived"
+        | "evidence_submitted"
+        | "officer_review"
+        | "officer_approved"
+        | "citizen_verification"
+        | "reopened"
+        | "auto_closed_no_response"
+        | "resolved_by_citizen"
       ulb_type: "corporation" | "municipality" | "town_panchayat"
     }
     CompositeTypes: {
@@ -786,6 +1139,7 @@ export const Constants = {
         "commissioner",
         "councillor",
         "admin",
+        "worker",
       ],
       complaint_priority: ["emergency", "high", "medium", "low"],
       complaint_status: [
@@ -797,6 +1151,16 @@ export const Constants = {
         "escalated",
         "joint_task_force",
         "rejected",
+        "worker_accepted",
+        "travelling",
+        "arrived",
+        "evidence_submitted",
+        "officer_review",
+        "officer_approved",
+        "citizen_verification",
+        "reopened",
+        "auto_closed_no_response",
+        "resolved_by_citizen",
       ],
       ulb_type: ["corporation", "municipality", "town_panchayat"],
     },
