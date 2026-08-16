@@ -14,11 +14,12 @@ type DemoPersona = {
   labelKey: string;
   ifhrms?: string;
   aadhaarTag: string;
-  to: "/feed" | "/officer" | "/analytics" | "/dashboard";
+  to: "/feed" | "/officer" | "/analytics" | "/dashboard" | "/worker";
 };
 
 const PERSONAS: DemoPersona[] = [
   { role: "citizen", labelKey: "demo.citizen", aadhaarTag: "@CivicGuard_42", to: "/feed" },
+  { role: "worker", labelKey: "demo.worker", aadhaarTag: "@WardCrew_07", to: "/worker" },
   { role: "field_officer", labelKey: "demo.fieldOfficer", ifhrms: "20241203045", aadhaarTag: "@CivicGuard_11", to: "/officer" },
   {
     role: "zonal_commissioner",
