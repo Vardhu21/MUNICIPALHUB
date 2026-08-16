@@ -71,7 +71,7 @@ export function TopBar() {
     <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-xl">
       <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3">
         <Link to="/" className="flex min-w-0 items-center gap-2.5">
-          <img src={emblem} alt="" className="grayscale contrast-125 size-9 shrink-0 rounded-lg" />
+          <img src={emblem} alt="" className="size-9 shrink-0 rounded-lg" />
           <span className="min-w-0">
             <span className="block truncate text-sm font-bold leading-tight">{t("appName")}</span>
             <span className="block truncate text-[11px] leading-tight text-muted-foreground">

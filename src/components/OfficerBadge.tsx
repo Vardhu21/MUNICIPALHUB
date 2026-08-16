@@ -128,7 +128,7 @@ export function OfficerBadge({ open, onClose, userId, role }: Props) {
 
         {/* State seal header */}
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-border bg-gradient-to-r from-primary/20 to-success/15 p-4">
-          <img src={emblem} alt="Tamil Nadu State Emblem" className="grayscale contrast-125 size-14 rounded-lg" />
+          <img src={emblem} alt="Tamil Nadu State Emblem" className="size-14 rounded-lg" />
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
               Government of Tamil Nadu
