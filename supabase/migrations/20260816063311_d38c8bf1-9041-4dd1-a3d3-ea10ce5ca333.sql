@@ -1,0 +1,1 @@
+UPDATE public.workflow_config SET value = 50, description = 'Maximum allowed distance in metres between evidence GPS and the complaint location (evidence outside this radius is rejected)', updated_at = now() WHERE key = 'evidence_gps_radius_m';
