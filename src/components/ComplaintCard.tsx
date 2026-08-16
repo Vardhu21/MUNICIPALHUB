@@ -51,7 +51,7 @@ export function ComplaintCard({
     const url = `${window.location.origin}/track/${c.id}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success(lang === "ta" ? "இணைப்பு நகலெடுக்கப்பட்டது" : "Tracking link copied", {
+      toast.success(t("card.linkCopied"), {
         description: url,
       });
     } catch {
@@ -64,7 +64,7 @@ export function ComplaintCard({
       {c.frozen_fake && (
         <div className="flex items-center gap-2 border-b border-destructive/40 bg-destructive/15 px-4 py-2 text-xs font-semibold text-destructive">
           <Lock className="size-3.5 shrink-0" />
-          Account frozen — fraudulent incident. Legal disclosure packet auto-generated.
+          {t("card.frozenFake")}
         </div>
       )}
 
@@ -110,7 +110,7 @@ export function ComplaintCard({
         />
 
         <p className="text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">Assigned:</span>{" "}
+          <span className="font-semibold text-foreground">{t("card.assigned")}</span>{" "}
           {c.assigned_officer ?? officerForTier(c.current_tier as Tier)}
         </p>
 
@@ -165,7 +165,7 @@ export function ComplaintCard({
             className="ml-auto flex items-center gap-1.5 rounded-lg border border-warning/50 bg-warning/10 px-2.5 py-1.5 text-xs font-semibold text-warning transition-opacity hover:opacity-80 disabled:opacity-50"
           >
             <FastForward className="size-4" />
-            <span className="hidden sm:inline">+1h</span>
+            <span className="hidden sm:inline">{t("card.plusOneHour")}</span>
           </button>
         </div>
       </div>
