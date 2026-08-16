@@ -42,8 +42,16 @@ export const Route = createFileRoute("/worker")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: WorkerConsole,
+  component: WorkerRoute,
 });
+
+function WorkerRoute() {
+  return (
+    <RoleGate allow={["worker", "admin"]}>
+      <WorkerConsole />
+    </RoleGate>
+  );
+}
 
 type Item = Awaited<ReturnType<typeof myAssignments>>["items"][number];
 const ACTIVE_STAGES = ["assigned", "worker_accepted", "travelling", "approaching", "arrived", "in_progress"];
