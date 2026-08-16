@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   BarChart3,
   FastForward,
-  Gavel,
   PhoneCall,
   ShieldCheck,
   Users,
@@ -139,16 +138,17 @@ function Dashboard() {
         {role === "admin" && (
           <section className="civic-card space-y-3 p-4">
             <h2 className="flex items-center gap-2 text-sm font-bold">
-              <Gavel className="size-4 text-primary" /> {t("judicial")}
+              <ShieldCheck className="size-4" /> Administrator console
             </h2>
             <p className="text-sm text-muted-foreground">
-              Identity decryption, dual-key custody and the immutable audit ledger live on the Oversight console.
+              Citizen legal identity stays sealed platform-wide. Monitor SLA compliance, breaches and ward
+              performance from the analytics console.
             </p>
             <Link
-              to="/oversight"
+              to="/analytics"
               className="inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
             >
-              Open Oversight console
+              Open SLA analytics
             </Link>
           </section>
         )}
