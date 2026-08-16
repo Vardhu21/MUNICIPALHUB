@@ -212,6 +212,24 @@ function ReportPage() {
           </div>
 
           <label className="block space-y-1.5">
+            <span className="text-xs font-semibold text-muted-foreground">
+              {lang === "ta" ? "வார்டு (தேவைப்பட்டால் மாற்றவும்)" : "Ward (override if wrong)"}
+            </span>
+            <select
+              value={manualWardId || (ward?.id ?? "")}
+              onChange={(e) => setManualWardId(e.target.value)}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              <option value="">{lang === "ta" ? "GPS தானியங்கி வழிமாற்று" : "Automatic GPS routing"}</option>
+              {dirWards.map((w) => (
+                <option key={w.id} value={w.id} className="bg-card">
+                  {`Ward ${w.ward_number} · ${lang === "ta" ? w.ward_name_ta : w.ward_name_en}`}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block space-y-1.5">
             <span className="text-xs font-semibold text-muted-foreground">{t("report.category")}</span>
             <select
               value={categoryId}
