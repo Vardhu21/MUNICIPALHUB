@@ -553,12 +553,15 @@ export const citizenDecision = createServerFn({ method: "POST" })
         photoDataUrl: z.string().max(9_000_000).optional(),
         lat: z.number().min(-90).max(90).optional(),
         lng: z.number().min(-180).max(180).optional(),
+        accuracyM: z.number().min(0).max(100_000).optional(),
+        locationUnavailable: z.boolean().optional(),
       })
       .parse(raw),
   )
   .handler(async ({ data, context }) => {
     const h = await import("./workflow.server");
     const sb = await h.admin();
+    const cfg = await h.loadConfig(sb);
     const { data: verification } = await sb
       .from("citizen_verifications")
       .select("*")
@@ -570,9 +573,33 @@ export const citizenDecision = createServerFn({ method: "POST" })
 
     const { data: complaint } = await sb
       .from("complaints")
-      .select("id,title")
+      .select("id,title,lat,lng")
       .eq("id", verification.complaint_id)
       .maybeSingle();
+
+    // ---- Citizen GPS verification (deterministic, never AI) ----
+    const hasFix = typeof data.lat === "number" && typeof data.lng === "number";
+    const complaintHasFix = typeof complaint?.lat === "number" && typeof complaint?.lng === "number";
+    let gpsState: "PENDING" | "CITIZEN_GPS_VERIFIED" | "CITIZEN_GPS_FLAGGED" | "LOCATION_UNAVAILABLE" = "PENDING";
+    let distance: number | null = null;
+    const radius = (cfg as Record<string, number>)["citizen_evidence_radius_m"] ?? 150;
+
+    if (!data.satisfied) {
+      if (!hasFix) {
+        if (!data.locationUnavailable) {
+          throw new Error("Location permission is required to verify this evidence.");
+        }
+        gpsState = "LOCATION_UNAVAILABLE";
+      } else if (!complaintHasFix) {
+        gpsState = "LOCATION_UNAVAILABLE";
+      } else {
+        distance = h.distanceM(
+          { lat: data.lat as number, lng: data.lng as number },
+          { lat: complaint!.lat as number, lng: complaint!.lng as number },
+        );
+        gpsState = distance <= radius ? "CITIZEN_GPS_VERIFIED" : "CITIZEN_GPS_FLAGGED";
+      }
+    }
 
     let photoPath: string | null = null;
     if (!data.satisfied && data.photoDataUrl) {
@@ -590,6 +617,11 @@ export const citizenDecision = createServerFn({ method: "POST" })
         photo_path: photoPath,
         lat: data.lat ?? null,
         lng: data.lng ?? null,
+        accuracy_m: data.accuracyM ?? null,
+        complaint_lat: complaint?.lat ?? null,
+        complaint_lng: complaint?.lng ?? null,
+        distance_m: distance,
+        gps_state: gpsState,
         decided_at: new Date().toISOString(),
       })
       .eq("id", verification.id);
@@ -609,9 +641,24 @@ export const citizenDecision = createServerFn({ method: "POST" })
       await h.moveComplaint(sb, verification.complaint_id, "reopened", { complainant_approved: false });
       await h.moveComplaint(sb, verification.complaint_id, "officer_review");
       await h.logEvent(sb, verification.complaint_id, "citizen_rejected", "Citizen", `Citizen not satisfied: ${data.reason}`);
-      await h.notify(sb, [assignment?.officer_id], "workflow", "Complaint reopened", `Citizen rejected resolution of "${complaint?.title ?? "complaint"}": ${data.reason}`);
+      // Audit the location outcome without publishing raw coordinates.
+      if (gpsState === "CITIZEN_GPS_VERIFIED") {
+        await h.logEvent(sb, verification.complaint_id, "citizen_gps_verified", "System", `Citizen evidence location verified (${Math.round(distance ?? 0)} m from the complaint location, radius ${radius} m).`);
+      } else if (gpsState === "CITIZEN_GPS_FLAGGED") {
+        await h.logEvent(sb, verification.complaint_id, "citizen_gps_flagged", "System", `Citizen evidence location outside the configured radius (${Math.round(distance ?? 0)} m vs ${radius} m). Flagged for officer review.`);
+      } else {
+        await h.logEvent(sb, verification.complaint_id, "citizen_location_unavailable", "System", "Citizen location was unavailable. Submission accepted as LOCATION_UNAVAILABLE and requires officer review.");
+      }
+      await h.logEvent(sb, verification.complaint_id, "complaint_reopened", "Citizen", "Complaint reopened for officer review after citizen rejection.");
+      await h.notify(
+        sb,
+        [assignment?.officer_id],
+        "workflow",
+        gpsState === "CITIZEN_GPS_VERIFIED" ? "Complaint reopened" : "Complaint reopened — location review needed",
+        `Citizen rejected resolution of "${complaint?.title ?? "complaint"}": ${data.reason} (location check: ${gpsState})`,
+      );
     }
-    return { ok: true };
+    return { ok: true, gpsState, distanceM: distance, radiusM: radius };
   });
 
 /** Nearby unresolved complaints around the worker's live position (never auto-assigned). */
