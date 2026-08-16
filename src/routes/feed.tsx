@@ -29,18 +29,22 @@ import { EmblemLoader } from "@/components/EmblemLoader";
 export const Route = createFileRoute("/feed")({
   head: () => ({
     meta: [
-      { title: "Public Grievance Feed — TN SmartMunicipality" },
+      { title: "Chennai Corporation Complaints — Live GCC Grievance Feed" },
       {
         name: "description",
         content:
-          "Live regional feed of geotagged civic grievances across Tamil Nadu wards with likes, comments, reposts and shareable real-time status tracking.",
+          "Track Chennai Corporation complaints live. Browse geotagged GCC grievances by ward, follow SLA countdowns and check real-time complaint status.",
       },
-      { property: "og:title", content: "Public Grievance Feed — TN SmartMunicipality" },
+      { property: "og:title", content: "Chennai Corporation Complaints — Live GCC Grievance Feed" },
       {
         property: "og:description",
-        content: "See what your ward reported today and follow each ticket's SLA countdown live.",
+        content: "Browse Chennai Corporation complaints by ward and follow each ticket's SLA countdown live.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://page-maker-magic-438.lovable.app/feed" },
     ],
+    links: [{ rel: "canonical", href: "https://page-maker-magic-438.lovable.app/feed" }],
   }),
   component: Feed,
 });
@@ -141,7 +145,7 @@ function Feed() {
       <main className="mx-auto max-w-3xl space-y-4 px-4 py-5">
         <EmergencyBanner position={fix} />
 
-        <h1 className="text-xl font-bold">{t("feed")}</h1>
+        <h1 className="text-xl font-bold">{t("feed.heading")}</h1>
 
         <TicketFilters
           filters={filters}
