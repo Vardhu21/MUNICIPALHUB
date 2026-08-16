@@ -115,10 +115,25 @@ function AuthPage() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
-    if (next) window.location.replace(next);
-    else navigate({ to: "/feed", replace: true });
-  }, [user, navigate, next]);
+    // Only auto-forward when the user was sent here by a protected route.
+    if (!user || !next) return;
+    window.location.replace(next);
+  }, [user, next]);
+
+  const switchAccount = async () => {
+    setBusy(true);
+    try {
+      await supabase.auth.signOut();
+      setMode("signin");
+      setStep(0);
+      setDetected(null);
+      setSignInId("");
+      setSignInPassword("");
+      toast.success(t("signOut"));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const digilockerVerify = () => {
     const raw = digilockerId.trim();
@@ -291,6 +306,28 @@ function AuthPage() {
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
           <span className="min-w-0">{t("auth.gatewayInfo")}</span>
         </div>
+
+        {user ? (
+          <section className="civic-card space-y-3 p-4">
+            <p className="text-sm font-semibold">{user.email}</p>
+            <p className="text-xs text-muted-foreground">{t("auth.gatewaySubtitle")}</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => navigate({ to: "/feed" })}
+                className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+              >
+                {t("feed")}
+              </button>
+              <button
+                onClick={switchAccount}
+                disabled={busy}
+                className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold disabled:opacity-50"
+              >
+                {t("signOut")}
+              </button>
+            </div>
+          </section>
+        ) : null}
 
         {import.meta.env.DEV ? <DemoBypass returnTo={next} /> : null}
 
