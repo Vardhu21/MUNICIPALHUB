@@ -419,6 +419,8 @@ export type Database = {
           photo_url: string | null
           priority: Database["public"]["Enums"]["complaint_priority"]
           resolution_photo_url: string | null
+          routed_councillor_id: string | null
+          routed_zone_id: string | null
           sla_hours: number
           status: Database["public"]["Enums"]["complaint_status"]
           street_address: string | null
@@ -446,6 +448,8 @@ export type Database = {
           photo_url?: string | null
           priority?: Database["public"]["Enums"]["complaint_priority"]
           resolution_photo_url?: string | null
+          routed_councillor_id?: string | null
+          routed_zone_id?: string | null
           sla_hours?: number
           status?: Database["public"]["Enums"]["complaint_status"]
           street_address?: string | null
@@ -473,6 +477,8 @@ export type Database = {
           photo_url?: string | null
           priority?: Database["public"]["Enums"]["complaint_priority"]
           resolution_photo_url?: string | null
+          routed_councillor_id?: string | null
+          routed_zone_id?: string | null
           sla_hours?: number
           status?: Database["public"]["Enums"]["complaint_status"]
           street_address?: string | null
@@ -482,8 +488,75 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "complaints_routed_councillor_id_fkey"
+            columns: ["routed_councillor_id"]
+            isOneToOne: false
+            referencedRelation: "councillors"
+            referencedColumns: ["councillor_id"]
+          },
+          {
+            foreignKeyName: "complaints_routed_zone_id_fkey"
+            columns: ["routed_zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["zone_id"]
+          },
+          {
             foreignKeyName: "complaints_ward_id_fkey"
             columns: ["ward_id"]
+            isOneToOne: false
+            referencedRelation: "wards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      councillors: {
+        Row: {
+          councillor_id: string
+          created_at: string
+          designation: string
+          name: string | null
+          official_contact_email: string | null
+          official_contact_phone: string | null
+          official_source: string
+          source_checked_at: string
+          status: string
+          updated_at: string
+          ward_ref: string
+          ward_uuid: string | null
+        }
+        Insert: {
+          councillor_id: string
+          created_at?: string
+          designation: string
+          name?: string | null
+          official_contact_email?: string | null
+          official_contact_phone?: string | null
+          official_source: string
+          source_checked_at: string
+          status?: string
+          updated_at?: string
+          ward_ref: string
+          ward_uuid?: string | null
+        }
+        Update: {
+          councillor_id?: string
+          created_at?: string
+          designation?: string
+          name?: string | null
+          official_contact_email?: string | null
+          official_contact_phone?: string | null
+          official_source?: string
+          source_checked_at?: string
+          status?: string
+          updated_at?: string
+          ward_ref?: string
+          ward_uuid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "councillors_ward_uuid_fkey"
+            columns: ["ward_uuid"]
             isOneToOne: false
             referencedRelation: "wards"
             referencedColumns: ["id"]
@@ -775,6 +848,95 @@ export type Database = {
         }
         Relationships: []
       }
+      ulb_leadership: {
+        Row: {
+          authority_id: string
+          created_at: string
+          email: string | null
+          name: string
+          office_phone: string | null
+          official_source: string
+          phone: string | null
+          role: string
+          source_checked_at: string
+          ulb_id: string
+          updated_at: string
+        }
+        Insert: {
+          authority_id: string
+          created_at?: string
+          email?: string | null
+          name: string
+          office_phone?: string | null
+          official_source: string
+          phone?: string | null
+          role: string
+          source_checked_at: string
+          ulb_id: string
+          updated_at?: string
+        }
+        Update: {
+          authority_id?: string
+          created_at?: string
+          email?: string | null
+          name?: string
+          office_phone?: string | null
+          official_source?: string
+          phone?: string | null
+          role?: string
+          source_checked_at?: string
+          ulb_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ulb_leadership_ulb_id_fkey"
+            columns: ["ulb_id"]
+            isOneToOne: false
+            referencedRelation: "ulbs"
+            referencedColumns: ["ulb_id"]
+          },
+        ]
+      }
+      ulbs: {
+        Row: {
+          created_at: string
+          district: string
+          official_source: string
+          source_checked_at: string
+          state: string
+          ulb_id: string
+          ulb_name: string
+          ulb_name_tamil: string
+          ulb_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          district: string
+          official_source: string
+          source_checked_at: string
+          state: string
+          ulb_id: string
+          ulb_name: string
+          ulb_name_tamil: string
+          ulb_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          district?: string
+          official_source?: string
+          source_checked_at?: string
+          state?: string
+          ulb_id?: string
+          ulb_name?: string
+          ulb_name_tamil?: string
+          ulb_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_identities: {
         Row: {
           aadhaar_masked: string
@@ -835,43 +997,79 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          lat: number
-          lng: number
+          lat: number | null
+          lng: number | null
+          official_source: string | null
+          official_ward_email: string | null
+          source_checked_at: string | null
+          ulb_id: string | null
           ulb_name_en: string
           ulb_name_ta: string
           ulb_type: Database["public"]["Enums"]["ulb_type"]
           ward_name_en: string
           ward_name_ta: string
           ward_number: number
+          ward_ref: string | null
+          ward_status: string
           zone: string
+          zone_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
-          lat: number
-          lng: number
+          lat?: number | null
+          lng?: number | null
+          official_source?: string | null
+          official_ward_email?: string | null
+          source_checked_at?: string | null
+          ulb_id?: string | null
           ulb_name_en: string
           ulb_name_ta: string
           ulb_type: Database["public"]["Enums"]["ulb_type"]
           ward_name_en: string
           ward_name_ta: string
           ward_number: number
+          ward_ref?: string | null
+          ward_status?: string
           zone: string
+          zone_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
-          lat?: number
-          lng?: number
+          lat?: number | null
+          lng?: number | null
+          official_source?: string | null
+          official_ward_email?: string | null
+          source_checked_at?: string | null
+          ulb_id?: string | null
           ulb_name_en?: string
           ulb_name_ta?: string
           ulb_type?: Database["public"]["Enums"]["ulb_type"]
           ward_name_en?: string
           ward_name_ta?: string
           ward_number?: number
+          ward_ref?: string | null
+          ward_status?: string
           zone?: string
+          zone_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wards_ulb_id_fkey"
+            columns: ["ulb_id"]
+            isOneToOne: false
+            referencedRelation: "ulbs"
+            referencedColumns: ["ulb_id"]
+          },
+          {
+            foreignKeyName: "wards_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["zone_id"]
+          },
+        ]
       }
       workers: {
         Row: {
@@ -937,6 +1135,47 @@ export type Database = {
           value?: number
         }
         Relationships: []
+      }
+      zones: {
+        Row: {
+          created_at: string
+          official_source: string
+          source_checked_at: string
+          ulb_id: string
+          updated_at: string
+          zone_id: string
+          zone_name: string
+          zone_number: number
+        }
+        Insert: {
+          created_at?: string
+          official_source: string
+          source_checked_at: string
+          ulb_id: string
+          updated_at?: string
+          zone_id: string
+          zone_name: string
+          zone_number: number
+        }
+        Update: {
+          created_at?: string
+          official_source?: string
+          source_checked_at?: string
+          ulb_id?: string
+          updated_at?: string
+          zone_id?: string
+          zone_name?: string
+          zone_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zones_ulb_id_fkey"
+            columns: ["ulb_id"]
+            isOneToOne: false
+            referencedRelation: "ulbs"
+            referencedColumns: ["ulb_id"]
+          },
+        ]
       }
     }
     Views: {
