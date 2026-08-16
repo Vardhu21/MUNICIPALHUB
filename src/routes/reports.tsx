@@ -6,6 +6,7 @@ import { TopBar } from "@/components/TopBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { useLang } from "@/lib/i18n";
+import { EmblemLoader } from "@/components/EmblemLoader";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
@@ -167,7 +168,7 @@ function ReportsArchive() {
           </p>
         )}
 
-        {loading && <p className="text-sm text-muted-foreground">Loading archive…</p>}
+        {loading && <EmblemLoader label="Loading archive…" />}
         {!loading && !denied && rows.length === 0 && (
           <p className="civic-card p-6 text-center text-sm text-muted-foreground">
             No reports generated yet. Click <b>Run now</b> or wait for the next scheduled window.

@@ -32,6 +32,7 @@ import {
   type Complaint,
   type Ward,
 } from "@/lib/data";
+import { EmblemLoader } from "@/components/EmblemLoader";
 
 export const Route = createFileRoute("/officer/")({
   head: () => ({
@@ -205,7 +206,7 @@ function OfficerWorkspace() {
         </p>
 
 
-        {loading && <p className="text-sm text-muted-foreground">Loading ward queue…</p>}
+        {loading && <EmblemLoader label="Loading ward queue…" />}
 
         {!loading && queue.length === 0 && (
           <p className="civic-card p-6 text-center text-sm text-muted-foreground">

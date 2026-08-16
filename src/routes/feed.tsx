@@ -24,6 +24,7 @@ import {
   type Complaint,
   type Ward,
 } from "@/lib/data";
+import { EmblemLoader } from "@/components/EmblemLoader";
 
 export const Route = createFileRoute("/feed")({
   head: () => ({
@@ -153,7 +154,7 @@ function Feed() {
           totalCount={complaints.length}
         />
 
-        {loading && <p className="text-sm text-muted-foreground">Loading grievances…</p>}
+        {loading && <EmblemLoader label="Loading grievances…" />}
         {!loading && visible.length === 0 && (
           <p className="civic-card p-6 text-center text-sm text-muted-foreground">
             {lang === "ta"

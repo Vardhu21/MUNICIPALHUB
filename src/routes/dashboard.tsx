@@ -31,6 +31,7 @@ import {
   type Complaint,
   type Ward,
 } from "@/lib/data";
+import { EmblemLoader } from "@/components/EmblemLoader";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -122,7 +123,7 @@ function Dashboard() {
           </span>
         </header>
 
-        {loading && <p className="text-sm text-muted-foreground">Loading console…</p>}
+        {loading && <EmblemLoader label="Loading console…" />}
 
         {role === "citizen" && (
           <CitizenView complaints={mine} wardMap={wardMap} onAdvance={advance} busyId={busyId} onPatch={patch} />
