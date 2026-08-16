@@ -2,10 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Radar, ShieldCheck, Timer } from "lucide-react";
 import { Starfield } from "@/components/Starfield";
-import { TamilNaduMap } from "@/components/TamilNaduMap";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useLang } from "@/lib/i18n";
-import { SLA_MATRIX } from "@/lib/sla";
 import emblem from "@/assets/tn-emblem.png";
 
 export const Route = createFileRoute("/")({
@@ -64,7 +62,7 @@ function Portal() {
           </button>
         </div>
 
-        <div className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-2">
+        <div className="grid flex-1 items-center gap-10 py-10">
           <div key={`copy-${zoomKey}`} className="animate-portal-zoom space-y-6 text-center lg:text-left">
             <button
               onClick={replay}
@@ -117,43 +115,8 @@ function Portal() {
             </div>
           </div>
 
-          <div key={`map-${zoomKey}`} className="animate-portal-zoom mx-auto w-full max-w-sm">
-            <TamilNaduMap className="w-full drop-shadow-2xl" pulse={entered} />
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              {lang === "ta"
-                ? "தமிழ்நாடு நகர்ப்புற உள்ளாட்சி எல்லை — மாநகராட்சி · நகராட்சி · பேரூராட்சி"
-                : "Tamil Nadu urban local body boundary — Corporation · Municipality · Town Panchayat"}
-            </p>
-          </div>
         </div>
 
-        <section className="civic-card overflow-hidden">
-          <h2 className="border-b border-border px-4 py-3 text-sm font-bold">
-            {lang === "ta" ? "SLA மேல்முறையீட்டு அணி" : "SLA escalation matrix"}
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[36rem] text-left text-xs">
-              <thead className="text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-2 font-semibold">{t("priority")}</th>
-                  <th className="px-4 py-2 font-semibold">Window</th>
-                  <th className="px-4 py-2 font-semibold">First responder</th>
-                  <th className="px-4 py-2 font-semibold">Escalates to</th>
-                </tr>
-              </thead>
-              <tbody>
-                {SLA_MATRIX.map((r) => (
-                  <tr key={r.priority} className="border-t border-border">
-                    <td className="px-4 py-2.5 font-bold uppercase">{r.priority}</td>
-                    <td className="px-4 py-2.5">{r.hours}h</td>
-                    <td className="px-4 py-2.5 text-muted-foreground">{r.fieldTier[lang]}</td>
-                    <td className="px-4 py-2.5 text-muted-foreground">{r.escalateTo[lang]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
       </div>
 
       <VoiceAssistant />
