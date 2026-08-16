@@ -229,6 +229,8 @@ function ReportPage() {
             </select>
           </label>
 
+          {directoryWard && <WardAuthorityCard ward={directoryWard} showLeadership={false} />}
+
           <label className="block space-y-1.5">
             <span className="text-xs font-semibold text-muted-foreground">{t("report.category")}</span>
             <select
