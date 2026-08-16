@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { CheckCircle2, MapPin, ShieldAlert } from "lucide-react";
 import { TopBar } from "@/components/TopBar";
 import { GeoCamera, type Capture } from "@/components/GeoCamera";
-import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { useSession } from "@/lib/session";

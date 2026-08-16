@@ -14,7 +14,7 @@ import { TopBar } from "@/components/TopBar";
 import { StatusPill, PriorityPill } from "@/components/StatusPill";
 import { SlaBar } from "@/components/SlaBar";
 import { MaskedCallModal } from "@/components/MaskedCallModal";
-import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { GeoCamera, type Capture } from "@/components/GeoCamera";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";

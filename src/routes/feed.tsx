@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { TopBar } from "@/components/TopBar";
 import { ComplaintCard } from "@/components/ComplaintCard";
 import { EmergencyBanner } from "@/components/EmergencyBanner";
-import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import {
   TicketFilters,
   applyTicketFilters,

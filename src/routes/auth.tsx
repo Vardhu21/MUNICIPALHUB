@@ -17,7 +17,7 @@ import { useLang } from "@/lib/i18n";
 import { suggestPseudonym, useSession, writeActiveRole, type AppRole } from "@/lib/session";
 import { sealIdentity } from "@/lib/civic.functions";
 import { fetchWards, type Ward } from "@/lib/data";
-import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { DemoBypass } from "@/components/DemoBypass";
 import emblem from "@/assets/tn-emblem.png";
 

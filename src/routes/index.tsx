@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Globe, ShieldCheck, Settings2, BarChart3, Users } from "lucide-react";
-import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { useLang } from "@/lib/i18n";
 import emblem from "@/assets/tn-emblem.png";
 import heroAsset from "@/assets/gcc-ripon.png.asset.json";
@@ -23,6 +23,9 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [
+      { rel: "preload", as: "image", href: heroAsset.url, fetchPriority: "high" },
     ],
   }),
   component: Portal,
