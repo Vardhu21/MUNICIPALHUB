@@ -8,20 +8,22 @@ import { NotificationsBell } from "@/components/NotificationsBell";
 import { OfficerBadge } from "@/components/OfficerBadge";
 import emblem from "@/assets/tn-emblem.png";
 
-const NAV: { to: string; key: "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports" }[] = [
+const NAV: { to: string; key: "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports" | "worker" }[] = [
   { to: "/feed", key: "feed" },
   { to: "/report", key: "report" },
   { to: "/dashboard", key: "dashboard" },
   { to: "/analytics", key: "analytics" },
   { to: "/reports", key: "reports" },
   { to: "/officer", key: "officer" },
+  { to: "/worker", key: "worker" },
 ];
 
-type NavKey = "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports";
+type NavKey = "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports" | "worker";
 function navLabel(key: NavKey, t: (k: string) => string) {
   if (key === "analytics") return t("nav.analytics");
   if (key === "reports") return t("nav.reports");
   if (key === "officer") return t("nav.officer");
+  if (key === "worker") return t("nav.worker");
   return t(key);
 }
 
