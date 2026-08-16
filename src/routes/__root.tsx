@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
-import { CinematicIntro } from "@/components/CinematicIntro";
 import { PageTransition } from "@/components/PageTransition";
 
 function NotFoundComponent() {
@@ -126,7 +125,6 @@ function RootComponent() {
         <PageTransition>
           <Outlet />
         </PageTransition>
-        <CinematicIntro />
         <Toaster position="top-center" richColors />
       </LanguageProvider>
     </QueryClientProvider>
