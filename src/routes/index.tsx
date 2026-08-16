@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, Radar, ShieldCheck, Timer } from "lucide-react";
 import { Starfield } from "@/components/Starfield";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
@@ -29,17 +29,8 @@ export const Route = createFileRoute("/")({
 function Portal() {
   const { t, lang, toggle } = useLang();
   const [zoomKey, setZoomKey] = useState(0);
-  const [entered, setEntered] = useState(false);
 
-  useEffect(() => {
-    const id = setTimeout(() => setEntered(true), 2400);
-    return () => clearTimeout(id);
-  }, [zoomKey]);
-
-  const replay = () => {
-    setEntered(false);
-    setZoomKey((k) => k + 1);
-  };
+  const replay = () => setZoomKey((k) => k + 1);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background">
