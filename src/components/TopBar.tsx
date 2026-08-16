@@ -8,19 +8,17 @@ import { NotificationsBell } from "@/components/NotificationsBell";
 import { OfficerBadge } from "@/components/OfficerBadge";
 import emblem from "@/assets/tn-emblem.png";
 
-const NAV: { to: string; key: "feed" | "report" | "dashboard" | "judicial" | "analytics" | "officer" | "reports" }[] = [
+const NAV: { to: string; key: "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports" }[] = [
   { to: "/feed", key: "feed" },
   { to: "/report", key: "report" },
   { to: "/dashboard", key: "dashboard" },
   { to: "/analytics", key: "analytics" },
   { to: "/reports", key: "reports" },
   { to: "/officer", key: "officer" },
-  { to: "/oversight", key: "judicial" },
 ];
 
-type NavKey = "feed" | "report" | "dashboard" | "judicial" | "analytics" | "officer" | "reports";
+type NavKey = "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports";
 function navLabel(key: NavKey, lang: "en" | "ta", t: (k: "feed" | "report" | "dashboard") => string) {
-  if (key === "judicial") return lang === "ta" ? "மேற்பார்வை" : "Oversight";
   if (key === "analytics") return lang === "ta" ? "பகுப்பாய்வு" : "Analytics";
   if (key === "reports") return lang === "ta" ? "அறிக்கைகள்" : "Reports";
   if (key === "officer") return lang === "ta" ? "அலுவலர்" : "Officer";
