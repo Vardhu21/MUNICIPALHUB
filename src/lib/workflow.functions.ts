@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { AssignmentRow } from "./workflow";
 
 const Coords = z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) });
 
