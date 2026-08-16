@@ -6,6 +6,7 @@ export const common: Locale = {
   "nav.reports": { en: "Reports", ta: "அறிக்கைகள்" },
   "nav.officer": { en: "Officer", ta: "அலுவலர்" },
   "nav.worker": { en: "Worker", ta: "பணியாளர்" },
+  "nav.directory": { en: "Directory", ta: "அடைவு" },
   "nav.menu": { en: "Menu", ta: "பட்டி" },
   "nav.persona": { en: "Persona", ta: "பாத்திரம்" },
   "nav.officerPersona": { en: "Officer", ta: "அலுவலர்" },
