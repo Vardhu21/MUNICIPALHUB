@@ -1,6 +1,6 @@
 import emblem from "@/assets/tn-emblem.png";
 
-/** Small spinning Tamil Nadu emblem used as the app-wide loading indicator. */
+/** Small static Tamil Nadu emblem used as the app-wide loading indicator. */
 export function EmblemLoader({
   label,
   className = "",
@@ -14,7 +14,7 @@ export function EmblemLoader({
         src={emblem}
         alt=""
         aria-hidden="true"
-        className="size-5 shrink-0 animate-spin object-contain [animation-duration:1.6s]"
+        className="size-5 shrink-0 object-contain"
       />
       {label ? <span>{label}</span> : null}
     </div>
