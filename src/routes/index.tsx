@@ -89,11 +89,10 @@ function Portal() {
               className="size-8 object-contain drop-shadow-md sm:size-10"
             />
             <p
-              className="text-[13px] font-medium uppercase leading-tight tracking-[0.11em] text-white"
+              className="max-w-[15rem] text-[13px] font-medium uppercase leading-tight tracking-[0.11em] text-white"
               style={{ textShadow: "0 1px 3px rgba(0,0,0,0.45)" }}
             >
-              <span className="block">Department of Municipal</span>
-              <span className="block">Administration & Water Supply</span>
+              {t("maws")}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm backdrop-blur-md sm:px-4 sm:py-2">
@@ -127,7 +126,7 @@ function Portal() {
               className="text-[17px] font-normal text-white/95 sm:text-[22px]"
               style={{ textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}
             >
-              Your City. Your Voice. Your Solution.
+              {t("landing.tagline", "Your City. Your Voice. Your Solution.")}
             </p>
           </div>
 
@@ -157,7 +156,7 @@ function Portal() {
               textShadow: "0 1px 4px rgba(0,0,0,0.40)",
             }}
           >
-            Skip
+            {t("landing.skip", "Skip")}
           </button>
         </div>
 
@@ -166,9 +165,21 @@ function Portal() {
           style={fadeUp(400)}
         >
           {[
-            { Icon: ShieldCheck, title: "Citizen Centric", sub: "People First" },
-            { Icon: Settings2, title: "Smart Solutions", sub: "Technology Led" },
-            { Icon: BarChart3, title: "Transparent", sub: "Open & Accountable" },
+            {
+              Icon: ShieldCheck,
+              title: t("landing.citizenCentric", "Citizen Centric"),
+              sub: t("landing.citizenCentricSub", "People First"),
+            },
+            {
+              Icon: Settings2,
+              title: t("landing.smartSolutions", "Smart Solutions"),
+              sub: t("landing.smartSolutionsSub", "Technology Led"),
+            },
+            {
+              Icon: BarChart3,
+              title: t("landing.transparent", "Transparent"),
+              sub: t("landing.transparentSub", "Open & Accountable"),
+            },
           ].map(({ Icon, title, sub }) => (
             <div key={title} className="flex items-center justify-center gap-3 px-2">
               <Icon className="size-5 shrink-0 text-primary" />
