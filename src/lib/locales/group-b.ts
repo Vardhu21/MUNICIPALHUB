@@ -85,6 +85,7 @@ export const groupb: Locale = {
   "dashboard.slaBreaches": { en: "SLA breaches", ta: "SLA மீறல்கள்" },
   "dashboard.zonesMonitored": { en: "Zones monitored", ta: "கண்காணிக்கப்படும் மண்டலங்கள்" },
 
+  "feed.heading": { en: "Chennai Corporation Complaints", ta: "சென்னை மாநகராட்சி புகார்கள்" },
   "feed.signInInteract": { en: "Sign in to interact with the feed", ta: "ஊட்டத்துடன் தொடர்பு கொள்ள முதலில் உள்நுழையவும்" },
   "feed.noMatchFilters": { en: "No grievances match these filters. Try broadening your search.", ta: "இந்த வடிப்பான்களுக்கு பொருந்தும் புகார்கள் இல்லை. உங்கள் தேடலை விரிவுபடுத்த முயற்சிக்கவும்." },
   "feed.couldNotLoad": { en: "Could not load the feed", ta: "ஊட்டத்தை ஏற்ற முடியவில்லை" },

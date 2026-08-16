@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://page-maker-magic-438.lovable.app/sitemap.xml
