@@ -2,7 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { IdCard, Languages, LogOut, Menu, ShieldCheck, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/i18n";
-import { ALL_ROLES, ROLE_LABEL, useActiveRole, useSession, type AppRole } from "@/lib/session";
+import { OFFICER_ROLES, ROLE_LABEL, useAuthorizedRole, type AppRole } from "@/lib/session";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import { OfficerBadge } from "@/components/OfficerBadge";
@@ -11,15 +11,16 @@ import emblem from "@/assets/tn-emblem.png";
 const NAV: {
   to: string;
   key: "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports" | "worker" | "directory";
+  allow: AppRole[];
 }[] = [
-  { to: "/feed", key: "feed" },
-  { to: "/report", key: "report" },
-  { to: "/dashboard", key: "dashboard" },
-  { to: "/directory", key: "directory" },
-  { to: "/analytics", key: "analytics" },
-  { to: "/reports", key: "reports" },
-  { to: "/officer", key: "officer" },
-  { to: "/worker", key: "worker" },
+  { to: "/feed", key: "feed", allow: ["citizen", "worker", ...OFFICER_ROLES] },
+  { to: "/report", key: "report", allow: ["citizen", ...OFFICER_ROLES] },
+  { to: "/dashboard", key: "dashboard", allow: ["citizen", "worker", ...OFFICER_ROLES] },
+  { to: "/directory", key: "directory", allow: ["citizen", "worker", ...OFFICER_ROLES] },
+  { to: "/analytics", key: "analytics", allow: ["citizen", ...OFFICER_ROLES] },
+  { to: "/reports", key: "reports", allow: ["citizen", ...OFFICER_ROLES] },
+  { to: "/officer", key: "officer", allow: OFFICER_ROLES },
+  { to: "/worker", key: "worker", allow: ["worker", "admin"] },
 ];
 
 type NavKey = "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports" | "worker" | "directory";
@@ -32,36 +33,15 @@ function navLabel(key: NavKey, t: (k: string) => string) {
   return t(key);
 }
 
-const OFFICER_ROLES: AppRole[] = ["field_officer", "zonal_commissioner", "commissioner", "councillor", "admin"];
-
 export function TopBar() {
   const { t, lang, toggle } = useLang();
-  const [role, setRole] = useActiveRole();
-  const { user } = useSession();
+  const { role, setRole, roles, user } = useAuthorizedRole();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [badgeOpen, setBadgeOpen] = useState(false);
-  const [trueOfficerRole, setTrueOfficerRole] = useState<AppRole | null>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-
-  // Discover whether the signed-in user actually has an officer role on record.
-  // This drives the persona toggle + digital badge availability.
-  useEffect(() => {
-    if (!user) {
-      setTrueOfficerRole(null);
-      return;
-    }
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .then(({ data }) => {
-        const officer = data
-          ?.map((r) => r.role as AppRole)
-          .find((r) => OFFICER_ROLES.includes(r));
-        setTrueOfficerRole(officer ?? null);
-      });
-  }, [user]);
+  const trueOfficerRole = roles.find((r) => OFFICER_ROLES.includes(r)) ?? null;
+  const visibleNav = NAV.filter((n) => n.allow.some((a) => roles.includes(a)));
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -89,7 +69,7 @@ export function TopBar() {
 
         <div className="flex shrink-0 items-center gap-2">
           <nav className="hidden items-center gap-1 lg:flex">
-            {NAV.map((n) => (
+            {visibleNav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
@@ -131,8 +111,8 @@ export function TopBar() {
             </div>
           )}
 
-          {/* Fallback role selector for demo mode when the account has no officer role. */}
-          {!trueOfficerRole && (
+          {/* Role selector — restricted to the roles this account actually holds. */}
+          {!trueOfficerRole && roles.length > 1 && (
             <label className="hidden items-center gap-1.5 rounded-lg border border-border bg-card px-2 py-1.5 sm:flex">
               <ShieldCheck className="size-3.5 shrink-0 text-primary" />
               <span className="sr-only">{t("role")}</span>
@@ -141,7 +121,7 @@ export function TopBar() {
                 onChange={(e) => setRole(e.target.value as AppRole)}
                 className="max-w-[13rem] bg-transparent text-xs font-semibold outline-none"
               >
-                {ALL_ROLES.map((r) => (
+                {roles.map((r) => (
                   <option key={r} value={r} className="bg-card text-foreground">
                     {ROLE_LABEL[r][lang]}
                   </option>
