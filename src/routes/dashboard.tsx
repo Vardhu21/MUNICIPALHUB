@@ -81,14 +81,14 @@ function Dashboard() {
       const updated = await fastForward(c, hours);
       setComplaints((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
       if (updated.status !== c.status || updated.current_tier !== c.current_tier) {
-        toast.error(`Auto-escalated → ${TIER_LABEL[updated.current_tier as Tier][lang]}`, {
+        toast.error(`${t("dashboard.autoEscalated")} ${TIER_LABEL[updated.current_tier as Tier][lang]}`, {
           description: updated.assigned_officer ?? undefined,
         });
       } else {
-        toast.info(`SLA clock +${hours}h`);
+        toast.info(t("dashboard.slaClockPlus").replace("{h}", String(hours)));
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Simulation failed");
+      toast.error(e instanceof Error ? e.message : t("dashboard.simulationFailed"));
     } finally {
       setBusyId(null);
     }
@@ -114,16 +114,14 @@ function Dashboard() {
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <h1 className="truncate text-xl font-bold">{ROLE_LABEL[role][lang]}</h1>
-            <p className="truncate text-xs text-muted-foreground">
-              {lang === "ta" ? "பங்கு மாற்றி மேலே உள்ளது" : "Switch viewports from the role selector above"}
-            </p>
+            <p className="truncate text-xs text-muted-foreground">{t("dashboard.switchHint")}</p>
           </div>
           <span className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            {complaints.length} tickets
+            {complaints.length} {t("dashboard.ticketsSuffix")}
           </span>
         </header>
 
-        {loading && <EmblemLoader label="Loading console…" />}
+        {loading && <EmblemLoader label={t("dashboard.loadingConsole")} />}
 
         {role === "citizen" && (
           <CitizenView complaints={mine} wardMap={wardMap} onAdvance={advance} busyId={busyId} onPatch={patch} />
@@ -139,17 +137,14 @@ function Dashboard() {
         {role === "admin" && (
           <section className="civic-card space-y-3 p-4">
             <h2 className="flex items-center gap-2 text-sm font-bold">
-              <ShieldCheck className="size-4" /> Administrator console
+              <ShieldCheck className="size-4" /> {t("dashboard.adminConsole")}
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Citizen legal identity stays sealed platform-wide. Monitor SLA compliance, breaches and ward
-              performance from the analytics console.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("dashboard.adminConsoleDesc")}</p>
             <Link
               to="/analytics"
               className="inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
             >
-              Open SLA analytics
+              {t("dashboard.openAnalytics")}
             </Link>
           </section>
         )}
@@ -230,14 +225,14 @@ function CitizenView({
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="My grievances" value={complaints.length} icon={Activity} />
+        <Stat label={t("dashboard.myGrievancesLabel")} value={complaints.length} icon={Activity} />
         <Stat
-          label="Resolved"
+          label={t("civic.resolved")}
           value={complaints.filter((c) => c.status === "resolved").length}
           icon={ShieldCheck}
         />
         <Stat
-          label="Escalated"
+          label={t("civic.escalated")}
           value={complaints.filter((c) => c.status === "escalated" || c.status === "joint_task_force").length}
           icon={AlertTriangle}
         />
@@ -246,15 +241,14 @@ function CitizenView({
       <div className="civic-card flex items-center gap-2 p-3 text-xs">
         <ShieldCheck className="size-4 shrink-0 text-success" />
         <span className="min-w-0">
-          <strong>{t("verifiedResident")}</strong> — issued after DigiLocker verification. It proves ward
-          residency for voting and commenting without revealing who you are.
+          <strong>{t("verifiedResident")}</strong> {t("dashboard.verifiedResidentDesc")}
         </span>
       </div>
 
       <h2 className="text-sm font-bold">{t("myGrievances")}</h2>
       {complaints.length === 0 && (
         <p className="civic-card p-6 text-center text-sm text-muted-foreground">
-          You haven't reported anything yet. <Link to="/report" className="text-primary underline">Report an issue</Link>.
+          {t("dashboard.noReportsYet")} <Link to="/report" className="text-primary underline">{t("dashboard.reportAnIssue")}</Link>.
         </p>
       )}
       {complaints.map((c) => (
@@ -271,7 +265,7 @@ function CitizenView({
               params={{ id: c.id }}
               className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
             >
-              Tracking page
+              {t("dashboard.trackingPage")}
             </Link>
             <button
               onClick={() => onAdvance(c)}
@@ -284,26 +278,26 @@ function CitizenView({
 
           {c.status === "verification" && (
             <div className="space-y-2 rounded-lg border border-chart-5/40 bg-chart-5/10 p-3">
-              <p className="text-xs font-semibold">Dual verification — your approval is required</p>
+              <p className="text-xs font-semibold">{t("dashboard.dualVerification")}</p>
               {c.resolution_photo_url && (
-                <img src={c.resolution_photo_url} alt="Resolution proof" className="w-full rounded-md" />
+                <img src={c.resolution_photo_url} alt={t("dashboard.resolutionProofAlt")} className="w-full rounded-md" />
               )}
               <div className="flex gap-2">
                 <button
                   onClick={() =>
-                    onPatch(c, { complainant_approved: true, status: "resolved" }, "Complainant accepted the resolution", "Complainant")
+                    onPatch(c, { complainant_approved: true, status: "resolved" }, t("dashboard.complainantAccepted"), "Complainant")
                   }
                   className="flex-1 rounded-lg bg-success px-3 py-2 text-xs font-semibold text-success-foreground"
                 >
-                  Accept resolution
+                  {t("dashboard.acceptResolution")}
                 </button>
                 <button
                   onClick={() =>
-                    onPatch(c, { complainant_approved: false, status: "escalated", current_tier: "zonal", assigned_officer: officerForTier("zonal") }, "Complainant rejected the resolution — escalated", "Complainant")
+                    onPatch(c, { complainant_approved: false, status: "escalated", current_tier: "zonal", assigned_officer: officerForTier("zonal") }, t("dashboard.complainantRejected"), "Complainant")
                   }
                   className="flex-1 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground"
                 >
-                  Reject
+                  {t("dashboard.reject")}
                 </button>
               </div>
             </div>
@@ -334,6 +328,7 @@ function FieldView({
   onAdvance: (c: Complaint) => void;
   busyId: string | null;
 }) {
+  const { t } = useLang();
   const [proofFor, setProofFor] = useState<Complaint | null>(null);
   const [calling, setCalling] = useState<Complaint | null>(null);
   const queue = complaints.filter((c) => c.current_tier === "field" && c.status !== "resolved");
@@ -342,7 +337,7 @@ function FieldView({
     onPatch(
       c,
       { resolution_photo_url: cap.dataUrl, status: "verification" },
-      "Resolution proof uploaded — moved to dual verification phase",
+      t("dashboard.proofUploadedNote"),
       "Field Officer",
     );
     setProofFor(null);
@@ -351,10 +346,10 @@ function FieldView({
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Ward-scoped tasks" value={queue.length} icon={Activity} />
-        <Stat label="In progress" value={queue.filter((c) => c.status === "in_progress").length} icon={BarChart3} />
+        <Stat label={t("dashboard.wardScopedTasks")} value={queue.length} icon={Activity} />
+        <Stat label={t("dashboard.inProgress")} value={queue.filter((c) => c.status === "in_progress").length} icon={BarChart3} />
         <Stat
-          label="Awaiting verification"
+          label={t("dashboard.awaitingVerification")}
           value={complaints.filter((c) => c.status === "verification").length}
           icon={ShieldCheck}
         />
@@ -362,8 +357,7 @@ function FieldView({
 
       <p className="civic-card p-3 text-xs text-muted-foreground">
         <ShieldCheck className="mr-1.5 inline size-3.5 text-success" />
-        Citizen legal names and phone numbers are not available to field staff. Contact runs through the masked
-        VoIP relay only.
+        {t("dashboard.fieldStaffPrivacy")}
       </p>
 
       {queue.map((c) => (
@@ -372,39 +366,39 @@ function FieldView({
           <div className="flex flex-wrap gap-2">
             {c.status === "assigned" && (
               <button
-                onClick={() => onPatch(c, { status: "in_progress" }, "Work started on site", "Field Officer")}
+                onClick={() => onPatch(c, { status: "in_progress" }, t("dashboard.workStarted"), "Field Officer")}
                 className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
               >
-                Start work
+                {t("dashboard.startWork")}
               </button>
             )}
             <button
               onClick={() => setProofFor(c)}
               className="rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-success-foreground"
             >
-              Upload completion proof
+              {t("dashboard.uploadProof")}
             </button>
             <button
               onClick={() => setCalling(c)}
               className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
             >
-              <PhoneCall className="size-3.5" /> Call complainant (masked)
+              <PhoneCall className="size-3.5" /> {t("dashboard.callComplainant")}
             </button>
             <button
               onClick={() => onAdvance(c)}
               disabled={busyId === c.id}
               className="flex items-center gap-1.5 rounded-lg border border-warning/50 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning disabled:opacity-50"
             >
-              <FastForward className="size-3.5" /> +1h
+              <FastForward className="size-3.5" /> {t("dashboard.plusOneHour")}
             </button>
           </div>
 
           {proofFor?.id === c.id && (
             <div className="space-y-2 rounded-lg border border-border p-3">
-              <p className="text-xs font-semibold">Geotagged completion proof</p>
+              <p className="text-xs font-semibold">{t("dashboard.geotaggedProof")}</p>
               <GeoCamera
                 wardLabel={wardLabel(c.ward_id ? wardMap.get(c.ward_id) : undefined, "en")}
-                zoneLabel="Officer completion capture"
+                zoneLabel={t("dashboard.officerCaptureLabel")}
                 onCapture={(cap) => submitProof(c, cap)}
               />
             </div>
@@ -435,7 +429,7 @@ function ZonalView({
   onPatch: (c: Complaint, v: Partial<Complaint>, note: string, actor: string) => void;
   onAdvance: (c: Complaint) => void;
 }) {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const zones = useMemo(() => {
     const map = new Map<string, { total: number; breached: number }>();
     complaints.forEach((c) => {
@@ -453,21 +447,21 @@ function ZonalView({
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Escalated to zone" value={queue.length} icon={AlertTriangle} />
-        <Stat label="SLA breaches" value={breached.length} icon={Activity} />
-        <Stat label="Zones monitored" value={zones.length} icon={BarChart3} />
+        <Stat label={t("dashboard.escalatedToZone")} value={queue.length} icon={AlertTriangle} />
+        <Stat label={t("dashboard.slaBreaches")} value={breached.length} icon={Activity} />
+        <Stat label={t("dashboard.zonesMonitored")} value={zones.length} icon={BarChart3} />
       </div>
 
       <section className="civic-card overflow-hidden">
-        <h2 className="border-b border-border px-4 py-3 text-sm font-bold">Zonal performance matrix</h2>
+        <h2 className="border-b border-border px-4 py-3 text-sm font-bold">{t("dashboard.zonalMatrix")}</h2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[28rem] text-left text-xs">
             <thead className="text-muted-foreground">
               <tr>
-                <th className="px-4 py-2">Zone</th>
-                <th className="px-4 py-2">Tickets</th>
-                <th className="px-4 py-2">Breached</th>
-                <th className="px-4 py-2">Compliance</th>
+                <th className="px-4 py-2">{t("dashboard.zone")}</th>
+                <th className="px-4 py-2">{t("dashboard.tickets")}</th>
+                <th className="px-4 py-2">{t("dashboard.breachedCol")}</th>
+                <th className="px-4 py-2">{t("dashboard.compliance")}</th>
               </tr>
             </thead>
             <tbody>
@@ -491,10 +485,10 @@ function ZonalView({
         </div>
       </section>
 
-      <h2 className="text-sm font-bold">Escalated ticket queue</h2>
+      <h2 className="text-sm font-bold">{t("dashboard.escalatedQueue")}</h2>
       {queue.length === 0 && (
         <p className="civic-card p-6 text-center text-sm text-muted-foreground">
-          No field SLA breaches have reached the zonal desk. Use the +1h simulator to demonstrate one.
+          {t("dashboard.noZonalBreaches")}
         </p>
       )}
       {queue.map((c) => (
@@ -505,36 +499,36 @@ function ZonalView({
                 onPatch(
                   c,
                   { assigned_officer: officerForTier("field"), current_tier: "field", status: "assigned" },
-                  "Reassigned back to a field officer by the Zonal Assistant Commissioner",
+                  t("dashboard.reassignedFieldNote"),
                   "Zonal Assistant Commissioner",
                 )
               }
               className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
             >
-              Reassign to field officer
+              {t("dashboard.reassignField")}
             </button>
             <button
               onClick={() =>
                 onPatch(
                   c,
                   { current_tier: "commissioner", status: "escalated", assigned_officer: officerForTier("commissioner") },
-                  "Escalated to the Corporation Commissioner",
+                  t("dashboard.escalatedCommissionerNote"),
                   "Zonal Assistant Commissioner",
                 )
               }
               className="rounded-lg bg-destructive px-3 py-1.5 text-xs font-semibold text-destructive-foreground"
             >
-              Escalate to Commissioner
+              {t("dashboard.escalateCommissioner")}
             </button>
             <button
               onClick={() => onAdvance(c)}
               className="flex items-center gap-1.5 rounded-lg border border-warning/50 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning"
             >
-              <FastForward className="size-3.5" /> +1h
+              <FastForward className="size-3.5" /> {t("dashboard.plusOneHour")}
             </button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Current tier: {TIER_LABEL[c.current_tier as Tier][lang]}
+            {t("dashboard.currentTier")} {TIER_LABEL[c.current_tier as Tier][lang]}
           </p>
         </TicketRow>
       ))}
@@ -551,10 +545,11 @@ function CommissionerView({
   wardMap: Map<string, Ward>;
   onPatch: (c: Complaint, v: Partial<Complaint>, note: string, actor: string) => void;
 }) {
+  const { t } = useLang();
   const heat = useMemo(() => {
     const map = new Map<string, number>();
     complaints.forEach((c) => {
-      const key = c.ward_id ? wardMap.get(c.ward_id)?.ward_name_en ?? "Unknown" : "Unknown";
+      const key = c.ward_id ? wardMap.get(c.ward_id)?.ward_name_en ?? t("dashboard.unknownWard") : t("dashboard.unknownWard");
       map.set(key, (map.get(key) ?? 0) + 1);
     });
     return [...map.entries()].sort((a, b) => b[1] - a[1]);
@@ -581,14 +576,14 @@ function CommissionerView({
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-4">
-        <Stat label="Total tickets" value={complaints.length} icon={Activity} />
-        <Stat label="Resolved" value={complaints.filter((c) => c.status === "resolved").length} icon={ShieldCheck} />
-        <Stat label="At Commissioner tier" value={complaints.filter((c) => c.current_tier === "commissioner").length} icon={Users} />
-        <Stat label="Joint Task Force" value={complaints.filter((c) => c.current_tier === "jtf").length} icon={AlertTriangle} />
+        <Stat label={t("dashboard.totalTickets")} value={complaints.length} icon={Activity} />
+        <Stat label={t("civic.resolved")} value={complaints.filter((c) => c.status === "resolved").length} icon={ShieldCheck} />
+        <Stat label={t("dashboard.atCommissionerTier")} value={complaints.filter((c) => c.current_tier === "commissioner").length} icon={Users} />
+        <Stat label={t("dashboard.jointTaskForce")} value={complaints.filter((c) => c.current_tier === "jtf").length} icon={AlertTriangle} />
       </div>
 
       <section className="civic-card space-y-3 p-4">
-        <h2 className="text-sm font-bold">Ward heatmap</h2>
+        <h2 className="text-sm font-bold">{t("dashboard.wardHeatmap")}</h2>
         <div className="space-y-2">
           {heat.map(([ward, n]) => (
             <div key={ward} className="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] items-center gap-3 text-xs">
@@ -602,19 +597,19 @@ function CommissionerView({
               <span className="font-semibold">{n}</span>
             </div>
           ))}
-          {heat.length === 0 && <p className="text-xs text-muted-foreground">No data yet.</p>}
+          {heat.length === 0 && <p className="text-xs text-muted-foreground">{t("dashboard.noDataYet")}</p>}
         </div>
       </section>
 
       <section className="civic-card overflow-hidden">
-        <h2 className="border-b border-border px-4 py-3 text-sm font-bold">Department performance ranking</h2>
+        <h2 className="border-b border-border px-4 py-3 text-sm font-bold">{t("dashboard.deptRanking")}</h2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[24rem] text-left text-xs">
             <thead className="text-muted-foreground">
               <tr>
-                <th className="px-4 py-2">Category</th>
-                <th className="px-4 py-2">Tickets</th>
-                <th className="px-4 py-2">Closure rate</th>
+                <th className="px-4 py-2">{t("dashboard.category")}</th>
+                <th className="px-4 py-2">{t("dashboard.tickets")}</th>
+                <th className="px-4 py-2">{t("dashboard.closureRate")}</th>
               </tr>
             </thead>
             <tbody>
@@ -632,14 +627,13 @@ function CommissionerView({
 
       <section className="civic-card space-y-3 p-4">
         <h2 className="flex items-center gap-2 text-sm font-bold">
-          <AlertTriangle className="size-4 text-destructive" /> Cross-departmental deadlock breaker
+          <AlertTriangle className="size-4 text-destructive" /> {t("dashboard.deadlockBreaker")}
         </h2>
         <p className="text-xs text-muted-foreground">
-          Tickets parked at the Commissioner tier for more than 48 hours convert into a Joint Task Force
-          Request and ping TWAD Board and the Highways Department.
+          {t("dashboard.deadlockDesc")}
         </p>
         {deadlockCandidates.length === 0 && (
-          <p className="text-xs text-muted-foreground">No ticket has crossed the 48h commissioner threshold.</p>
+          <p className="text-xs text-muted-foreground">{t("dashboard.noDeadlockCandidates")}</p>
         )}
         {deadlockCandidates.map((c) => (
           <div key={c.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
@@ -649,13 +643,13 @@ function CommissionerView({
                 onPatch(
                   c,
                   { current_tier: "jtf", status: "joint_task_force", assigned_officer: officerForTier("jtf") },
-                  "Joint Task Force Request raised — TWAD Board & Highways Department notified",
+                  t("dashboard.jtfRaisedNote"),
                   "Corporation Commissioner (IAS)",
                 )
               }
               className="shrink-0 rounded-lg bg-destructive px-3 py-1.5 text-xs font-semibold text-destructive-foreground"
             >
-              Trigger JTF
+              {t("dashboard.triggerJtf")}
             </button>
           </div>
         ))}
@@ -665,19 +659,18 @@ function CommissionerView({
 }
 
 function CouncillorView({ complaints, wardMap }: { complaints: Complaint[]; wardMap: Map<string, Ward> }) {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const active = complaints.filter((c) => c.status !== "resolved");
   const resolved = complaints.filter((c) => c.status === "resolved");
 
   return (
     <div className="space-y-4">
       <p className="civic-card p-3 text-xs text-muted-foreground">
-        Read-only constituency view for council session auditing. Councillors cannot reassign officers or edit
-        ticket state.
+        {t("dashboard.councillorReadOnly")}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Stat label="Active in constituency" value={active.length} icon={Activity} />
-        <Stat label="Closed this cycle" value={resolved.length} icon={ShieldCheck} />
+        <Stat label={t("dashboard.activeInConstituency")} value={active.length} icon={Activity} />
+        <Stat label={t("dashboard.closedThisCycle")} value={resolved.length} icon={ShieldCheck} />
       </div>
       {complaints.map((c) => (
         <article key={c.id} className="civic-card grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-3">

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, CircleAlert, Crosshair, RefreshCcw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useGeolocation, type GeoFix } from "@/lib/useGeolocation";
+import { useLang } from "@/lib/i18n";
 
 export type Capture = {
   dataUrl: string;
@@ -23,6 +24,7 @@ type Props = {
  * MediaStream only, and every frame is stamped with the GPS fix at capture time.
  */
 export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
+  const { t } = useLang();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -51,7 +53,7 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       setReady(true);
     } catch (e) {
       setReady(false);
-      setCamError(e instanceof Error ? e.message : "Camera unavailable");
+      setCamError(e instanceof Error ? e.message : t("camera.unavailable"));
     }
   }, []);
 
@@ -84,28 +86,28 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
   const capture = () => {
     // --- AI EXIF anti-spoofing inspector -------------------------------
     if (!fix) {
-      toast.error("Submission Rejected: Authentic Geotagged Capture Required", {
-        description: "No live GPS fix. Enable location services and retry.",
+      toast.error(t("camera.rejectedTitle"), {
+        description: t("camera.rejectedNoFix"),
       });
       return;
     }
     const fixAgeSec = (Date.now() - fix.timestamp) / 1000;
     if (fixAgeSec > 45) {
-      toast.error("Submission Rejected: Authentic Geotagged Capture Required", {
-        description: `Stale location fix (${Math.round(fixAgeSec)}s old) — mock-location signature detected. File purged.`,
+      toast.error(t("camera.rejectedTitle"), {
+        description: t("camera.rejectedStaleFixTemplate").replace("{seconds}", String(Math.round(fixAgeSec))),
       });
       return;
     }
     if (!Number.isFinite(fix.accuracy) || fix.accuracy <= 0 || fix.accuracy > 2000) {
-      toast.error("Submission Rejected: Authentic Geotagged Capture Required", {
-        description: "Implausible GPS accuracy reported by the device. File purged.",
+      toast.error(t("camera.rejectedTitle"), {
+        description: t("camera.rejectedBadAccuracy"),
       });
       return;
     }
     const video = videoRef.current;
     if (!ready || !video || video.videoWidth === 0) {
-      toast.error("Submission Rejected: Authentic Geotagged Capture Required", {
-        description: "No live camera stream. Gallery and file uploads are not accepted.",
+      toast.error(t("camera.rejectedTitle"), {
+        description: t("camera.rejectedNoStream"),
       });
       return;
     }
@@ -128,8 +130,8 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       capturedAt: new Date().toISOString(),
       geoVerified: true,
     });
-    toast.success("Geotagged capture accepted", {
-      description: "EXIF inspector: live sensor stream + fresh GPS fix confirmed.",
+    toast.success(t("camera.acceptedTitle"), {
+      description: t("camera.acceptedDesc"),
     });
   };
 
@@ -158,30 +160,29 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
           <div className="absolute inset-0 grid place-items-center bg-background/90 p-6 text-center">
             <div className="space-y-3">
               <CircleAlert className="mx-auto size-8 text-destructive" />
-              <p className="text-sm font-semibold">Camera access required</p>
+              <p className="text-sm font-semibold">{t("camera.accessRequired")}</p>
               <p className="text-xs text-muted-foreground">
-                {camError}. Gallery uploads are permanently disabled on this portal — a live hardware
-                capture is the only accepted evidence source.
+                {t("camera.disabledDescTemplate").replace("{error}", String(camError))}
               </p>
               <button
                 onClick={start}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
               >
-                <RefreshCcw className="size-4" /> Retry camera
+                <RefreshCcw className="size-4" /> {t("camera.retry")}
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {geoError && <p className="text-xs text-destructive">Location error: {geoError}</p>}
+      {geoError && <p className="text-xs text-destructive">{t("camera.locationErrorTemplate").replace("{error}", geoError)}</p>}
 
       <button
         type="button"
         onClick={capture}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        <Camera className="size-4" /> Capture geotagged evidence
+        <Camera className="size-4" /> {t("camera.captureButton")}
       </button>
     </div>
   );

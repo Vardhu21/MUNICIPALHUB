@@ -59,7 +59,7 @@ function PseudoQR({ payload, size = 168 }: { payload: string; size?: number }) {
 }
 
 export function OfficerBadge({ open, onClose, userId, role }: Props) {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const [profile, setProfile] = useState<{
     pseudonym: string;
     ward_id: string | null;
@@ -97,8 +97,8 @@ export function OfficerBadge({ open, onClose, userId, role }: Props) {
   const ward = wards.find((w) => w.id === profile?.ward_id) ?? null;
   const inferredIfhrms =
     meta.ifhrms ?? (profile?.pseudonym?.match(/IFHRMS_(\d{11})/)?.[1] ?? "———————————");
-  const officerName = meta.officer_name ?? "Officer on Roster";
-  const department = meta.department ?? "Municipal Administration";
+  const officerName = meta.officer_name ?? t("badge.officerFallback");
+  const department = meta.department ?? t("badge.deptFallback");
   const payload = [
     "TN-MAWS/OFFICER-BADGE",
     `IFHRMS:${inferredIfhrms}`,
@@ -120,7 +120,7 @@ export function OfficerBadge({ open, onClose, userId, role }: Props) {
       >
         <button
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t("action.close")}
           className="absolute right-3 top-3 rounded-lg border border-border bg-background/80 p-1.5 text-muted-foreground hover:text-foreground"
         >
           <X className="size-4" />
@@ -128,14 +128,14 @@ export function OfficerBadge({ open, onClose, userId, role }: Props) {
 
         {/* State seal header */}
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-border bg-gradient-to-r from-primary/20 to-success/15 p-4">
-          <img src={emblem} alt="Tamil Nadu State Emblem" className="size-14 rounded-lg" />
+          <img src={emblem} alt={t("badge.emblemAlt")} className="size-14 rounded-lg" />
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
-              Government of Tamil Nadu
+              {t("badge.govTn")}
             </p>
-            <p className="truncate text-sm font-bold">Municipal Administration & Water Supply</p>
+            <p className="truncate text-sm font-bold">{t("badge.maws")}</p>
             <p className="truncate text-[11px] text-muted-foreground">
-              Digital Officer ID Badge · IFHRMS Verified
+              {t("badge.subtitle")}
             </p>
           </div>
         </div>
@@ -154,11 +154,11 @@ export function OfficerBadge({ open, onClose, userId, role }: Props) {
           </div>
 
           <dl className="space-y-1.5 text-xs">
-            <Row label="Name" value={officerName} />
-            <Row label="Designation" value={ROLE_LABEL[role][lang]} />
-            <Row label="Department" value={department} />
-            <Row label="IFHRMS ID" value={inferredIfhrms} mono />
-            <Row label="Jurisdiction" value={ward ? wardLabel(ward, lang) : "Unassigned"} />
+            <Row label={t("badge.name")} value={officerName} />
+            <Row label={t("badge.designation")} value={ROLE_LABEL[role][lang]} />
+            <Row label={t("badge.department")} value={department} />
+            <Row label={t("badge.ifhrmsId")} value={inferredIfhrms} mono />
+            <Row label={t("badge.jurisdiction")} value={ward ? wardLabel(ward, lang) : t("badge.unassigned")} />
           </dl>
         </div>
 
@@ -166,17 +166,16 @@ export function OfficerBadge({ open, onClose, userId, role }: Props) {
           <PseudoQR payload={payload} />
           <div className="space-y-2 text-xs text-muted-foreground">
             <p className="flex items-center gap-1.5 font-semibold text-success">
-              <BadgeCheck className="size-4" /> Roster status: Active
+              <BadgeCheck className="size-4" /> {t("badge.rosterActive")}
             </p>
             <p className="flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-primary" /> DigiLocker · TN Govt Service Certificate
+              <ShieldCheck className="size-3.5 text-primary" /> {t("badge.digilocker")}
             </p>
             <p className="flex items-center gap-1.5">
-              <IdCard className="size-3.5 text-primary" /> Scan on-site to verify identity
+              <IdCard className="size-3.5 text-primary" /> {t("badge.scanVerify")}
             </p>
             <p className="text-[10px] leading-tight">
-              This badge is a demo credential. In production the QR resolves to a signed MAWS attestation
-              at{" "}
+              {t("badge.disclaimerPrefix")}{" "}
               <span className="font-mono">verify.maws.tn.gov.in</span>.
             </p>
           </div>

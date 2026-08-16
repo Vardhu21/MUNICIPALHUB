@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useLang } from "@/lib/i18n";
 import { TopBar } from "@/components/TopBar";
 import { StatusPill, PriorityPill } from "@/components/StatusPill";
 import { SlaBar } from "@/components/SlaBar";
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/track/$id")({
 type EventRow = { id: string; event_type: string; actor_label: string; note: string | null; created_at: string };
 
 function TrackPage() {
+  const { t } = useLang();
   const { id } = Route.useParams();
   const { user } = useSession();
   const [c, setC] = useState<Complaint | null>(null);
@@ -62,7 +64,7 @@ function TrackPage() {
   }, [id]);
 
   const addComment = async () => {
-    if (!user || !c) return toast.error("Sign in to comment on ward grievances.");
+    if (!user || !c) return toast.error(t("track.signInComment"));
     if (body.trim().length < 2) return;
     const { data: profile } = await supabase
       .from("profiles")
@@ -91,17 +93,17 @@ function TrackPage() {
   };
 
   const vote = async (approve: boolean) => {
-    if (!user || !c?.ward_id) return toast.error("Sign in as a ward resident to vote.");
+    if (!user || !c?.ward_id) return toast.error(t("track.signInVote"));
     try {
       const { token } = await issueWardToken({ data: { wardId: c.ward_id } });
       const { error } = await supabase
         .from("resolution_votes")
         .insert({ complaint_id: c.id, voter_id: user.id, approve, zkp_token: token });
       if (error) throw error;
-      toast.success(approve ? "Vote recorded: work matches the proof" : "Vote recorded: work does not match");
+      toast.success(approve ? t("track.voteApproved") : t("track.voteRejected"));
       refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "ZKP ward residency proof failed.");
+      toast.error(e instanceof Error ? e.message : t("track.zkpProofFailed"));
     }
   };
 
@@ -109,8 +111,8 @@ function TrackPage() {
     <div className="min-h-screen bg-background">
       <TopBar />
       <main className="mx-auto max-w-2xl space-y-4 px-4 py-5">
-        {loading && <EmblemLoader label="Loading ticket…" />}
-        {!loading && !c && <p className="civic-card p-6 text-center text-sm">This tracking link is not valid.</p>}
+        {loading && <EmblemLoader label={t("track.loadingTicket")} />}
+        {!loading && !c && <p className="civic-card p-6 text-center text-sm">{t("track.invalidLink")}</p>}
 
         {c && (
           <>
@@ -137,25 +139,22 @@ function TrackPage() {
 
             {c.status === "verification" && (
               <section className="civic-card space-y-3 p-4">
-                <h2 className="text-sm font-bold">Regional ward vote</h2>
-                <p className="text-xs text-muted-foreground">
-                  Nearby verified residents decide whether the physical work matches the uploaded proof. Your
-                  identity never travels with the vote — only an anonymous ZKP ward token.
-                </p>
+                <h2 className="text-sm font-bold">{t("track.regionalVote")}</h2>
+                <p className="text-xs text-muted-foreground">{t("track.regionalVoteDesc")}</p>
                 {c.resolution_photo_url && <img src={c.resolution_photo_url} alt="" className="w-full rounded-lg" />}
                 <div className="flex gap-2">
                   <button onClick={() => vote(true)} className="flex-1 rounded-lg bg-success px-3 py-2 text-xs font-semibold text-success-foreground">
-                    Work matches proof
+                    {t("track.worksMatches")}
                   </button>
                   <button onClick={() => vote(false)} className="flex-1 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground">
-                    Does not match
+                    {t("track.doesNotMatch")}
                   </button>
                 </div>
               </section>
             )}
 
             <section className="civic-card space-y-3 p-4">
-              <h2 className="text-sm font-bold">Escalation audit trail</h2>
+              <h2 className="text-sm font-bold">{t("track.auditTrail")}</h2>
               <ol className="space-y-3">
                 {events.map((e) => (
                   <li key={e.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
@@ -169,19 +168,19 @@ function TrackPage() {
                     </span>
                   </li>
                 ))}
-                {events.length === 0 && <p className="text-xs text-muted-foreground">No events recorded yet.</p>}
+                {events.length === 0 && <p className="text-xs text-muted-foreground">{t("track.noEventsYet")}</p>}
               </ol>
             </section>
 
             <section className="civic-card space-y-3 p-4">
-              <h2 className="text-sm font-bold">Ward discussion</h2>
+              <h2 className="text-sm font-bold">{t("track.wardDiscussion")}</h2>
               {comments.map((m) => (
                 <div key={m.id} className="rounded-lg border border-border p-3">
                   <p className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs font-semibold">
                     <span className="truncate text-primary">{m.pseudonym}</span>
                     {m.ward_verified && (
                       <span className="shrink-0 rounded-full border border-success/50 bg-success/10 px-2 py-0.5 text-[10px] text-success">
-                        ZKP ward resident
+                        {t("track.zkpWardResident")}
                       </span>
                     )}
                   </p>
@@ -193,11 +192,11 @@ function TrackPage() {
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   maxLength={500}
-                  placeholder="Add a comment"
+                  placeholder={t("track.addComment")}
                   className="min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                 />
                 <button onClick={addComment} className="shrink-0 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground">
-                  Post
+                  {t("track.post")}
                 </button>
               </div>
             </section>

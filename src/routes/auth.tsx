@@ -49,19 +49,19 @@ export const Route = createFileRoute("/auth")({
 type Persona = "citizen" | "officer";
 type Step = 0 | 1 | 2 | 3;
 
-const OFFICER_ROLES: { value: AppRole; label: string }[] = [
-  { value: "field_officer", label: "Assistant Engineer / Junior Engineer / Sanitary Inspector" },
-  { value: "zonal_commissioner", label: "Zonal Assistant Commissioner" },
-  { value: "commissioner", label: "Corporation Commissioner (IAS)" },
-  { value: "councillor", label: "Ward Councillor" },
+const OFFICER_ROLE_KEYS: { value: AppRole; key: string }[] = [
+  { value: "field_officer", key: "auth.roleFieldOfficer" },
+  { value: "zonal_commissioner", key: "auth.roleZonal" },
+  { value: "commissioner", key: "auth.roleCommissioner" },
+  { value: "councillor", key: "auth.roleCouncillor" },
 ];
 
-const DEPARTMENTS = [
-  "Sanitation & Public Health",
-  "Engineering & Infrastructure",
-  "Town Planning",
-  "Revenue & Administration",
-  "Water Supply (TWAD liaison)",
+const DEPARTMENT_KEYS = [
+  "auth.deptSanitation",
+  "auth.deptEngineering",
+  "auth.deptTownPlanning",
+  "auth.deptRevenue",
+  "auth.deptWaterSupply",
 ];
 
 // Officer employee IDs map to a deterministic internal email so Supabase Auth still works.
@@ -99,7 +99,7 @@ function AuthPage() {
   // Officer branch state
   const [officerName, setOfficerName] = useState("");
   const [officerRole, setOfficerRole] = useState<AppRole>("field_officer");
-  const [department, setDepartment] = useState(DEPARTMENTS[0]);
+  const [department, setDepartment] = useState(DEPARTMENT_KEYS[0]);
 
   // Sign-in state (works for both — email/password OR IFHRMS/password)
   const [signInId, setSignInId] = useState("");
@@ -127,8 +127,8 @@ function AuthPage() {
       setBusy(true);
       setTimeout(() => {
         setBusy(false);
-        toast.success("DigiLocker → TN Government Service Certificate detected", {
-          description: `IFHRMS employee code ${raw} verified. Auto-classified as Municipal Officer.`,
+        toast.success(t("auth.toast.digilockerOfficerVerified"), {
+          description: `${t("auth.toast.ifhrmsVerifiedDesc")} (${raw})`,
         });
         setStep(3);
       }, 1200);
@@ -139,25 +139,25 @@ function AuthPage() {
       setBusy(true);
       setTimeout(() => {
         setBusy(false);
-        toast.success("DigiLocker → Aadhaar consent artefact verified", {
-          description: "Demographic hash matched. Proceeding to OTP binding.",
+        toast.success(t("auth.toast.digilockerCitizenVerified"), {
+          description: t("auth.toast.aadhaarVerifiedDesc"),
         });
         setStep(1);
       }, 1200);
       return;
     }
-    toast.error("Unrecognised DigiLocker credential", {
-      description: "Enter your 12-digit Aadhaar (citizen) or 11-digit IFHRMS employee code (officer).",
+    toast.error(t("auth.toast.unrecognisedCredential"), {
+      description: t("auth.toast.unrecognisedCredentialDesc"),
     });
   };
 
   const completeCitizen = async () => {
-    if (legalName.trim().length < 2) return toast.error("Enter your legal name as printed in DigiLocker.");
-    if (!/^\d{10}$/.test(phone.trim())) return toast.error("Mobile number must be 10 digits.");
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return toast.error("Enter a valid email.");
-    if (password.length < 8) return toast.error("Password must be at least 8 characters.");
+    if (legalName.trim().length < 2) return toast.error(t("auth.error.legalName"));
+    if (!/^\d{10}$/.test(phone.trim())) return toast.error(t("auth.error.mobile10"));
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return toast.error(t("auth.error.validEmail"));
+    if (password.length < 8) return toast.error(t("auth.error.password8"));
     if (!/^@[A-Za-z0-9_]{3,24}$/.test(pseudonym))
-      return toast.error("Pseudonym must start with @ and use 3–24 letters/digits/underscore.");
+      return toast.error(t("auth.error.pseudonymFormat"));
 
     setBusy(true);
     try {
@@ -168,7 +168,7 @@ function AuthPage() {
       });
       if (error) throw error;
       const uid = data.user?.id;
-      if (!uid) throw new Error("Account created but no session returned.");
+      if (!uid) throw new Error(t("auth.error.noSession"));
 
       await supabase.from("profiles").upsert({
         id: uid,
@@ -183,22 +183,22 @@ function AuthPage() {
       });
 
       writeActiveRole("citizen");
-      toast.success("Identity sealed. Welcome to the portal.", {
-        description: `Field officers will only ever see ${pseudonym}.`,
+      toast.success(t("auth.toast.identitySealed"), {
+        description: `${t("auth.toast.identitySealedDesc")} ${pseudonym}.`,
       });
       if (next) window.location.assign(next);
       else navigate({ to: "/feed" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Registration failed.");
+      toast.error(e instanceof Error ? e.message : t("auth.error.registrationFailed"));
     } finally {
       setBusy(false);
     }
   };
 
   const completeOfficer = async () => {
-    if (officerName.trim().length < 2) return toast.error("Enter your name as per department roster.");
-    if (password.length < 8) return toast.error("Password must be at least 8 characters.");
-    if (!wardId) return toast.error("Select the ward/zone you supervise.");
+    if (officerName.trim().length < 2) return toast.error(t("auth.error.officerName"));
+    if (password.length < 8) return toast.error(t("auth.error.password8"));
+    if (!wardId) return toast.error(t("auth.error.selectWard"));
 
     setBusy(true);
     try {
@@ -218,7 +218,7 @@ function AuthPage() {
       });
       if (error) throw error;
       const uid = data.user?.id;
-      if (!uid) throw new Error("Account not created.");
+      if (!uid) throw new Error(t("auth.error.accountNotCreated"));
 
       await supabase.from("profiles").upsert({
         id: uid,
@@ -232,13 +232,13 @@ function AuthPage() {
       await supabase.from("user_roles").upsert({ user_id: uid, role: "citizen", ward_id: wardId });
 
       writeActiveRole(officerRole);
-      toast.success("Officer roster entry created", {
-        description: `${officerName} · IFHRMS ${digilockerId} · ${department}`,
+      toast.success(t("auth.toast.officerRosterCreated"), {
+        description: `${officerName} · IFHRMS ${digilockerId} · ${t(department)}`,
       });
       if (next) window.location.assign(next);
       else navigate({ to: "/officer" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Sign-up failed");
+      toast.error(e instanceof Error ? e.message : t("auth.error.signupFailed"));
     } finally {
       setBusy(false);
     }
@@ -246,7 +246,7 @@ function AuthPage() {
 
   const signIn = async () => {
     const raw = signInId.trim();
-    if (!raw || signInPassword.length < 6) return toast.error("Enter your DigiLocker ID / email and password.");
+    if (!raw || signInPassword.length < 6) return toast.error(t("auth.error.enterIdPassword"));
     setBusy(true);
     const email = /^\d{11}$/.test(raw) ? ifhrmsToEmail(raw) : raw;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: signInPassword });
@@ -259,7 +259,7 @@ function AuthPage() {
       const officerRoles = ["commissioner", "zonal_commissioner", "field_officer", "councillor"] as const;
       const officer = roles?.map((r) => r.role as AppRole).find((r) => officerRoles.includes(r as typeof officerRoles[number]));
       writeActiveRole((officer as AppRole) ?? "citizen");
-      toast.success(officer ? "Welcome, officer" : "Welcome back");
+      toast.success(officer ? t("auth.toast.welcomeOfficer") : t("auth.toast.welcomeBack"));
       if (next) window.location.assign(next);
       else navigate({ to: officer ? "/officer" : "/feed" });
       return;
@@ -277,7 +277,7 @@ function AuthPage() {
           </Link>
           <div className="min-w-0">
             <h1 className="truncate text-lg font-bold">{t("appName")}</h1>
-            <p className="truncate text-xs text-muted-foreground">Unified DigiLocker Gateway</p>
+            <p className="truncate text-xs text-muted-foreground">{t("auth.gatewaySubtitle")}</p>
           </div>
           <button
             onClick={toggle}
@@ -289,11 +289,7 @@ function AuthPage() {
 
         <div className="civic-card flex items-start gap-2 p-3 text-xs">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
-          <span className="min-w-0">
-            One gateway for everyone. DigiLocker returns either a{" "}
-            <b>12-digit Aadhaar</b> (citizen persona) or an{" "}
-            <b>11-digit IFHRMS Government Service Certificate</b> (MAWS officer). Role is auto-detected.
-          </span>
+          <span className="min-w-0">{t("auth.gatewayInfo")}</span>
         </div>
 
         <DemoBypass returnTo={next} />
@@ -312,7 +308,7 @@ function AuthPage() {
                 mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"
               }`}
             >
-              {m === "signup" ? "Register via DigiLocker" : t("signIn")}
+              {m === "signup" ? t("auth.registerViaDigilocker") : t("signIn")}
             </button>
           ))}
         </div>
@@ -321,10 +317,10 @@ function AuthPage() {
           <section className="civic-card space-y-3 p-4">
             <Field
               icon={IdCard}
-              label="Email or 11-digit IFHRMS ID"
+              label={t("auth.emailOrIfhrms")}
               value={signInId}
               onChange={setSignInId}
-              placeholder="citizen@example.com  or  20241203045"
+              placeholder={t("auth.emailOrIfhrmsPlaceholder")}
             />
             <Field icon={Lock} label={t("password")} value={signInPassword} onChange={setSignInPassword} type="password" />
             <button
@@ -334,16 +330,14 @@ function AuthPage() {
             >
               {busy ? "…" : t("signIn")}
             </button>
-            <p className="text-[11px] text-muted-foreground">
-              Officers enrolled with IFHRMS can enter their 11-digit employee code instead of an email.
-            </p>
+            <p className="text-[11px] text-muted-foreground">{t("auth.officerIfhrmsNote")}</p>
           </section>
         ) : (
           <>
             <ol className="grid grid-cols-4 gap-1.5">
               {(detected === "officer"
-                ? ["DigiLocker", "—", "—", "Officer roster"]
-                : ["DigiLocker", "Email OTP", "Mobile OTP", "Pseudonym"]
+                ? [t("auth.stepDigilocker"), "—", "—", t("auth.stepOfficerRoster")]
+                : [t("auth.stepDigilocker"), t("auth.stepEmailOtp"), t("auth.stepMobileOtp"), t("auth.stepPseudonym")]
               ).map((s, i) => (
                 <li
                   key={`${s}-${i}`}
@@ -360,39 +354,38 @@ function AuthPage() {
               <section className="civic-card space-y-3 p-4">
                 <p className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-xs text-warning">
                   <Fingerprint className="mt-0.5 size-4 shrink-0" />
-                  Enter the credential DigiLocker returns for you. <b>12 digits</b> = Aadhaar (citizen).{" "}
-                  <b>11 digits</b> = IFHRMS Government Service Certificate (officer). Anything else is rejected.
+                  {t("auth.digilockerInstruction")}
                 </p>
                 <Field
                   icon={Fingerprint}
-                  label="DigiLocker ID"
+                  label={t("auth.digilockerIdLabel")}
                   value={digilockerId}
                   onChange={setDigilockerId}
                   inputMode="numeric"
-                  placeholder="12-digit Aadhaar or 11-digit IFHRMS code"
+                  placeholder={t("auth.digilockerIdPlaceholder")}
                 />
                 <button
                   onClick={digilockerVerify}
                   disabled={busy}
                   className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50"
                 >
-                  {busy ? "Contacting DigiLocker…" : "Sign in with DigiLocker"}
+                  {busy ? t("auth.contactingDigilocker") : t("auth.signInWithDigilocker")}
                 </button>
               </section>
             )}
 
             {detected === "citizen" && step === 1 && (
               <OtpStep
-                title="Email OTP verification"
-                target={email || "your email"}
+                title={t("auth.emailOtpTitle")}
+                target={email || t("auth.yourEmail")}
                 code={emailOtp}
                 value={emailOtpInput}
                 onChange={setEmailOtpInput}
                 onVerify={() => {
                   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()))
-                    return toast.error("Enter a valid email above first.");
-                  if (emailOtpInput.trim() !== emailOtp) return toast.error("Incorrect email OTP.");
-                  toast.success("Email verified");
+                    return toast.error(t("auth.error.emailOtpFirst"));
+                  if (emailOtpInput.trim() !== emailOtp) return toast.error(t("auth.error.incorrectEmailOtp"));
+                  toast.success(t("auth.toast.emailVerified"));
                   setStep(2);
                 }}
                 extra={
@@ -403,15 +396,15 @@ function AuthPage() {
 
             {detected === "citizen" && step === 2 && (
               <OtpStep
-                title="Mobile OTP verification"
-                target={phone ? `+91 ${phone}` : "your mobile"}
+                title={t("auth.mobileOtpTitle")}
+                target={phone ? `+91 ${phone}` : t("auth.yourMobile")}
                 code={phoneOtp}
                 value={phoneOtpInput}
                 onChange={setPhoneOtpInput}
                 onVerify={() => {
-                  if (!/^\d{10}$/.test(phone.trim())) return toast.error("Enter a valid 10-digit mobile.");
-                  if (phoneOtpInput.trim() !== phoneOtp) return toast.error("Incorrect mobile OTP.");
-                  toast.success("Mobile verified");
+                  if (!/^\d{10}$/.test(phone.trim())) return toast.error(t("auth.error.validMobile"));
+                  if (phoneOtpInput.trim() !== phoneOtp) return toast.error(t("auth.error.incorrectMobileOtp"));
+                  toast.success(t("auth.toast.mobileVerified"));
                   setStep(3);
                 }}
                 extra={
@@ -431,8 +424,7 @@ function AuthPage() {
               <section className="civic-card space-y-3 p-4">
                 <p className="flex items-start gap-2 rounded-lg border border-success/40 bg-success/10 p-3 text-xs text-success">
                   <BadgeCheck className="mt-0.5 size-4 shrink-0" />
-                  Your legal identity is sealed in the encrypted identity vault. Only this pseudonym is
-                  ever shown to engineers, inspectors and the public feed.
+                  {t("auth.identitySealedInfo")}
                 </p>
                 <Field icon={UserRound} label={t("legalName")} value={legalName} onChange={setLegalName} />
                 <div className="space-y-1.5">
@@ -447,7 +439,7 @@ function AuthPage() {
                       onClick={() => setPseudonym(suggestPseudonym())}
                       className="shrink-0 rounded-lg border border-border bg-card px-3 text-xs font-semibold"
                     >
-                      Shuffle
+                      {t("auth.shuffle")}
                     </button>
                   </div>
                 </div>
@@ -472,14 +464,14 @@ function AuthPage() {
                   value={password}
                   onChange={setPassword}
                   type="password"
-                  placeholder="Min 8 characters"
+                  placeholder={t("auth.minEightChars")}
                 />
                 <button
                   onClick={completeCitizen}
                   disabled={busy}
                   className="w-full rounded-xl bg-success px-4 py-3 text-sm font-semibold text-success-foreground disabled:opacity-50"
                 >
-                  {busy ? "Sealing identity…" : t("signUp")}
+                  {busy ? t("auth.sealingIdentity") : t("signUp")}
                 </button>
               </section>
             )}
@@ -488,40 +480,39 @@ function AuthPage() {
               <section className="civic-card space-y-3 p-4">
                 <p className="flex items-start gap-2 rounded-lg border border-primary/40 bg-primary/10 p-3 text-xs text-primary">
                   <HardHat className="mt-0.5 size-4 shrink-0" />
-                  IFHRMS <b>{digilockerId}</b> — TN Government Service Certificate accepted. Complete your
-                  officer roster entry to receive your digital ID badge.
+                  IFHRMS <b>{digilockerId}</b> — {t("auth.ifhrmsAccepted")}
                 </p>
-                <Field icon={UserRound} label="Officer name (as per department roster)" value={officerName} onChange={setOfficerName} />
+                <Field icon={UserRound} label={t("auth.officerNameLabel")} value={officerName} onChange={setOfficerName} />
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Designation</label>
+                  <label className="text-xs font-semibold text-muted-foreground">{t("auth.designation")}</label>
                   <select
                     value={officerRole}
                     onChange={(e) => setOfficerRole(e.target.value as AppRole)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                   >
-                    {OFFICER_ROLES.map((r) => (
+                    {OFFICER_ROLE_KEYS.map((r) => (
                       <option key={r.value} value={r.value} className="bg-card">
-                        {r.label}
+                        {t(r.key)}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Department</label>
+                  <label className="text-xs font-semibold text-muted-foreground">{t("auth.department")}</label>
                   <select
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                   >
-                    {DEPARTMENTS.map((d) => (
+                    {DEPARTMENT_KEYS.map((d) => (
                       <option key={d} value={d} className="bg-card">
-                        {d}
+                        {t(d)}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Assigned ward / zone</label>
+                  <label className="text-xs font-semibold text-muted-foreground">{t("auth.assignedWardZone")}</label>
                   <select
                     value={wardId}
                     onChange={(e) => setWardId(e.target.value)}
@@ -541,14 +532,14 @@ function AuthPage() {
                   value={password}
                   onChange={setPassword}
                   type="password"
-                  placeholder="Min 8 characters"
+                  placeholder={t("auth.minEightChars")}
                 />
                 <button
                   onClick={completeOfficer}
                   disabled={busy}
                   className="w-full rounded-xl bg-success px-4 py-3 text-sm font-semibold text-success-foreground disabled:opacity-50"
                 >
-                  {busy ? "Adding to roster…" : "Issue Officer ID badge & enter workspace"}
+                  {busy ? t("auth.addingToRoster") : t("auth.issueBadge")}
                 </button>
               </section>
             )}
@@ -612,32 +603,30 @@ function OtpStep({
   onVerify: () => void;
   extra?: React.ReactNode;
 }) {
+  const { t } = useLang();
   return (
     <section className="civic-card space-y-3 p-4">
       <div>
         <h2 className="text-sm font-bold">{title}</h2>
-        <p className="truncate text-xs text-muted-foreground">Sent to {target}</p>
+        <p className="truncate text-xs text-muted-foreground">{t("auth.sentTo")} {target}</p>
       </div>
       {extra}
       <p className="rounded-lg border border-border bg-secondary p-3 text-center font-mono text-lg font-bold tracking-[0.4em]">
         {code}
       </p>
-      <p className="text-[11px] text-muted-foreground">
-        Simulation only — in production this code is delivered by the state SMS/email gateway and never
-        displayed on screen.
-      </p>
+      <p className="text-[11px] text-muted-foreground">{t("auth.otpSimulationNote")}</p>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         inputMode="numeric"
-        placeholder="Enter 6-digit OTP"
+        placeholder={t("auth.enterOtpPlaceholder")}
         className="w-full rounded-lg border border-input bg-background px-3 py-2 text-center text-sm tracking-widest outline-none focus:border-primary"
       />
       <button
         onClick={onVerify}
         className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
       >
-        Verify OTP
+        {t("auth.verifyOtp")}
       </button>
     </section>
   );

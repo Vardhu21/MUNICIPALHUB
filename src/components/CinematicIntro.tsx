@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import emblem from "@/assets/tn-emblem.png";
+import { useLang } from "@/lib/i18n";
 
 const SESSION_KEY = "tnsm-intro-played";
 
@@ -22,6 +23,7 @@ const TN_CY = 592;
 type Stage = "wide" | "zoom" | "highlight" | "brand" | "out";
 
 export function CinematicIntro() {
+  const { t } = useLang();
   const [visible, setVisible] = useState(false);
   const [stage, setStage] = useState<Stage>("wide");
 
@@ -73,7 +75,7 @@ export function CinematicIntro() {
       <svg
         viewBox="0 0 600 700"
         className="relative h-[86vh] max-h-[860px] w-auto max-w-[92vw]"
-        aria-label="Zooming from India to Tamil Nadu"
+        aria-label={t("intro.ariaZoom")}
       >
         <defs>
           <linearGradient id="ci-india" x1="0" y1="0" x2="1" y2="1">
@@ -140,7 +142,7 @@ export function CinematicIntro() {
             stage === "wide" || stage === "zoom" ? "opacity-100" : "opacity-0"
           }`}
         >
-          {stage === "wide" ? "Republic of India" : "Locating southern region"}
+          {stage === "wide" ? t("intro.republicOfIndia") : t("intro.locatingSouth")}
         </p>
         <div
           className={`transition-all duration-700 ${
@@ -148,10 +150,10 @@ export function CinematicIntro() {
           }`}
         >
           <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-            TAMIL NADU
+            {t("intro.tamilNadu")}
           </h2>
           <p className="mt-1 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-            11.13° N · 78.66° E — Urban Local Bodies
+            {t("intro.coordinates")}
           </p>
         </div>
       </div>
@@ -163,17 +165,17 @@ export function CinematicIntro() {
       >
         <img
           src={emblem}
-          alt="Government of Tamil Nadu emblem"
+          alt={t("intro.emblemAlt")}
           className={`h-24 w-24 object-contain transition-all duration-700 sm:h-32 sm:w-32 ${
             branding ? "scale-100 opacity-100" : "scale-90 opacity-0"
           }`}
         />
-        <p className="text-[10px] uppercase tracking-[0.42em] text-muted-foreground">Tamil Nadu · MAWS</p>
+        <p className="text-[10px] uppercase tracking-[0.42em] text-muted-foreground">{t("intro.brandTag")}</p>
         <h1 className="text-center text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">
-          Smart Municipality
+          {t("intro.smartMunicipality")}
         </h1>
         <p className="max-w-md px-6 text-center text-sm text-muted-foreground">
-          Geotagged grievances · SLA-driven escalation · transparent ward accountability
+          {t("intro.tagline")}
         </p>
       </div>
 
@@ -181,7 +183,7 @@ export function CinematicIntro() {
         onClick={finish}
         className="absolute right-4 top-4 rounded-lg border border-border bg-card/80 px-3 py-1.5 text-xs font-semibold text-foreground backdrop-blur transition-colors hover:bg-accent sm:right-6 sm:top-6"
       >
-        Skip intro
+        {t("intro.skip")}
       </button>
     </div>
   );
