@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Camera, HardHat, MapPin, Navigation, PlayCircle, Radar } from "lucide-react";
 import { TopBar } from "@/components/TopBar";
 import { EmblemLoader } from "@/components/EmblemLoader";
+import { RoleGate } from "@/components/RoleGate";
 import { DeliveryTracker } from "@/components/DeliveryTracker";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useLang } from "@/lib/i18n";
