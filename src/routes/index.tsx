@@ -45,7 +45,15 @@ function Portal() {
   const enter = (to: string) => {
     if (leaving) return;
     setLeaving(true);
-    window.setTimeout(() => navigate({ to }), 600);
+    window.setTimeout(() => {
+      void Promise.resolve(navigate({ to })).catch(() => {
+        window.location.href = to;
+      });
+      // Safety net: if client navigation silently fails, force a full load.
+      window.setTimeout(() => {
+        if (window.location.pathname !== to) window.location.href = to;
+      }, 800);
+    }, 600);
   };
 
   const fadeUp = (delayMs: number) => ({
@@ -137,12 +145,16 @@ function Portal() {
             className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:gap-4"
             style={fadeUp(240)}
           >
-            <button
-              onClick={() => enter("/auth")}
+            <Link
+              to="/auth"
+              onClick={(e) => {
+                e.preventDefault();
+                enter("/auth");
+              }}
               className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:scale-[1.02] hover:bg-[#5635C9] motion-reduce:transition-none motion-reduce:hover:scale-100"
             >
               {t("enterPortal")} <ArrowRight className="size-4" />
-            </button>
+            </Link>
             <Link
               to="/feed"
               className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/15"
@@ -151,8 +163,12 @@ function Portal() {
             </Link>
           </div>
 
-          <button
-            onClick={() => enter("/auth")}
+          <Link
+            to="/auth"
+            onClick={(e) => {
+              e.preventDefault();
+              enter("/auth");
+            }}
             className="text-[13px] font-medium text-white/70 underline decoration-white/40 decoration-1 underline-offset-6 transition-colors hover:text-white"
             style={{
               ...fadeUp(320),
@@ -160,7 +176,7 @@ function Portal() {
             }}
           >
             {t("landing.skip", "Skip")}
-          </button>
+          </Link>
         </div>
 
         <div
