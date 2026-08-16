@@ -92,13 +92,13 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       return;
     }
     const fixAgeSec = (Date.now() - fix.timestamp) / 1000;
-    if (fixAgeSec > 45) {
+    if (fixAgeSec > 180) {
       toast.error(t("camera.rejectedTitle"), {
         description: t("camera.rejectedStaleFixTemplate").replace("{seconds}", String(Math.round(fixAgeSec))),
       });
       return;
     }
-    if (!Number.isFinite(fix.accuracy) || fix.accuracy <= 0 || fix.accuracy > 2000) {
+    if (!Number.isFinite(fix.accuracy) || fix.accuracy <= 0 || fix.accuracy > 50_000) {
       toast.error(t("camera.rejectedTitle"), {
         description: t("camera.rejectedBadAccuracy"),
       });
