@@ -553,12 +553,15 @@ export const citizenDecision = createServerFn({ method: "POST" })
         photoDataUrl: z.string().max(9_000_000).optional(),
         lat: z.number().min(-90).max(90).optional(),
         lng: z.number().min(-180).max(180).optional(),
+        accuracyM: z.number().min(0).max(100_000).optional(),
+        locationUnavailable: z.boolean().optional(),
       })
       .parse(raw),
   )
   .handler(async ({ data, context }) => {
     const h = await import("./workflow.server");
     const sb = await h.admin();
+    const cfg = await h.loadConfig(sb);
     const { data: verification } = await sb
       .from("citizen_verifications")
       .select("*")
@@ -570,9 +573,33 @@ export const citizenDecision = createServerFn({ method: "POST" })
 
     const { data: complaint } = await sb
       .from("complaints")
-      .select("id,title")
+      .select("id,title,lat,lng")
       .eq("id", verification.complaint_id)
       .maybeSingle();
+
+    // ---- Citizen GPS verification (deterministic, never AI) ----
+    const hasFix = typeof data.lat === "number" && typeof data.lng === "number";
+    const complaintHasFix = typeof complaint?.lat === "number" && typeof complaint?.lng === "number";
+    let gpsState: "PENDING" | "CITIZEN_GPS_VERIFIED" | "CITIZEN_GPS_FLAGGED" | "LOCATION_UNAVAILABLE" = "PENDING";
+    let distance: number | null = null;
+    const radius = (cfg as Record<string, number>)["citizen_evidence_radius_m"] ?? 150;
+
+    if (!data.satisfied) {
+      if (!hasFix) {
+        if (!data.locationUnavailable) {
+          throw new Error("Location permission is required to verify this evidence.");
+        }
+        gpsState = "LOCATION_UNAVAILABLE";
+      } else if (!complaintHasFix) {
+        gpsState = "LOCATION_UNAVAILABLE";
+      } else {
+        distance = h.distanceM(
+          { lat: data.lat as number, lng: data.lng as number },
+          { lat: complaint!.lat as number, lng: complaint!.lng as number },
+        );
+        gpsState = distance <= radius ? "CITIZEN_GPS_VERIFIED" : "CITIZEN_GPS_FLAGGED";
+      }
+    }
 
     let photoPath: string | null = null;
     if (!data.satisfied && data.photoDataUrl) {
@@ -590,6 +617,11 @@ export const citizenDecision = createServerFn({ method: "POST" })
         photo_path: photoPath,
         lat: data.lat ?? null,
         lng: data.lng ?? null,
+        accuracy_m: data.accuracyM ?? null,
+        complaint_lat: complaint?.lat ?? null,
+        complaint_lng: complaint?.lng ?? null,
+        distance_m: distance,
+        gps_state: gpsState,
         decided_at: new Date().toISOString(),
       })
       .eq("id", verification.id);
@@ -609,9 +641,24 @@ export const citizenDecision = createServerFn({ method: "POST" })
       await h.moveComplaint(sb, verification.complaint_id, "reopened", { complainant_approved: false });
       await h.moveComplaint(sb, verification.complaint_id, "officer_review");
       await h.logEvent(sb, verification.complaint_id, "citizen_rejected", "Citizen", `Citizen not satisfied: ${data.reason}`);
-      await h.notify(sb, [assignment?.officer_id], "workflow", "Complaint reopened", `Citizen rejected resolution of "${complaint?.title ?? "complaint"}": ${data.reason}`);
+      // Audit the location outcome without publishing raw coordinates.
+      if (gpsState === "CITIZEN_GPS_VERIFIED") {
+        await h.logEvent(sb, verification.complaint_id, "citizen_gps_verified", "System", `Citizen evidence location verified (${Math.round(distance ?? 0)} m from the complaint location, radius ${radius} m).`);
+      } else if (gpsState === "CITIZEN_GPS_FLAGGED") {
+        await h.logEvent(sb, verification.complaint_id, "citizen_gps_flagged", "System", `Citizen evidence location outside the configured radius (${Math.round(distance ?? 0)} m vs ${radius} m). Flagged for officer review.`);
+      } else {
+        await h.logEvent(sb, verification.complaint_id, "citizen_location_unavailable", "System", "Citizen location was unavailable. Submission accepted as LOCATION_UNAVAILABLE and requires officer review.");
+      }
+      await h.logEvent(sb, verification.complaint_id, "complaint_reopened", "Citizen", "Complaint reopened for officer review after citizen rejection.");
+      await h.notify(
+        sb,
+        [assignment?.officer_id],
+        "workflow",
+        gpsState === "CITIZEN_GPS_VERIFIED" ? "Complaint reopened" : "Complaint reopened — location review needed",
+        `Citizen rejected resolution of "${complaint?.title ?? "complaint"}": ${data.reason} (location check: ${gpsState})`,
+      );
     }
-    return { ok: true };
+    return { ok: true, gpsState, distanceM: distance, radiusM: radius };
   });
 
 /** Nearby unresolved complaints around the worker's live position (never auto-assigned). */
@@ -652,18 +699,47 @@ export const nearbyComplaints = createServerFn({ method: "POST" })
 /** Worker opts in to a nearby complaint — explicit, never automatic. */
 export const acceptNearbyComplaint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => z.object({ complaintId: z.string().uuid() }).parse(raw))
+  .inputValidator((raw: unknown) =>
+    z
+      .object({
+        complaintId: z.string().uuid(),
+        lat: z.number().min(-90).max(90).optional(),
+        lng: z.number().min(-180).max(180).optional(),
+      })
+      .parse(raw),
+  )
   .handler(async ({ data, context }) => {
     const h = await import("./workflow.server");
     const sb = await h.admin();
-    const { data: worker } = await sb.from("workers").select("id,display_name").eq("user_id", context.userId).maybeSingle();
+    const cfg = await h.loadConfig(sb);
+    const { data: worker } = await sb
+      .from("workers")
+      .select("id,display_name,department,active")
+      .eq("user_id", context.userId)
+      .maybeSingle();
     if (!worker) throw new Error("Worker profile required.");
+    if (!worker.active) throw new Error("Your worker profile is inactive. Contact your ward officer.");
     const { data: complaint } = await sb
       .from("complaints")
-      .select("id,title,author_id,lat,lng,sla_hours,status")
+      .select("id,title,author_id,lat,lng,sla_hours,status,category,ward_id,frozen_fake")
       .eq("id", data.complaintId)
       .maybeSingle();
     if (!complaint) throw new Error("Complaint not found.");
+    // --- Server-side authorization: never trust the client list ---
+    if (complaint.frozen_fake) throw new Error("This complaint is frozen and cannot be picked up.");
+    if (["resolved", "resolved_by_citizen", "rejected", "auto_closed_no_response"].includes(complaint.status)) {
+      throw new Error("This complaint is no longer active.");
+    }
+    if (worker.department && worker.department !== "general" && complaint.category !== worker.department) {
+      throw new Error("This complaint belongs to another department.");
+    }
+    if (typeof data.lat === "number" && typeof data.lng === "number") {
+      if (typeof complaint.lat !== "number" || typeof complaint.lng !== "number") {
+        throw new Error("This complaint has no location and cannot be picked up nearby.");
+      }
+      const away = h.distanceM({ lat: data.lat, lng: data.lng }, { lat: complaint.lat, lng: complaint.lng });
+      if (away > cfg.nearby_radius_m) throw new Error("You are outside the nearby pickup radius for this complaint.");
+    }
     const { data: existing } = await sb
       .from("complaint_assignments")
       .select("id")
@@ -672,25 +748,37 @@ export const acceptNearbyComplaint = createServerFn({ method: "POST" })
       .maybeSingle();
     if (existing) throw new Error("This complaint already has an active assignment.");
 
+    // The worker never becomes the officer of record. Resolve (or preserve) the
+    // responsible officer from existing relationships instead.
+    const responsibleOfficerId = await h.resolveResponsibleOfficer(sb, complaint);
+    if (!responsibleOfficerId) {
+      throw new Error("No responsible officer is configured for this ward. Ask an officer to assign this task.");
+    }
+
+    const acceptedAt = new Date().toISOString();
     const { data: assignment, error } = await sb
       .from("complaint_assignments")
       .insert({
         complaint_id: complaint.id,
         worker_id: worker.id,
-        officer_id: context.userId,
+        officer_id: responsibleOfficerId,
+        assignment_source: "NEARBY_PICKUP",
+        accepted_by_worker_at: acceptedAt,
         sla_deadline: new Date(Date.now() + (complaint.sla_hours ?? 24) * 3_600_000).toISOString(),
         dest_lat: complaint.lat,
         dest_lng: complaint.lng,
         stage: "worker_accepted",
-        accepted_at: new Date().toISOString(),
+        accepted_at: acceptedAt,
       })
       .select()
       .maybeSingle();
     if (error) throw new Error(error.message);
     await h.moveComplaint(sb, complaint.id, "assigned", { assigned_officer: worker.display_name });
     await h.moveComplaint(sb, complaint.id, "worker_accepted");
-    await h.logEvent(sb, complaint.id, "worker_accepted", worker.display_name, "Worker picked up this nearby task voluntarily.");
+    await h.logEvent(sb, complaint.id, "nearby_task_accepted", worker.display_name, "Worker picked up this nearby task voluntarily (assignment_source: NEARBY_PICKUP).");
+    await h.logEvent(sb, complaint.id, "worker_assigned", worker.display_name, "Worker assigned through nearby pickup; the responsible officer remains unchanged.");
     await h.notify(sb, [complaint.author_id], "workflow", "Worker assigned", `A nearby worker picked up "${complaint.title}".`);
+    await h.notify(sb, [responsibleOfficerId], "workflow", "Nearby pickup", `${worker.display_name} picked up "${complaint.title}" as a nearby task. You remain the responsible officer.`);
     return assignment;
   });
 

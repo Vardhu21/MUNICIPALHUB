@@ -16,13 +16,18 @@ export type Database = {
     Tables: {
       citizen_verifications: {
         Row: {
+          accuracy_m: number | null
           citizen_id: string
           complaint_id: string
+          complaint_lat: number | null
+          complaint_lng: number | null
           created_at: string
           deadline_at: string
           decided_at: string | null
           decision: string
+          distance_m: number | null
           evidence_id: string | null
+          gps_state: string
           id: string
           lat: number | null
           lng: number | null
@@ -32,13 +37,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accuracy_m?: number | null
           citizen_id: string
           complaint_id: string
+          complaint_lat?: number | null
+          complaint_lng?: number | null
           created_at?: string
           deadline_at: string
           decided_at?: string | null
           decision?: string
+          distance_m?: number | null
           evidence_id?: string | null
+          gps_state?: string
           id?: string
           lat?: number | null
           lng?: number | null
@@ -48,13 +58,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accuracy_m?: number | null
           citizen_id?: string
           complaint_id?: string
+          complaint_lat?: number | null
+          complaint_lng?: number | null
           created_at?: string
           deadline_at?: string
           decided_at?: string | null
           decision?: string
+          distance_m?: number | null
           evidence_id?: string | null
+          gps_state?: string
           id?: string
           lat?: number | null
           lng?: number | null
@@ -83,9 +98,11 @@ export type Database = {
       complaint_assignments: {
         Row: {
           accepted_at: string | null
+          accepted_by_worker_at: string | null
           active: boolean
           arrived_at: string | null
           assigned_at: string
+          assignment_source: string
           complaint_id: string
           completed_at: string | null
           created_at: string
@@ -104,9 +121,11 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          accepted_by_worker_at?: string | null
           active?: boolean
           arrived_at?: string | null
           assigned_at?: string
+          assignment_source?: string
           complaint_id: string
           completed_at?: string | null
           created_at?: string
@@ -125,9 +144,11 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          accepted_by_worker_at?: string | null
           active?: boolean
           arrived_at?: string | null
           assigned_at?: string
+          assignment_source?: string
           complaint_id?: string
           completed_at?: string | null
           created_at?: string

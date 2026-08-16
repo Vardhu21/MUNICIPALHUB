@@ -17,6 +17,7 @@ export function CitizenVerificationPanel() {
   const [reason, setReason] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [locationDenied, setLocationDenied] = useState(false);
 
   const refresh = useCallback(() => {
     load({ data: undefined } as never)
@@ -29,8 +30,15 @@ export function CitizenVerificationPanel() {
   if (!items.length) return null;
 
   const answer = async (verificationId: string, satisfied: boolean) => {
-    if (!satisfied && !reason.trim()) {
+    if (!satisfied && (!reason.trim() || !photo)) {
       setReasonFor(verificationId);
+      if (reason.trim() && !photo) {
+        toast.error(
+          lang === "ta"
+            ? "தயவுசெய்து தற்போதைய நிலையின் புகைப்படத்தை இணைக்கவும்."
+            : "Please attach an evidence photo of the current condition.",
+        );
+      }
       return;
     }
     setBusy(true);
@@ -40,7 +48,17 @@ export function CitizenVerificationPanel() {
           ? navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), { timeout: 8000 })
           : resolve(null),
       );
-      await decide({
+      if (!satisfied && !pos && !locationDenied) {
+        setLocationDenied(true);
+        setBusy(false);
+        toast.error(
+          lang === "ta"
+            ? "இந்தச் சான்றை சரிபார்க்க இருப்பிட அனுமதி தேவை."
+            : "Location permission is required to verify this evidence.",
+        );
+        return;
+      }
+      const res = await decide({
         data: {
           verificationId,
           satisfied,
@@ -48,20 +66,40 @@ export function CitizenVerificationPanel() {
           photoDataUrl: satisfied ? undefined : (photo ?? undefined),
           lat: pos?.coords.latitude,
           lng: pos?.coords.longitude,
+          accuracyM: pos?.coords.accuracy,
+          locationUnavailable: !satisfied && !pos,
         },
       });
-      toast.success(
-        satisfied
-          ? lang === "ta"
+      const state = (res as { gpsState?: string } | undefined)?.gpsState;
+      if (satisfied) {
+        toast.success(
+          lang === "ta"
             ? "நன்றி — புகார் தீர்க்கப்பட்டதாக பதிவு செய்யப்பட்டது."
-            : "Thank you — the complaint is marked resolved."
-          : lang === "ta"
+            : "Thank you — the complaint is marked resolved.",
+        );
+      } else if (state === "CITIZEN_GPS_FLAGGED") {
+        toast.warning(
+          lang === "ta"
+            ? "சான்றின் இருப்பிடம் அசல் புகார் இருப்பிடத்துடன் பொருந்தவில்லை. அலுவலர் மறுஆய்வுக்காக குறிக்கப்பட்டது."
+            : "The evidence location does not match the original complaint location. It has been flagged for officer review.",
+        );
+      } else if (state === "LOCATION_UNAVAILABLE") {
+        toast.warning(
+          lang === "ta"
+            ? "இருப்பிடம் கிடைக்கவில்லை — அலுவலர் மறுஆய்வுடன் சமர்ப்பிக்கப்பட்டது."
+            : "Location unavailable — submitted for officer review without GPS verification.",
+        );
+      } else {
+        toast.success(
+          lang === "ta"
             ? "புகார் மீண்டும் திறக்கப்பட்டது."
             : "The complaint has been reopened for officer review.",
-      );
+        );
+      }
       setReason("");
       setPhoto(null);
       setReasonFor(null);
+      setLocationDenied(false);
       refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not submit your response.");
@@ -109,9 +147,16 @@ export function CitizenVerificationPanel() {
               />
               <p className="text-[11px] text-muted-foreground">
                 {lang === "ta"
-                  ? "விருப்பம்: தற்போதைய நிலையைக் காட்டும் புகைப்படம்."
-                  : "Optional: attach a photo of the current condition."}
+                  ? "தேவை: தற்போதைய நிலையைக் காட்டும் புகைப்படம் மற்றும் இருப்பிட அனுமதி."
+                  : "Required: a photo of the current condition and location permission."}
               </p>
+              {locationDenied && (
+                <p className="text-[11px] font-semibold text-destructive">
+                  {lang === "ta"
+                    ? "இருப்பிடம் கிடைக்கவில்லை. மீண்டும் அழுத்தினால், அலுவலர் மறுஆய்வுக்காக இருப்பிடம் இல்லாமல் சமர்ப்பிக்கப்படும்."
+                    : "Location permission is required to verify this evidence. Press again to submit without GPS — it will require officer review."}
+                </p>
+              )}
             </div>
           )}
 
