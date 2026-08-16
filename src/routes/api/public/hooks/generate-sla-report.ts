@@ -11,18 +11,21 @@ import { byDepartment, byOfficer, byWard, overallStats, toCSV } from "@/lib/anal
  * snapshot row in `sla_reports` and fans out in-app notifications to every
  * commissioner / zonal commissioner / admin.
  *
- * Auth: pg_cron passes the Supabase publishable key in the `apikey` header
- * (documented cron pattern). We privilege-check that value before running.
- * All writes then go through a service-role client so RLS is bypassed for
- * the scheduler-owned tables (`sla_reports`, `notifications`).
+ * Auth: the scheduler must present the server-only `CRON_SECRET` in the
+ * `x-cron-secret` header (or as a bearer token). The public publishable key
+ * is never accepted — it ships in the browser bundle. All writes then go
+ * through a service-role client so RLS is bypassed for the scheduler-owned
+ * tables (`sla_reports`, `notifications`).
  */
 export const Route = createFileRoute("/api/public/hooks/generate-sla-report")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const providedKey = request.headers.get("apikey") ?? "";
-        const expectedKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
-        if (!providedKey || providedKey !== expectedKey) {
+        const providedKey =
+          request.headers.get("x-cron-secret") ??
+          (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+        const expectedKey = process.env["CRON_SECRET"] ?? "";
+        if (!expectedKey || providedKey !== expectedKey) {
           return json({ error: "Unauthorized" }, 401);
         }
 
