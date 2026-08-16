@@ -16,7 +16,6 @@ import { useLang } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { useGeolocation } from "@/lib/useGeolocation";
 import {
-import { EmblemLoader } from "@/components/EmblemLoader";
   applyEscalation,
   fastForward,
   fetchComplaints,
@@ -25,6 +24,7 @@ import { EmblemLoader } from "@/components/EmblemLoader";
   type Complaint,
   type Ward,
 } from "@/lib/data";
+import { EmblemLoader } from "@/components/EmblemLoader";
 
 export const Route = createFileRoute("/feed")({
   head: () => ({

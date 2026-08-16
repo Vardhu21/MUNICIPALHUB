@@ -22,7 +22,6 @@ import { useLang } from "@/lib/i18n";
 import { useSession, writeActiveRole } from "@/lib/session";
 import { computeClock, type Tier } from "@/lib/sla";
 import {
-import { EmblemLoader } from "@/components/EmblemLoader";
   applyEscalation,
   fastForward,
   fetchComplaints,
@@ -33,6 +32,7 @@ import { EmblemLoader } from "@/components/EmblemLoader";
   type Complaint,
   type Ward,
 } from "@/lib/data";
+import { EmblemLoader } from "@/components/EmblemLoader";
 
 export const Route = createFileRoute("/officer/")({
   head: () => ({

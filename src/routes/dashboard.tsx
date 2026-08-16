@@ -21,7 +21,6 @@ import { useLang } from "@/lib/i18n";
 import { ROLE_LABEL, useActiveRole, useSession } from "@/lib/session";
 import { computeClock, SLA_MATRIX, TIER_LABEL, type Tier } from "@/lib/sla";
 import {
-import { EmblemLoader } from "@/components/EmblemLoader";
   applyEscalation,
   fastForward,
   fetchComplaints,
@@ -32,6 +31,7 @@ import { EmblemLoader } from "@/components/EmblemLoader";
   type Complaint,
   type Ward,
 } from "@/lib/data";
+import { EmblemLoader } from "@/components/EmblemLoader";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
