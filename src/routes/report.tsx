@@ -12,6 +12,14 @@ import { useGeolocation } from "@/lib/useGeolocation";
 import { CATEGORIES, slaRow } from "@/lib/sla";
 import { BAND_LABEL, BAND_TONE, triage } from "@/lib/triage";
 import { fetchWards, logEvent, officerForTier, resolveWard, ULB_LABEL, type Ward } from "@/lib/data";
+import { WardAuthorityCard } from "@/components/WardAuthorityCard";
+import {
+  fetchCouncillorForWard,
+  fetchDirectoryWards,
+  fetchZones,
+  type DirectoryWard,
+  type Zone,
+} from "@/lib/directory";
 
 export const Route = createFileRoute("/report")({
   head: () => ({
@@ -38,6 +46,9 @@ function ReportPage() {
   const { user } = useSession();
   const { fix } = useGeolocation(true);
   const [wards, setWards] = useState<Ward[]>([]);
+  const [dirWards, setDirWards] = useState<DirectoryWard[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [manualWardId, setManualWardId] = useState("");
   const [capture, setCapture] = useState<Capture | null>(null);
   const [categoryId, setCategoryId] = useState(CATEGORIES[4].id);
   const [title, setTitle] = useState("");
@@ -47,9 +58,24 @@ function ReportPage() {
 
   useEffect(() => {
     fetchWards().then(setWards).catch(() => undefined);
+    fetchDirectoryWards().then(setDirWards).catch(() => undefined);
+    fetchZones().then(setZones).catch(() => undefined);
   }, []);
 
-  const ward = useMemo(() => resolveWard(wards, capture ?? fix), [wards, capture, fix]);
+  const geoWard = useMemo(() => resolveWard(wards, capture ?? fix), [wards, capture, fix]);
+  const ward = useMemo(
+    () => (manualWardId ? (wards.find((w) => w.id === manualWardId) ?? geoWard) : geoWard),
+    [manualWardId, wards, geoWard],
+  );
+  /** Official directory record behind the routed ward (zone, councillor, source). */
+  const directoryWard = useMemo(
+    () => dirWards.find((w) => w.id === ward?.id) ?? null,
+    [dirWards, ward],
+  );
+  const zoneName = useMemo(
+    () => zones.find((z) => z.zone_id === directoryWard?.zone_id)?.zone_name ?? null,
+    [zones, directoryWard],
+  );
   
   // Priority is never chosen by the citizen — it is derived from a health-impact score.
   const assessment = useMemo(
@@ -102,12 +128,23 @@ function ReportPage() {
 
       if (error) throw error;
       if (data) {
+        const councillor = await fetchCouncillorForWard(directoryWard?.ward_ref ?? null).catch(() => null);
         await logEvent(
           data.id,
           "assignment",
           "Dynamic Spatial Router",
           `Reverse-geocoded to ${ward ? `Ward ${ward.ward_number}, ${ward.ulb_name_en}` : "nearest ULB"} · assigned to ${sla.fieldTier.en} with a ${sla.hours}h SLA.`,
         );
+        if (directoryWard) {
+          await logEvent(
+            data.id,
+            "routing",
+            "Authority Directory",
+            `Routed to ${directoryWard.ward_ref}${zoneName ? ` · ${zoneName}` : ""} · councillor ${
+              councillor?.name?.trim() || "not on record"
+            }${councillor?.official_contact_email ? ` (${councillor.official_contact_email})` : ""}.`,
+          );
+        }
       }
       toast.success(t("report.toast.published"));
       navigate({ to: "/feed" });
