@@ -48,7 +48,7 @@ export function Starfield({ className = "" }: { className?: string }) {
         if (px < 0 || px > w || py < 0 || py > h) continue;
         const r = Math.max(0.3, (1 - s.z) * 2.1);
         ctx.globalAlpha = Math.min(1, (1 - s.z) * 1.4);
-        ctx.fillStyle = s.z < 0.35 ? "#C4C4C4" : "#8A8A8A";
+        ctx.fillStyle = s.z < 0.35 ? "#D6CCF9" : "#9B85F0";
         ctx.beginPath();
         ctx.arc(px, py, r, 0, Math.PI * 2);
         ctx.fill();

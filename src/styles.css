@@ -49,51 +49,51 @@
   --radius: 1.25rem;
 
   /* Strict monochrome palette */
-  --background: #F5F5F5;
-  --foreground: #111111;
+  --background: #FFFFFF;
+  --foreground: #17151C;
 
   --surface: #FFFFFF;
-  --surface-2: #EDEDED;
+  --surface-2: #F8F6FF;
 
   --card: #FFFFFF;
-  --card-foreground: #111111;
+  --card-foreground: #17151C;
   --popover: #FFFFFF;
-  --popover-foreground: #111111;
+  --popover-foreground: #17151C;
 
-  --primary: #000000;
+  --primary: #6C4CE8;
   --primary-foreground: #FFFFFF;
 
-  --secondary: #FFFFFF;
-  --secondary-foreground: #000000;
+  --secondary: #F1EDFF;
+  --secondary-foreground: #5635C9;
 
-  --muted: #EDEDED;
-  --muted-foreground: #555555;
+  --muted: #F5F5F7;
+  --muted-foreground: #6F6B78;
 
-  --accent: #EDEDED;
-  --accent-foreground: #111111;
+  --accent: #F1EDFF;
+  --accent-foreground: #5635C9;
 
-  --destructive: #222222;
+  --destructive: #B3392F;
   --destructive-foreground: #FFFFFF;
 
-  --success: #555555;
+  --success: #2F7D5B;
   --success-foreground: #FFFFFF;
 
-  --warning: #777777;
+  --warning: #A5761E;
   --warning-foreground: #FFFFFF;
 
-  --border: #D9D9D9;
-  --input: #D9D9D9;
-  --ring: #111111;
+  --border: #E7E3F0;
+  --input: #E7E3F0;
+  --ring: #6C4CE8;
 
-  --chart-1: #000000;
-  --chart-2: #333333;
-  --chart-3: #666666;
-  --chart-4: #999999;
-  --chart-5: #C4C4C4;
+  --chart-1: #6C4CE8;
+  --chart-2: #5635C9;
+  --chart-3: #9B85F0;
+  --chart-4: #C3B4F7;
+  --chart-5: #E1D9FB;
 
-  --gradient-portal: radial-gradient(ellipse at 50% 120%, rgba(17, 17, 17, 0.10), transparent 65%);
-  --shadow-elevated: 0 18px 40px -24px rgba(0, 0, 0, 0.28);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -18px rgba(0, 0, 0, 0.25);
+  --gradient-portal: radial-gradient(ellipse at 50% 120%, rgba(108, 76, 232, 0.16), transparent 65%);
+  --shadow-elevated: 0 18px 40px -20px rgba(86, 53, 201, 0.28);
+  --shadow-card: 0 1px 2px rgba(23, 21, 28, 0.04), 0 10px 28px -20px rgba(86, 53, 201, 0.30);
 
   /* Motion system — calm, professional */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -179,9 +179,9 @@
 
 /* Selective high-priority dark surface */
 @utility card-dark {
-  background-color: #111111;
-  color: #F5F5F5;
-  border: 1px solid #222222;
+  background-color: #6C4CE8;
+  color: #FFFFFF;
+  border: 1px solid #5635C9;
   border-radius: var(--radius-2xl);
 }
 
@@ -198,8 +198,8 @@
 
 @utility grid-noise {
   background-image:
-    linear-gradient(to right, oklch(0.24 0 0 / 0.07) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.24 0 0 / 0.07) 1px, transparent 1px);
+    linear-gradient(to right, rgba(108, 76, 232, 0.10) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(108, 76, 232, 0.10) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
