@@ -14,9 +14,7 @@ type OAuthApi = {
   denyAuthorization: (id: string) => Promise<OAuthResult>;
 };
 
-function oauthApi(): OAuthApi {
-  return (supabase.auth as typeof supabase.auth & { oauth: OAuthApi }).oauth;
-}
+export const oauthApi: OAuthApi = (supabase.auth as typeof supabase.auth & { oauth: OAuthApi }).oauth;
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
