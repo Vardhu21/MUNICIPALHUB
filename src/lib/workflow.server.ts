@@ -89,6 +89,41 @@ export async function isOfficer(sb: AnyClient, userId: string) {
 }
 
 /**
+ * Resolves the officer who stays accountable for a complaint.
+ * Order: officer on a previous assignment → ward-scoped officer role →
+ * any officer account. Never a worker, never a hardcoded name/ID.
+ */
+export async function resolveResponsibleOfficer(
+  sb: AnyClient,
+  complaint: { id: string; ward_id?: string | null },
+): Promise<string | null> {
+  const { data: prior } = await sb
+    .from("complaint_assignments")
+    .select("officer_id,assigned_at")
+    .eq("complaint_id", complaint.id)
+    .order("assigned_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (prior?.officer_id) return prior.officer_id as string;
+
+  const officerRoles = ["field_officer", "zonal_commissioner", "commissioner"];
+  if (complaint.ward_id) {
+    const { data: wardOfficers } = await sb
+      .from("user_roles")
+      .select("user_id,role")
+      .eq("ward_id", complaint.ward_id)
+      .in("role", officerRoles);
+    if (wardOfficers?.length) return wardOfficers[0].user_id as string;
+  }
+  const { data: anyOfficer } = await sb
+    .from("user_roles")
+    .select("user_id,role")
+    .in("role", officerRoles)
+    .limit(1);
+  return (anyOfficer?.[0]?.user_id as string | undefined) ?? null;
+}
+
+/**
  * Resolves the ward councillor for a complaint dynamically (complaint → ward_id
  * → councillors row) and notifies any authenticated councillor accounts that
  * hold the councillor role for that ward. Names are never hardcoded.
