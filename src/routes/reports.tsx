@@ -90,16 +90,7 @@ function ReportsArchive() {
   const runNow = async () => {
     setTriggering(true);
     try {
-      const res = await fetch("/api/public/hooks/generate-sla-report", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
-        },
-        body: "{}",
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
+      const json = await runSlaReportNow();
       toast.success(t("reports.reportGenerated"), {
         description: `${t("reports.notifiedCommissioners")} ${json.notified ?? 0} ${t("reports.commissioners")}`,
       });
