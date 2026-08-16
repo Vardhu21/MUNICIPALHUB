@@ -81,14 +81,14 @@ function Dashboard() {
       const updated = await fastForward(c, hours);
       setComplaints((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
       if (updated.status !== c.status || updated.current_tier !== c.current_tier) {
-        toast.error(`Auto-escalated → ${TIER_LABEL[updated.current_tier as Tier][lang]}`, {
+        toast.error(`${t("dashboard.autoEscalated")} ${TIER_LABEL[updated.current_tier as Tier][lang]}`, {
           description: updated.assigned_officer ?? undefined,
         });
       } else {
-        toast.info(`SLA clock +${hours}h`);
+        toast.info(t("dashboard.slaClockPlus").replace("{h}", String(hours)));
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Simulation failed");
+      toast.error(e instanceof Error ? e.message : t("dashboard.simulationFailed"));
     } finally {
       setBusyId(null);
     }
@@ -659,19 +659,18 @@ function CommissionerView({
 }
 
 function CouncillorView({ complaints, wardMap }: { complaints: Complaint[]; wardMap: Map<string, Ward> }) {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const active = complaints.filter((c) => c.status !== "resolved");
   const resolved = complaints.filter((c) => c.status === "resolved");
 
   return (
     <div className="space-y-4">
       <p className="civic-card p-3 text-xs text-muted-foreground">
-        Read-only constituency view for council session auditing. Councillors cannot reassign officers or edit
-        ticket state.
+        {t("dashboard.councillorReadOnly")}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Stat label="Active in constituency" value={active.length} icon={Activity} />
-        <Stat label="Closed this cycle" value={resolved.length} icon={ShieldCheck} />
+        <Stat label={t("dashboard.activeInConstituency")} value={active.length} icon={Activity} />
+        <Stat label={t("dashboard.closedThisCycle")} value={resolved.length} icon={ShieldCheck} />
       </div>
       {complaints.map((c) => (
         <article key={c.id} className="civic-card grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-3">
