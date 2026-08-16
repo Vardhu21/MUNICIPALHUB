@@ -31,7 +31,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   },
   loader: async ({ location }) => {
     const authorizationId = new URLSearchParams(location.search).get("authorization_id") ?? "";
-    const { data, error } = await oauthApi().getAuthorizationDetails(authorizationId);
+    const { data, error } = await oauthApi.getAuthorizationDetails(authorizationId);
     if (error) throw new Error(error.message);
     const immediate = data?.redirect_url ?? data?.redirect_to;
     if (immediate && !data?.client) throw redirect({ href: immediate });
@@ -70,8 +70,8 @@ function ConsentPage() {
     setBusy(approve ? "approve" : "deny");
     setError(null);
     const result = approve
-      ? await oauthApi().approveAuthorization(authorizationId)
-      : await oauthApi().denyAuthorization(authorizationId);
+      ? await oauthApi.approveAuthorization(authorizationId)
+      : await oauthApi.denyAuthorization(authorizationId);
     if (result.error) {
       setBusy(null);
       setError(result.error.message);
