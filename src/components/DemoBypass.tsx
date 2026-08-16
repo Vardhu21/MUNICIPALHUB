@@ -41,6 +41,9 @@ export function DemoBypass({ returnTo }: { returnTo?: string }) {
   const { t } = useLang();
   const [busy, setBusy] = useState<AppRole | null>(null);
 
+  // Never expose one-click privileged sign-in outside local development.
+  if (!import.meta.env.DEV) return null;
+
   const enter = async (p: DemoPersona) => {
     setBusy(p.role);
     try {

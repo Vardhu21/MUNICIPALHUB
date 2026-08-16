@@ -10,9 +10,13 @@ export const Route = createFileRoute("/api/public/hooks/workflow-sweep")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey") ?? "";
-        const expected = process.env["SUPABASE_ANON_KEY"] ?? process.env["SUPABASE_PUBLISHABLE_KEY"] ?? "";
-        if (!expected || apikey !== expected) {
+        // Server-only shared secret. The public anon/publishable key is NOT
+        // acceptable here — it ships in every client bundle.
+        const provided =
+          request.headers.get("x-cron-secret") ??
+          (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+        const expected = process.env["CRON_SECRET"] ?? "";
+        if (!expected || provided !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
 
