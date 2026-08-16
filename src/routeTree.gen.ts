@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ReportRouteImport } from './routes/report'
@@ -46,6 +47,11 @@ const AuthRoute = AuthRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DirectoryRoute = DirectoryRouteImport.update({
+  id: '/directory',
+  path: '/directory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/directory': typeof DirectoryRoute
   '/feed': typeof FeedRoute
   '/mcp': typeof McpRoute
   '/report': typeof ReportRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/directory': typeof DirectoryRoute
   '/feed': typeof FeedRoute
   '/mcp': typeof McpRoute
   '/report': typeof ReportRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/directory': typeof DirectoryRoute
   '/feed': typeof FeedRoute
   '/mcp': typeof McpRoute
   '/report': typeof ReportRoute
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/dashboard'
+    | '/directory'
     | '/feed'
     | '/mcp'
     | '/report'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/dashboard'
+    | '/directory'
     | '/feed'
     | '/mcp'
     | '/report'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/dashboard'
+    | '/directory'
     | '/feed'
     | '/mcp'
     | '/report'
@@ -253,6 +265,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  DirectoryRoute: typeof DirectoryRoute
   FeedRoute: typeof FeedRoute
   McpRoute: typeof McpRoute
   ReportRoute: typeof ReportRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/directory': {
+      id: '/directory'
+      path: '/directory'
+      fullPath: '/directory'
+      preLoaderRoute: typeof DirectoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -405,6 +425,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  DirectoryRoute: DirectoryRoute,
   FeedRoute: FeedRoute,
   McpRoute: McpRoute,
   ReportRoute: ReportRoute,

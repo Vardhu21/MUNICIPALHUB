@@ -122,6 +122,7 @@ const SYSTEM = `You are the Civic Voice Assistant embedded in "TN SmartMunicipal
 - The application's database is the only source of truth for councillor names, officer names, ward numbers, phone numbers, complaint statuses, SLA deadlines, department assignments and emergency alerts.
 - NEVER invent or guess any of those. If the specific record was not supplied to you in this conversation, say clearly that the information is not available in the portal right now and point the user to the page where it can be looked up.
 - Never claim a complaint has been submitted, assigned, escalated or resolved unless the user's messages show the app actually completed it.
+- When an "OFFICIAL DIRECTORY RECORDS" block is supplied, it comes straight from the portal database (Greater Chennai Corporation official dataset). Answer ward / zone / councillor / mayor / commissioner / contact questions ONLY from that block, quote names and numbers exactly, and if a field says "not on record" say so plainly instead of substituting a name.
 
 === ANSWER RULES ===
 - Be concise: 2-4 sentences, plain text, no markdown.
@@ -144,6 +145,17 @@ export const askAssistant = createServerFn({ method: "POST" })
     const empty = { text: "", refs: [] as ReferenceKey[], action: "none" as ActionKey };
     const key = process.env.GEMINI_API_KEY;
     const gatewayKey = process.env.LOVABLE_API_KEY;
+
+    // Database-first grounding: fetch only the directory rows this question needs.
+    let directory: string | null = null;
+    try {
+      const lastUser = [...data.messages].reverse().find((m) => m.role === "user")?.text ?? "";
+      const { lookupDirectory } = await import("./directory.server");
+      directory = await lookupDirectory(lastUser);
+    } catch (e) {
+      console.error("directory lookup failed", e);
+    }
+    const grounding = directory ? `\n\n=== OFFICIAL DIRECTORY RECORDS (from database) ===\n${directory}` : "";
 
     const parseResult = (raw: string) => {
       let parsed: { text?: string; refs?: string[]; action?: string } = {};
@@ -176,7 +188,7 @@ export const askAssistant = createServerFn({ method: "POST" })
             messages: [
               {
                 role: "system",
-                content: `${SYSTEM}\n\nCurrent language: ${data.lang}\n\nReturn ONLY a JSON object: {"text": string, "refs": string[], "action": string}. refs entries must come from: ${REF_KEYS.join(", ")}. action must be one of: ${ACTION_KEYS.join(", ")}.`,
+                content: `${SYSTEM}${grounding}\n\nCurrent language: ${data.lang}\n\nReturn ONLY a JSON object: {"text": string, "refs": string[], "action": string}. refs entries must come from: ${REF_KEYS.join(", ")}. action must be one of: ${ACTION_KEYS.join(", ")}.`,
               },
               ...data.messages.map((m) => ({
                 role: m.role === "user" ? ("user" as const) : ("assistant" as const),
@@ -209,7 +221,7 @@ export const askAssistant = createServerFn({ method: "POST" })
           headers: { "Content-Type": "application/json", "x-goog-api-key": key },
           body: JSON.stringify({
             systemInstruction: {
-              parts: [{ text: `${SYSTEM}\n\nCurrent language: ${data.lang}` }],
+              parts: [{ text: `${SYSTEM}${grounding}\n\nCurrent language: ${data.lang}` }],
             },
             contents: data.messages.map((m) => ({
               role: m.role === "user" ? "user" : "model",
