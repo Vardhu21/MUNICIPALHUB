@@ -10,7 +10,7 @@ export function TamilNaduMap({
     <svg viewBox="0 0 300 420" className={className} role="img" aria-label="Map of Tamil Nadu">
       <defs>
         <linearGradient id="tn-fill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.55" />
+          <stop offset="0%" stopColor="#3F3F3F" stopOpacity="0.35" />
           <stop offset="100%" stopColor="#909090" stopOpacity="0.55" />
         </linearGradient>
         <filter id="tn-glow" x="-40%" y="-40%" width="180%" height="180%">
