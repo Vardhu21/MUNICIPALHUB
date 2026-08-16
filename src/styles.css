@@ -132,18 +132,18 @@
   button,
   [role="button"] {
     transition:
-      transform 520ms var(--ease-scoop),
-      filter 520ms var(--ease-soft),
-      background-color 520ms var(--ease-soft),
-      border-color 520ms var(--ease-soft),
-      color 520ms var(--ease-soft),
-      opacity 520ms var(--ease-soft),
-      box-shadow 520ms var(--ease-soft);
+      transform 200ms var(--ease-scoop),
+      filter 200ms var(--ease-soft),
+      background-color 200ms var(--ease-soft),
+      border-color 200ms var(--ease-soft),
+      color 200ms var(--ease-soft),
+      opacity 200ms var(--ease-soft),
+      box-shadow 200ms var(--ease-soft);
   }
 
   button:not(:disabled):hover,
   [role="button"]:not([aria-disabled="true"]):hover {
-    transform: translateY(-1.5px);
+    transform: translateY(-1px);
     filter: brightness(1.08);
   }
 
@@ -176,8 +176,8 @@
 
 @utility grid-noise {
   background-image:
-    linear-gradient(to right, oklch(1 0 0 / 0.07) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(1 0 0 / 0.07) 1px, transparent 1px);
+    linear-gradient(to right, oklch(0.24 0 0 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.24 0 0 / 0.07) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
@@ -191,15 +191,15 @@
 /* Physical button feedback: hover lift, press compression, soft release */
 @utility btn-physical {
   transition:
-    transform 520ms var(--ease-scoop),
-    filter 520ms var(--ease-soft),
-    background-color 520ms var(--ease-soft),
-    border-color 520ms var(--ease-soft),
-    box-shadow 520ms var(--ease-soft);
+    transform 200ms var(--ease-scoop),
+    filter 200ms var(--ease-soft),
+    background-color 200ms var(--ease-soft),
+    border-color 200ms var(--ease-soft),
+    box-shadow 200ms var(--ease-soft);
   will-change: transform;
 
   &:hover {
-    transform: translateY(-1.5px);
+    transform: translateY(-1px);
     filter: brightness(1.08);
   }
 
@@ -249,10 +249,10 @@
 }
 
 .animate-scoop-in {
-  animation: scoop-in 1100ms var(--ease-scoop) both;
+  animation: scoop-in 420ms var(--ease-scoop) both;
 }
 .animate-scoop-out {
-  animation: scoop-out 620ms var(--ease-soft) both;
+  animation: scoop-out 240ms var(--ease-soft) both;
 }
 
 @keyframes portal-zoom {
@@ -302,10 +302,10 @@
 }
 
 .animate-portal-zoom {
-  animation: portal-zoom 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: portal-zoom 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .animate-atmos-fade {
-  animation: atmos-fade 2.4s ease-out forwards;
+  animation: atmos-fade 1.6s ease-out forwards;
 }
 .animate-pulse-ring {
   animation: pulse-ring 2s ease-out infinite;
