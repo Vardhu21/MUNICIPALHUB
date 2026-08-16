@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import emblem from "@/assets/tn-emblem.png";
 
 const SESSION_KEY = "tnsm-intro-played";
 
@@ -160,6 +161,13 @@ export function CinematicIntro() {
           branding ? "opacity-100" : "opacity-0"
         }`}
       >
+        <img
+          src={emblem}
+          alt="Government of Tamil Nadu emblem"
+          className={`h-24 w-24 object-contain transition-all duration-700 sm:h-32 sm:w-32 ${
+            branding ? "scale-100 opacity-100" : "scale-90 opacity-0"
+          }`}
+        />
         <p className="text-[10px] uppercase tracking-[0.42em] text-muted-foreground">Tamil Nadu · MAWS</p>
         <h1 className="text-center text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">
           Smart Municipality
