@@ -143,14 +143,14 @@
   button:not(:disabled):hover,
   [role="button"]:not([aria-disabled="true"]):hover {
     transform: translateY(-1px);
-    filter: brightness(1.08);
+    filter: brightness(1.03);
   }
 
   button:not(:disabled):active,
   [role="button"]:not([aria-disabled="true"]):active {
-    transform: translateY(1px) scale(0.974);
-    filter: brightness(0.94);
-    transition-duration: 120ms;
+    transform: translateY(0) scale(0.985);
+    filter: brightness(0.96);
+    transition-duration: 140ms;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -170,7 +170,30 @@
 @utility civic-card {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out);
+}
+
+/* Selective high-priority dark surface */
+@utility card-dark {
+  background-color: #111111;
+  color: #F5F5F5;
+  border: 1px solid #222222;
+  border-radius: var(--radius-2xl);
+}
+
+@utility hover-lift {
+  transition:
+    transform 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevated);
+  }
 }
 
 @utility grid-noise {
@@ -199,7 +222,7 @@
 
   &:hover {
     transform: translateY(-1px);
-    filter: brightness(1.08);
+    filter: brightness(1.03);
   }
 
   &:active {
@@ -209,49 +232,19 @@
   }
 }
 
-@keyframes scoop-in {
+@keyframes page-in {
   0% {
     opacity: 0;
-    transform: translate3d(0, 26px, 0) scale(0.985) rotate(-0.35deg);
-    filter: blur(10px);
-    clip-path: ellipse(120% 0% at 50% 100%);
-  }
-  55% {
-    opacity: 1;
-    filter: blur(2px);
-    clip-path: ellipse(150% 90% at 50% 70%);
-  }
-  80% {
-    transform: translate3d(0, -3px, 0) scale(1.004) rotate(0.08deg);
+    transform: translate3d(0, 10px, 0) scale(0.995);
   }
   100% {
     opacity: 1;
     transform: none;
-    filter: blur(0);
-    clip-path: ellipse(220% 200% at 50% 50%);
   }
 }
 
-@keyframes scoop-out {
-  0% {
-    opacity: 1;
-    transform: none;
-    filter: blur(0);
-    clip-path: ellipse(220% 200% at 50% 50%);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(0, -18px, 0) scale(0.99) rotate(0.4deg);
-    filter: blur(8px);
-    clip-path: ellipse(140% 0% at 50% 0%);
-  }
-}
-
-.animate-scoop-in {
-  animation: scoop-in 420ms var(--ease-scoop) both;
-}
-.animate-scoop-out {
-  animation: scoop-out 240ms var(--ease-soft) both;
+.animate-page-in {
+  animation: page-in 420ms var(--ease-out) both;
 }
 
 @keyframes portal-zoom {
@@ -321,19 +314,14 @@
     animation: none !important;
   }
 
-  .animate-scoop-in,
-  .animate-scoop-out {
-    animation: fade-in 180ms ease-out both !important;
-    clip-path: none !important;
-    filter: none !important;
+  .animate-page-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
-  .btn-physical {
-    transition-duration: 120ms !important;
-
-    &:hover,
-    &:active {
-      transform: none;
-    }
+  .civic-card,
+  .hover-lift {
+    transition: none !important;
   }
 }
