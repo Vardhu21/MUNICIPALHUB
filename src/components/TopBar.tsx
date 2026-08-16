@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { IdCard, Languages, LogOut, Menu, ShieldCheck, UserRound, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLang } from "@/lib/i18n";
 import { OFFICER_ROLES, ROLE_LABEL, useAuthorizedRole, type AppRole } from "@/lib/session";
 import { supabase } from "@/integrations/supabase/client";
@@ -174,7 +174,7 @@ export function TopBar() {
       {open && (
         <div className="space-y-2 border-t border-border px-4 py-3 lg:hidden">
           <nav className="grid gap-1">
-            {NAV.map((n) => (
+            {visibleNav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
