@@ -33,7 +33,7 @@ export const Route = createFileRoute("/report")({
 });
 
 function ReportPage() {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const navigate = useNavigate();
   const { user } = useSession();
   const { fix } = useGeolocation(true);
@@ -60,10 +60,10 @@ function ReportPage() {
 
 
   const submit = async () => {
-    if (!user) return toast.error("Sign in with DigiLocker verification before reporting.");
-    if (!capture) return toast.error("A live geotagged capture is required.");
-    if (title.trim().length < 6) return toast.error("Give the issue a clear title (min 6 characters).");
-    if (description.trim().length < 12) return toast.error("Describe the issue in a little more detail.");
+    if (!user) return toast.error(t("report.error.signInRequired"));
+    if (!capture) return toast.error(t("report.error.captureRequired"));
+    if (title.trim().length < 6) return toast.error(t("report.error.titleMin"));
+    if (description.trim().length < 12) return toast.error(t("report.error.descriptionMin"));
 
     setBusy(true);
     try {
@@ -73,8 +73,8 @@ function ReportPage() {
         .eq("id", user.id)
         .maybeSingle();
 
-      if (!profile?.digilocker_verified) throw new Error("DigiLocker verification required to publish.");
-      if (profile.frozen) throw new Error("Your account is frozen pending a fraud investigation.");
+      if (!profile?.digilocker_verified) throw new Error(t("report.error.digilockerRequired"));
+      if (profile.frozen) throw new Error(t("report.error.accountFrozen"));
 
       const { data, error } = await supabase
         .from("complaints")
@@ -109,10 +109,10 @@ function ReportPage() {
           `Reverse-geocoded to ${ward ? `Ward ${ward.ward_number}, ${ward.ulb_name_en}` : "nearest ULB"} · assigned to ${sla.fieldTier.en} with a ${sla.hours}h SLA.`,
         );
       }
-      toast.success("Grievance published to the public feed");
+      toast.success(t("report.toast.published"));
       navigate({ to: "/feed" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Submission failed");
+      toast.error(e instanceof Error ? e.message : t("report.error.submissionFailed"));
     } finally {
       setBusy(false);
     }
@@ -123,12 +123,8 @@ function ReportPage() {
       <TopBar />
       <main className="mx-auto max-w-2xl space-y-4 px-4 py-5">
         <div>
-          <h1 className="text-xl font-bold">{lang === "ta" ? "புகார் அளி" : "Report an issue"}</h1>
-          <p className="text-sm text-muted-foreground">
-            {lang === "ta"
-              ? "நேரடி கேமரா படம் மட்டுமே ஏற்கப்படும். கேலரி பதிவேற்றம் நிராகரிக்கப்படும்."
-              : "Live camera evidence only. Gallery uploads and spoofed GPS are rejected by the EXIF inspector."}
-          </p>
+          <h1 className="text-xl font-bold">{t("report.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("report.subtitle")}</p>
         </div>
 
         <section className="civic-card space-y-3 p-4">
@@ -141,21 +137,21 @@ function ReportPage() {
               />
               <p className="flex items-center gap-2 text-xs font-semibold text-success">
                 <CheckCircle2 className="size-4 shrink-0" />
-                Authentic capture accepted · {capture.lat.toFixed(6)}, {capture.lng.toFixed(6)}
+                {t("report.captureAccepted")} · {capture.lat.toFixed(6)}, {capture.lng.toFixed(6)}
               </p>
               <button
                 onClick={() => setCapture(null)}
                 className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold"
               >
-                Retake capture
+                {t("report.retakeCapture")}
               </button>
             </div>
           ) : (
             <GeoCamera
               wardLabel={
-                ward ? `Ward ${ward.ward_number} · ${ward.ward_name_en}` : "Ward: resolving from GPS…"
+                ward ? `Ward ${ward.ward_number} · ${ward.ward_name_en}` : t("report.wardResolvingGps")
               }
-              zoneLabel={ward ? `${ward.ulb_name_en} · ${ward.zone}` : "Zone: resolving…"}
+              zoneLabel={ward ? `${ward.ulb_name_en} · ${ward.zone}` : t("report.zoneResolving")}
               onCapture={setCapture}
             />
           )}
@@ -165,7 +161,7 @@ function ReportPage() {
           <div className="flex items-start gap-2 rounded-lg border border-primary/40 bg-primary/10 p-3 text-xs">
             <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
             <span className="min-w-0">
-              <strong className="block">Auto reverse-geocoded ULB routing</strong>
+              <strong className="block">{t("report.autoRouting")}</strong>
               {ward ? (
                 <>
                   {lang === "ta" ? ward.ulb_name_ta : ward.ulb_name_en} ·{" "}
@@ -173,13 +169,13 @@ function ReportPage() {
                   {lang === "ta" ? ward.ward_name_ta : ward.ward_name_en}) · {ward.zone}
                 </>
               ) : (
-                "Waiting for a GPS fix to resolve your ward…"
+                t("report.waitingGpsFix")
               )}
             </span>
           </div>
 
           <label className="block space-y-1.5">
-            <span className="text-xs font-semibold text-muted-foreground">Category</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t("report.category")}</span>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
@@ -196,7 +192,7 @@ function ReportPage() {
           <div className={`space-y-1.5 rounded-lg border p-3 text-xs ${BAND_TONE[assessment.band]}`}>
             <p className="flex items-center gap-2 font-semibold">
               <ShieldAlert className="size-4 shrink-0" />
-              AI health-impact triage · {BAND_LABEL[assessment.band][lang]} ({assessment.score}/100)
+              {t("report.aiTriage")} · {BAND_LABEL[assessment.band][lang]} ({assessment.score}/100)
             </p>
             <ul className="ml-6 list-disc space-y-0.5 opacity-90">
               {assessment.reasons.map((r) => (
@@ -204,15 +200,14 @@ function ReportPage() {
               ))}
             </ul>
             <p className="opacity-80">
-              Auto-assigned {sla.hours}h SLA · first responder {sla.fieldTier[lang]} · escalates to{" "}
-              {sla.escalateTo[lang]}. You cannot set priority — the algorithm ranks health and odour
-              hazards first.
+              {t("report.autoAssignedSla")} {sla.hours}h SLA · {t("report.firstResponder")} {sla.fieldTier[lang]} · {t("report.escalatesTo")}{" "}
+              {sla.escalateTo[lang]}. {t("report.autoAssignedNote")}
             </p>
           </div>
 
 
           <label className="block space-y-1.5">
-            <span className="text-xs font-semibold text-muted-foreground">Title</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t("report.titleLabel")}</span>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -222,7 +217,7 @@ function ReportPage() {
           </label>
 
           <label className="block space-y-1.5">
-            <span className="text-xs font-semibold text-muted-foreground">Description</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t("report.descriptionLabel")}</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -233,7 +228,7 @@ function ReportPage() {
           </label>
 
           <label className="block space-y-1.5">
-            <span className="text-xs font-semibold text-muted-foreground">Street / landmark (optional)</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t("report.streetLabel")}</span>
             <input
               value={street}
               onChange={(e) => setStreet(e.target.value)}
@@ -247,7 +242,7 @@ function ReportPage() {
             disabled={busy || !capture}
             className="w-full rounded-xl bg-success px-4 py-3 text-sm font-semibold text-success-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {busy ? "Publishing…" : "Publish grievance"}
+            {busy ? t("report.publishing") : t("report.publishButton")}
           </button>
         </section>
       </main>

@@ -18,10 +18,10 @@ const NAV: { to: string; key: "feed" | "report" | "dashboard" | "analytics" | "o
 ];
 
 type NavKey = "feed" | "report" | "dashboard" | "analytics" | "officer" | "reports";
-function navLabel(key: NavKey, lang: "en" | "ta", t: (k: "feed" | "report" | "dashboard") => string) {
-  if (key === "analytics") return lang === "ta" ? "பகுப்பாய்வு" : "Analytics";
-  if (key === "reports") return lang === "ta" ? "அறிக்கைகள்" : "Reports";
-  if (key === "officer") return lang === "ta" ? "அலுவலர்" : "Officer";
+function navLabel(key: NavKey, t: (k: string) => string) {
+  if (key === "analytics") return t("nav.analytics");
+  if (key === "reports") return t("nav.reports");
+  if (key === "officer") return t("nav.officer");
   return t(key);
 }
 
@@ -92,7 +92,7 @@ export function TopBar() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {navLabel(n.key, lang, t)}
+                {navLabel(n.key, t)}
               </Link>
             ))}
           </nav>
@@ -103,7 +103,7 @@ export function TopBar() {
             <div
               className="hidden overflow-hidden rounded-lg border border-primary/40 bg-primary/5 text-[11px] font-semibold sm:flex"
               role="group"
-              aria-label="Persona"
+              aria-label={t("nav.persona")}
             >
               <button
                 onClick={() => setRole(trueOfficerRole)}
@@ -111,7 +111,7 @@ export function TopBar() {
                   !inCitizenPersona ? "bg-primary text-primary-foreground" : "text-primary hover:bg-primary/10"
                 }`}
               >
-                <ShieldCheck className="size-3.5" /> Officer
+                <ShieldCheck className="size-3.5" /> {t("nav.officerPersona")}
               </button>
               <button
                 onClick={() => setRole("citizen")}
@@ -119,7 +119,7 @@ export function TopBar() {
                   inCitizenPersona ? "bg-primary text-primary-foreground" : "text-primary hover:bg-primary/10"
                 }`}
               >
-                <UserRound className="size-3.5" /> Citizen
+                <UserRound className="size-3.5" /> {t("nav.citizenPersona")}
               </button>
             </div>
           )}
@@ -147,10 +147,10 @@ export function TopBar() {
           {trueOfficerRole && (
             <button
               onClick={() => setBadgeOpen(true)}
-              aria-label="View Officer ID Badge"
+              aria-label={t("nav.viewBadge")}
               className="hidden items-center gap-1 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-[11px] font-semibold text-primary hover:bg-primary/15 sm:flex"
             >
-              <IdCard className="size-3.5" /> ID Badge
+              <IdCard className="size-3.5" /> {t("nav.idBadge")}
             </button>
           )}
 
@@ -176,7 +176,7 @@ export function TopBar() {
 
           <button
             onClick={() => setOpen((o) => !o)}
-            aria-label="Menu"
+            aria-label={t("nav.menu")}
             className="rounded-lg border border-border bg-card p-2 lg:hidden"
           >
             {open ? <X className="size-4" /> : <Menu className="size-4" />}
@@ -194,7 +194,7 @@ export function TopBar() {
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
               >
-                {navLabel(n.key, lang, t)}
+                {navLabel(n.key, t)}
               </Link>
             ))}
           </nav>
@@ -205,7 +205,7 @@ export function TopBar() {
                 className="flex items-center justify-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"
               >
                 {inCitizenPersona ? <ShieldCheck className="size-3.5" /> : <UserRound className="size-3.5" />}
-                Switch to {inCitizenPersona ? "Officer" : "Citizen"} persona
+                {t("nav.switchPersona")} · {inCitizenPersona ? t("nav.officerPersona") : t("nav.citizenPersona")}
               </button>
               <button
                 onClick={() => {
@@ -214,7 +214,7 @@ export function TopBar() {
                 }}
                 className="flex items-center justify-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"
               >
-                <IdCard className="size-3.5" /> ID Badge
+                <IdCard className="size-3.5" /> {t("nav.idBadge")}
               </button>
             </div>
           )}

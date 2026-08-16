@@ -54,7 +54,7 @@ export const Route = createFileRoute("/officer/")({
 });
 
 function OfficerWorkspace() {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const { user, loading: sessionLoading } = useSession();
   const navigate = useNavigate();
 
@@ -129,9 +129,9 @@ function OfficerWorkspace() {
       const updated = await fastForward(c, 1);
       setComplaints((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
       if (updated.status !== c.status) {
-        toast.error(`Auto-escalated — reassigned to ${updated.assigned_officer ?? "next tier"}`);
+        toast.error(`${t("officer.autoEscalated")} ${updated.assigned_officer ?? t("officer.nextTier")}`);
       } else {
-        toast.info("SLA clock +1h");
+        toast.info(t("officer.slaClockPlusOne"));
       }
     } finally {
       setBusyId(null);
@@ -142,7 +142,7 @@ function OfficerWorkspace() {
     patch(
       c,
       { resolution_photo_url: cap.dataUrl, status: "verification" },
-      "Resolution proof uploaded — moved to dual verification",
+      t("officer.proofUploadedNote"),
     );
     setProofFor(null);
   };
@@ -152,7 +152,7 @@ function OfficerWorkspace() {
       <div className="min-h-screen bg-background">
         <TopBar />
         <main className="mx-auto max-w-6xl px-4 py-6">
-          <p className="text-sm text-muted-foreground">Redirecting to officer sign-in…</p>
+          <p className="text-sm text-muted-foreground">{t("officer.redirecting")}</p>
         </main>
       </div>
     );
@@ -165,7 +165,7 @@ function OfficerWorkspace() {
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <h1 className="flex items-center gap-2 truncate text-xl font-bold">
-              <HardHat className="size-5 shrink-0 text-primary" /> Officer workspace
+              <HardHat className="size-5 shrink-0 text-primary" /> {t("officer.workspace")}
             </h1>
             <p className="truncate text-xs text-muted-foreground">
               {officerName} · <MapPin className="inline size-3" /> {wardLabel(officerWard, lang)}
@@ -175,15 +175,15 @@ function OfficerWorkspace() {
             to="/analytics"
             className="shrink-0 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-secondary"
           >
-            <BarChart3 className="mr-1.5 inline size-3.5" /> SLA analytics
+            <BarChart3 className="mr-1.5 inline size-3.5" /> {t("officer.slaAnalytics")}
           </Link>
         </header>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <Stat label="My ward tasks" value={queue.length} icon={Activity} />
-          <Stat label="SLA breaches" value={breachedCount} icon={AlertTriangle} />
+          <Stat label={t("officer.myWardTasks")} value={queue.length} icon={Activity} />
+          <Stat label={t("officer.slaBreaches")} value={breachedCount} icon={AlertTriangle} />
           <Stat
-            label="Awaiting verification"
+            label={t("officer.awaitingVerification")}
             value={complaints.filter((c) => c.status === "verification" && c.ward_id === officerWardId).length}
             icon={ShieldCheck}
           />
@@ -192,34 +192,30 @@ function OfficerWorkspace() {
         <p className="civic-card flex items-start gap-2 border-warning/40 p-3 text-xs">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
           <span>
-            <strong>AI health-impact ranking.</strong> Citizens no longer choose a priority. Tickets are
-            ordered by an algorithm that puts odour, sewage, stagnant water and rotting-waste hazards
-            first — even the smallest issue that harms residents' health appears at the top.
+            <strong>{t("officer.aiRankingTitle")}</strong> {t("officer.aiRankingBody")}
           </span>
         </p>
 
         <p className="civic-card flex items-start gap-2 p-3 text-xs">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />
-          <span>
-            Citizen legal names and phone numbers are shielded. All contact runs through masked VoIP relays.
-          </span>
+          <span>{t("officer.maskedContactNotice")}</span>
         </p>
 
 
-        {loading && <EmblemLoader label="Loading ward queue…" />}
+        {loading && <EmblemLoader label={t("officer.loadingQueue")} />}
 
         {!loading && queue.length === 0 && (
           <p className="civic-card p-6 text-center text-sm text-muted-foreground">
-            No active tickets in your assigned ward. Check the{" "}
+            {t("officer.emptyQueuePrefix")}{" "}
             <Link to="/analytics" className="text-primary underline">
-              analytics dashboard
+              {t("officer.emptyQueueLink")}
             </Link>{" "}
-            for department performance.
+            {t("officer.emptyQueueSuffix")}
           </p>
         )}
 
         {queue.map((c, i) => {
-          const t = triage(c);
+          const tri = triage(c);
           return (
           <article key={c.id} className="civic-card space-y-3 p-4">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
@@ -235,15 +231,15 @@ function OfficerWorkspace() {
               <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <StatusPill status={c.status} />
                 <span
-                  className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${BAND_TONE[t.band]}`}
+                  className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${BAND_TONE[tri.band]}`}
                 >
-                  {BAND_LABEL[t.band][lang]} · {t.score}
+                  {BAND_LABEL[tri.band][lang]} · {tri.score}
                 </span>
               </div>
             </div>
 
             <p className="rounded-lg border border-border bg-secondary/40 p-2 text-[11px] text-muted-foreground">
-              <strong className="text-foreground">Why this rank:</strong> {t.reasons.join(" · ")}
+              <strong className="text-foreground">{t("officer.whyThisRank")}</strong> {tri.reasons.join(" · ")}
             </p>
 
             <SlaBar
@@ -263,10 +259,10 @@ function OfficerWorkspace() {
             <div className="flex flex-wrap gap-2">
               {c.status === "assigned" && (
                 <button
-                  onClick={() => patch(c, { status: "in_progress" }, "Work started on site")}
+                  onClick={() => patch(c, { status: "in_progress" }, t("officer.startWorkNote"))}
                   className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
                 >
-                  Start work
+                  {t("officer.startWork")}
                 </button>
               )}
               {c.status !== "verification" && c.status !== "resolved" && (
@@ -274,44 +270,44 @@ function OfficerWorkspace() {
                   onClick={() => setProofFor(c)}
                   className="rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-success-foreground"
                 >
-                  Upload completion proof
+                  {t("officer.uploadProof")}
                 </button>
               )}
               <button
                 onClick={() => setCalling(c)}
                 className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
               >
-                <PhoneCall className="size-3.5" /> Call complainant (masked)
+                <PhoneCall className="size-3.5" /> {t("officer.callComplainant")}
               </button>
               <button
                 onClick={() => advance(c)}
                 disabled={busyId === c.id}
                 className="flex items-center gap-1.5 rounded-lg border border-warning/50 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning disabled:opacity-50"
               >
-                <FastForward className="size-3.5" /> +1h
+                <FastForward className="size-3.5" /> {t("officer.plusOneHour")}
               </button>
               <Link
                 to="/track/$id"
                 params={{ id: c.id }}
                 className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
               >
-                Tracking page
+                {t("officer.trackingPage")}
               </Link>
             </div>
 
             {proofFor?.id === c.id && (
               <div className="space-y-2 rounded-lg border border-border p-3">
-                <p className="text-xs font-semibold">Geotagged completion proof</p>
+                <p className="text-xs font-semibold">{t("officer.geotaggedProof")}</p>
                 <GeoCamera
                   wardLabel={wardLabel(c.ward_id ? wardMap.get(c.ward_id) : undefined, "en")}
-                  zoneLabel="Officer completion capture"
+                  zoneLabel={t("officer.completionCapture")}
                   onCapture={(cap) => submitProof(c, cap)}
                 />
                 <button
                   onClick={() => setProofFor(null)}
                   className="w-full rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
                 >
-                  Cancel
+                  {t("action.cancel")}
                 </button>
               </div>
             )}

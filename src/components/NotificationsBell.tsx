@@ -17,7 +17,7 @@ type Notif = {
 
 export function NotificationsBell() {
   const { user } = useSession();
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const [items, setItems] = useState<Notif[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -72,7 +72,7 @@ export function NotificationsBell() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label={lang === "ta" ? "அறிவிப்புகள்" : "Notifications"}
+        aria-label={t("nav.notifications")}
         className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-foreground"
       >
         <Bell className="size-4" />
@@ -93,7 +93,7 @@ export function NotificationsBell() {
           <div className="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-card shadow-xl">
             <div className="flex items-center justify-between border-b border-border px-3 py-2">
               <p className="text-sm font-bold">
-                {lang === "ta" ? "அறிவிப்புகள்" : "Notifications"}
+                {t("nav.notifications")}
                 {unread > 0 && <span className="ml-1 text-muted-foreground">({unread})</span>}
               </p>
               <div className="flex items-center gap-1">
@@ -102,11 +102,11 @@ export function NotificationsBell() {
                   disabled={unread === 0}
                   className="rounded px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-40"
                 >
-                  {lang === "ta" ? "அனைத்தையும் படித்ததாக" : "Mark all read"}
+                  {t("notif.markAllRead")}
                 </button>
                 <button
                   onClick={() => setOpen(false)}
-                  aria-label="Close"
+                  aria-label={t("action.close")}
                   className="rounded p-1 text-muted-foreground hover:text-foreground"
                 >
                   <X className="size-3.5" />
@@ -116,7 +116,7 @@ export function NotificationsBell() {
             <div className="max-h-[70vh] overflow-y-auto">
               {items.length === 0 && (
                 <p className="p-6 text-center text-xs text-muted-foreground">
-                  {lang === "ta" ? "இதுவரை அறிவிப்புகள் இல்லை." : "No notifications yet."}
+                  {t("notif.empty")}
                 </p>
               )}
               {items.map((n) => (
@@ -143,7 +143,7 @@ export function NotificationsBell() {
                           }}
                           className="font-semibold text-primary hover:underline"
                         >
-                          Download →
+                          {t("notif.download")}
                         </Link>
                       )}
                       {!n.read_at && (
@@ -151,7 +151,7 @@ export function NotificationsBell() {
                           onClick={() => markRead(n.id)}
                           className="font-semibold text-primary hover:underline"
                         >
-                          Mark read
+                          {t("notif.markRead")}
                         </button>
                       )}
                     </div>

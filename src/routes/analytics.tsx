@@ -64,7 +64,7 @@ type Scope = "ward" | "department" | "officer";
 const CHART_COLORS = ["#6C4CE8", "#5635C9", "#8163EE", "#9B85F0", "#B29FF4", "#C3B4F7", "#D6CCF9", "#E7E0FC"];
 
 function AnalyticsPage() {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +89,7 @@ function AnalyticsPage() {
   const officerRows = useMemo(() => byOfficer(complaints), [complaints]);
 
   const activeRows = scope === "ward" ? wardRows : scope === "department" ? deptRows : officerRows;
-  const scopeLabel = scope === "ward" ? "Ward" : scope === "department" ? "Department" : "Officer";
+  const scopeLabel = scope === "ward" ? t("analytics.scopeWard") : scope === "department" ? t("analytics.scopeDepartment") : t("analytics.scopeOfficer");
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,40 +98,38 @@ function AnalyticsPage() {
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <h1 className="flex items-center gap-2 truncate text-xl font-bold">
-              <BarChart3 className="size-5 shrink-0 text-primary" /> SLA analytics & oversight
+              <BarChart3 className="size-5 shrink-0 text-primary" /> {t("analytics.title")}
             </h1>
             <p className="truncate text-xs text-muted-foreground">
-              {lang === "ta"
-                ? "வார்டு, துறை மற்றும் அலுவலர் அடிப்படையிலான செயல்திறன் அறிக்கை"
-                : "Commissioner-grade compliance reporting across wards, departments and officers"}
+              {t("analytics.subtitle")}
             </p>
           </div>
           <Link
             to="/dashboard"
             className="shrink-0 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-secondary"
           >
-            Back to console
+            {t("analytics.backToConsole")}
           </Link>
         </header>
 
-        {loading && <p className="text-sm text-muted-foreground">Aggregating tickets…</p>}
+        {loading && <p className="text-sm text-muted-foreground">{t("analytics.aggregating")}</p>}
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Kpi label="Total tickets" value={stats.total} icon={Activity} />
+          <Kpi label={t("analytics.totalTickets")} value={stats.total} icon={Activity} />
           <Kpi
-            label="SLA compliance"
+            label={t("analytics.slaCompliance")}
             value={`${stats.slaCompliancePct}%`}
             icon={Timer}
             tone={stats.slaCompliancePct >= 75 ? "success" : stats.slaCompliancePct >= 50 ? "warning" : "danger"}
           />
           <Kpi
-            label="Escalation rate"
+            label={t("analytics.escalationRate")}
             value={`${stats.total ? Math.round((stats.escalated / stats.total) * 100) : 0}%`}
             icon={AlertTriangle}
             tone={stats.escalated > 0 ? "danger" : "success"}
           />
           <Kpi
-            label="Avg resolution"
+            label={t("analytics.avgResolution")}
             value={stats.avgResolutionHours == null ? "—" : `${stats.avgResolutionHours.toFixed(1)}h`}
             icon={Trophy}
           />
@@ -140,9 +138,9 @@ function AnalyticsPage() {
         <div className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-card p-1">
           {(
             [
-              { s: "ward" as const, label: "By Ward", icon: Building2 },
-              { s: "department" as const, label: "By Department", icon: BarChart3 },
-              { s: "officer" as const, label: "By Officer", icon: HardHat },
+              { s: "ward" as const, label: t("analytics.byWard"), icon: Building2 },
+              { s: "department" as const, label: t("analytics.byDepartment"), icon: BarChart3 },
+              { s: "officer" as const, label: t("analytics.byOfficer"), icon: HardHat },
             ]
           ).map(({ s, label, icon: Icon }) => (
             <button
@@ -158,7 +156,7 @@ function AnalyticsPage() {
         </div>
 
         <ChartCard
-          title={`SLA compliance % — by ${scopeLabel.toLowerCase()}`}
+          title={`${t("analytics.slaComplianceChartTitle")} ${scopeLabel.toLowerCase()}`}
           filename={`sla-compliance-by-${scope}`}
           rows={activeRows}
         >
@@ -170,7 +168,7 @@ function AnalyticsPage() {
                   <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#6F6B78" }} angle={-25} textAnchor="end" height={70} interval={0} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#6F6B78" }} />
                   <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid #E7E3F0", color: "#17151C" }} />
-                  <Bar dataKey="slaCompliancePct" name="SLA %" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="slaCompliancePct" name={t("analytics.slaPct")} radius={[4, 4, 0, 0]}>
                     {activeRows.slice(0, 12).map((r, i) => (
                       <Cell
                         key={r.key}
@@ -187,7 +185,7 @@ function AnalyticsPage() {
 
         <div className="grid gap-5 lg:grid-cols-2">
           <ChartCard
-            title="Avg resolution time (hours)"
+            title={t("analytics.avgResolutionChartTitle")}
             filename={`avg-resolution-by-${scope}`}
             rows={activeRows}
           >
@@ -206,7 +204,7 @@ function AnalyticsPage() {
             )}
           </ChartCard>
 
-          <ChartCard title="Ticket volume distribution" filename={`volume-by-${scope}`} rows={activeRows}>
+          <ChartCard title={t("analytics.volumeChartTitle")} filename={`volume-by-${scope}`} rows={activeRows}>
             {(ref) => (
               <div ref={ref} className="bg-card p-2">
                 <ResponsiveContainer width="100%" height={280}>
@@ -233,7 +231,7 @@ function AnalyticsPage() {
           </ChartCard>
         </div>
 
-        <Leaderboard title={`${scopeLabel} performance leaderboard`} rows={activeRows} scope={scope} />
+        <Leaderboard title={`${scopeLabel} ${t("analytics.leaderboardTitle")}`} rows={activeRows} scope={scope} />
       </main>
     </div>
   );
@@ -282,6 +280,7 @@ function ChartCard({
   rows: BucketMetrics[];
   children: (ref: React.RefObject<HTMLDivElement | null>) => React.ReactNode;
 }) {
+  const { t } = useLang();
   const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -294,9 +293,9 @@ function ChartCard({
       a.href = dataUrl;
       a.download = `${filename}.png`;
       a.click();
-      toast.success("Chart exported");
+      toast.success(t("analytics.chartExported"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Export failed");
+      toast.error(e instanceof Error ? e.message : t("analytics.exportFailed"));
     } finally {
       setBusy(false);
     }
@@ -311,7 +310,7 @@ function ChartCard({
     a.download = `${filename}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("CSV exported");
+    toast.success(t("analytics.csvExported"));
   };
 
   return (
@@ -324,13 +323,13 @@ function ChartCard({
             disabled={busy}
             className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-secondary disabled:opacity-50"
           >
-            <FileImage className="size-3.5" /> PNG
+            <FileImage className="size-3.5" /> {t("analytics.png")}
           </button>
           <button
             onClick={downloadCsv}
             className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-secondary"
           >
-            <Download className="size-3.5" /> CSV
+            <Download className="size-3.5" /> {t("analytics.csv")}
           </button>
         </div>
       </div>
@@ -348,6 +347,7 @@ function Leaderboard({
   rows: BucketMetrics[];
   scope: Scope;
 }) {
+  const { t } = useLang();
   const ranked = useMemo(
     () =>
       [...rows]
@@ -365,7 +365,7 @@ function Leaderboard({
     a.download = `leaderboard-${scope}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Leaderboard exported");
+    toast.success(t("analytics.leaderboardExported"));
   };
 
   return (
@@ -378,22 +378,22 @@ function Leaderboard({
           onClick={downloadCsv}
           className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-secondary"
         >
-          <Download className="size-3.5" /> Export CSV
+          <Download className="size-3.5" /> {t("analytics.exportCsv")}
         </button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-xs">
           <thead className="bg-secondary/50 text-muted-foreground">
             <tr>
-              <th className="px-3 py-2 font-semibold">Rank</th>
+              <th className="px-3 py-2 font-semibold">{t("analytics.rank")}</th>
               <th className="px-3 py-2 font-semibold">
-                {scope === "ward" ? "Ward" : scope === "department" ? "Department" : "Officer"}
+                {scope === "ward" ? t("analytics.scopeWard") : scope === "department" ? t("analytics.scopeDepartment") : t("analytics.scopeOfficer")}
               </th>
-              <th className="px-3 py-2 text-right font-semibold">Tickets</th>
-              <th className="px-3 py-2 text-right font-semibold">SLA %</th>
-              <th className="px-3 py-2 text-right font-semibold">Avg hrs</th>
-              <th className="px-3 py-2 text-right font-semibold">Escal %</th>
-              <th className="px-3 py-2 text-right font-semibold">Breached</th>
+              <th className="px-3 py-2 text-right font-semibold">{t("analytics.tickets")}</th>
+              <th className="px-3 py-2 text-right font-semibold">{t("analytics.slaPct")}</th>
+              <th className="px-3 py-2 text-right font-semibold">{t("analytics.avgHrs")}</th>
+              <th className="px-3 py-2 text-right font-semibold">{t("analytics.escalPct")}</th>
+              <th className="px-3 py-2 text-right font-semibold">{t("analytics.breached")}</th>
             </tr>
           </thead>
           <tbody>
@@ -427,7 +427,7 @@ function Leaderboard({
             {ranked.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
-                  No data yet.
+                  {t("analytics.noDataYet")}
                 </td>
               </tr>
             )}

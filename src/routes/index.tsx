@@ -58,7 +58,7 @@ function Portal() {
             <button
               onClick={replay}
               className="mx-auto flex size-20 items-center justify-center rounded-2xl border border-border bg-card p-2 transition-transform hover:scale-105 lg:mx-0"
-              aria-label="Replay portal animation"
+              aria-label={t("auth.replayAnimation")}
             >
               <img src={emblem} alt="TN SmartMunicipality emblem" width={512} height={512} className="size-full object-contain" />
             </button>
@@ -71,9 +71,7 @@ function Portal() {
                 </span>
               </h1>
               <p className="mx-auto max-w-md text-sm text-muted-foreground lg:mx-0">
-                {lang === "ta"
-                  ? "செயற்கைக்கோள் பார்வையிலிருந்து உங்கள் தெரு வரை — புவிக்குறியிட்ட புகார்கள், அநாமதேய அடையாளம், தானியங்கி SLA மேல்முறையீடு."
-                  : "From satellite view down to your street — tamper-proof geotagged grievances, pseudonymous citizen identity, and an SLA daemon that escalates on its own."}
+                {t("home.tagline")}
               </p>
             </div>
 
@@ -94,13 +92,13 @@ function Portal() {
 
             <div className="grid gap-3 sm:grid-cols-3">
               {[
-                { icon: ShieldCheck, en: "Zero-knowledge identity", ta: "அடையாள மறைப்பு" },
-                { icon: Radar, en: "Anti-spoof geotag camera", ta: "போலி எதிர்ப்பு கேமரா" },
-                { icon: Timer, en: "Automatic SLA escalation", ta: "தானியங்கி SLA" },
+                { icon: ShieldCheck, key: "home.feature.zeroKnowledge" },
+                { icon: Radar, key: "home.feature.antiSpoofCamera" },
+                { icon: Timer, key: "home.feature.autoSla" },
               ].map((f) => (
-                <div key={f.en} className="civic-card flex items-center gap-2 p-3 text-left">
+                <div key={f.key} className="civic-card flex items-center gap-2 p-3 text-left">
                   <f.icon className="size-4 shrink-0 text-primary" />
-                  <span className="min-w-0 text-xs font-semibold">{lang === "ta" ? f.ta : f.en}</span>
+                  <span className="min-w-0 text-xs font-semibold">{t(f.key)}</span>
                 </div>
               ))}
             </div>

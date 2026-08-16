@@ -46,7 +46,7 @@ type ReportRow = {
 };
 
 function ReportsArchive() {
-  const { lang } = useLang();
+  const { t } = useLang();
   const { user, loading: sessionLoading } = useSession();
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,7 +84,7 @@ function ReportsArchive() {
     a.download = `sla-${scope}-${new Date(report.created_at).toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("CSV downloaded");
+    toast.success(t("reports.csvDownloaded"));
   };
 
   const runNow = async () => {
@@ -100,12 +100,12 @@ function ReportsArchive() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
-      toast.success("Report generated", {
-        description: `Notified ${json.notified ?? 0} commissioners`,
+      toast.success(t("reports.reportGenerated"), {
+        description: `${t("reports.notifiedCommissioners")} ${json.notified ?? 0} ${t("reports.commissioners")}`,
       });
       await load();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to run scheduler");
+      toast.error(e instanceof Error ? e.message : t("reports.schedulerFailed"));
     } finally {
       setTriggering(false);
     }
@@ -117,9 +117,9 @@ function ReportsArchive() {
         <TopBar />
         <main className="mx-auto max-w-3xl px-4 py-8">
           <p className="civic-card p-6 text-sm text-muted-foreground">
-            Sign in as a commissioner to view scheduled SLA reports.{" "}
+            {t("reports.signInPrompt")}{" "}
             <Link to="/officer/login" className="text-primary underline">
-              Officer sign-in
+              {t("reports.officerSignIn")}
             </Link>
           </p>
         </main>
@@ -135,12 +135,10 @@ function ReportsArchive() {
           <div className="min-w-0">
             <h1 className="flex items-center gap-2 truncate text-xl font-bold">
               <FileSpreadsheet className="size-5 shrink-0 text-primary" />{" "}
-              {lang === "ta" ? "SLA அறிக்கை காப்பகம்" : "SLA report archive"}
+              {t("reports.archiveTitle")}
             </h1>
             <p className="truncate text-xs text-muted-foreground">
-              {lang === "ta"
-                ? "தானியங்கி SLA டைஜெஸ்ட் — ஆணையர் மட்டுமே"
-                : "Auto-generated SLA digests · commissioner access only"}
+              {t("reports.archiveSubtitle")}
             </p>
           </div>
           <button
@@ -149,29 +147,25 @@ function ReportsArchive() {
             className="shrink-0 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50"
           >
             <RefreshCw className={`size-3.5 ${triggering ? "animate-spin" : ""}`} />
-            {triggering ? "Running…" : "Run now"}
+            {triggering ? t("reports.running") : t("reports.runNow")}
           </button>
         </header>
 
         <p className="civic-card flex items-start gap-2 p-3 text-xs">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />
-          <span>
-            The scheduler runs daily at 06:00 IST via pg_cron. Commissioners receive an in-app{" "}
-            <Bell className="inline size-3" /> notification with a link to each digest.
-          </span>
+          <span>{t("reports.schedulerNotice")}</span>
         </p>
 
         {denied && (
           <p className="civic-card border-destructive/40 p-4 text-sm text-destructive">
-            Your role cannot access SLA reports. Only commissioners, zonal assistant commissioners and admins are
-            permitted.
+            {t("reports.accessDenied")}
           </p>
         )}
 
-        {loading && <EmblemLoader label="Loading archive…" />}
+        {loading && <EmblemLoader label={t("reports.loadingArchive")} />}
         {!loading && !denied && rows.length === 0 && (
           <p className="civic-card p-6 text-center text-sm text-muted-foreground">
-            No reports generated yet. Click <b>Run now</b> or wait for the next scheduled window.
+            {t("reports.emptyPrefix")} <b>{t("reports.runNowBold")}</b> {t("reports.emptySuffix")}
           </p>
         )}
 
@@ -182,7 +176,7 @@ function ReportsArchive() {
                 <div className="min-w-0">
                   <h2 className="truncate text-sm font-bold">{r.period_label}</h2>
                   <p className="truncate text-[11px] text-muted-foreground">
-                    Generated {new Date(r.created_at).toLocaleString()} · {r.generated_by}
+                    {t("reports.generated")} {new Date(r.created_at).toLocaleString()} · {r.generated_by}
                   </p>
                 </div>
                 <span
@@ -199,15 +193,15 @@ function ReportsArchive() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <Kpi label="Tickets" value={r.total_tickets} />
-                <Kpi label="Resolved" value={r.resolved_tickets} tone="success" />
-                <Kpi label="Escalated" value={r.escalated_tickets} tone="warning" />
-                <Kpi label="Breached" value={r.breached_tickets} tone="danger" />
+                <Kpi label={t("reports.kpiTickets")} value={r.total_tickets} />
+                <Kpi label={t("reports.kpiResolved")} value={r.resolved_tickets} tone="success" />
+                <Kpi label={t("reports.kpiEscalated")} value={r.escalated_tickets} tone="warning" />
+                <Kpi label={t("reports.kpiBreached")} value={r.breached_tickets} tone="danger" />
               </div>
 
               {r.avg_resolution_hours != null && (
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Timer className="size-3.5" /> Avg resolution {r.avg_resolution_hours}h
+                  <Timer className="size-3.5" /> {t("reports.avgResolution")} {r.avg_resolution_hours}h
                 </p>
               )}
 
@@ -218,7 +212,7 @@ function ReportsArchive() {
                     onClick={() => download(r, s)}
                     className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-secondary"
                   >
-                    <Download className="size-3.5" /> {s.charAt(0).toUpperCase() + s.slice(1)} CSV
+                    <Download className="size-3.5" /> {s === "ward" ? t("reports.downloadWard") : s === "department" ? t("reports.downloadDepartment") : t("reports.downloadOfficer")}
                   </button>
                 ))}
               </div>
