@@ -114,12 +114,6 @@ function AuthPage() {
       .catch(() => undefined);
   }, []);
 
-  useEffect(() => {
-    // Only auto-forward when the user was sent here by a protected route.
-    if (!user || !next) return;
-    window.location.replace(next);
-  }, [user, next]);
-
   const switchAccount = async () => {
     setBusy(true);
     try {
@@ -329,10 +323,9 @@ function AuthPage() {
           </section>
         ) : null}
 
-        {import.meta.env.DEV ? <DemoBypass returnTo={next} /> : null}
+        {!user && import.meta.env.DEV ? <DemoBypass returnTo={next} /> : null}
 
-        <div className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-card p-1">
-
+        {!user ? <div className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-card p-1">
           {(["signup", "signin"] as const).map((m) => (
             <button
               key={m}
@@ -348,9 +341,9 @@ function AuthPage() {
               {m === "signup" ? t("auth.registerViaDigilocker") : t("signIn")}
             </button>
           ))}
-        </div>
+        </div> : null}
 
-        {mode === "signin" ? (
+        {!user && mode === "signin" ? (
           <section className="civic-card space-y-3 p-4">
             <Field
               icon={IdCard}
@@ -369,7 +362,7 @@ function AuthPage() {
             </button>
             <p className="text-[11px] text-muted-foreground">{t("auth.officerIfhrmsNote")}</p>
           </section>
-        ) : (
+        ) : !user ? (
           <>
             <ol className="grid grid-cols-4 gap-1.5">
               {(detected === "officer"
@@ -581,7 +574,7 @@ function AuthPage() {
               </section>
             )}
           </>
-        )}
+        ) : null}
       </div>
       <VoiceAssistant />
     </main>
