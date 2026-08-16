@@ -226,9 +226,9 @@
   }
 
   &:active {
-    transform: translateY(1px) scale(0.972);
-    filter: brightness(0.94);
-    transition-duration: 120ms;
+    transform: translateY(0) scale(0.985);
+    filter: brightness(0.96);
+    transition-duration: 140ms;
   }
 }
 
