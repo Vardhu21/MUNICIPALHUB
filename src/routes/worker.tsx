@@ -7,7 +7,7 @@ import { TopBar } from "@/components/TopBar";
 import { EmblemLoader } from "@/components/EmblemLoader";
 import { RoleGate } from "@/components/RoleGate";
 import { DeliveryTracker } from "@/components/DeliveryTracker";
-import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { useLang } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { readExifGps } from "@/lib/exif";

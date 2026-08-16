@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { TopBar } from "@/components/TopBar";
-import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { WardAuthorityCard } from "@/components/WardAuthorityCard";
 import { EmblemLoader } from "@/components/EmblemLoader";
 import { useLang } from "@/lib/i18n";
