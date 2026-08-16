@@ -128,7 +128,7 @@ function TrackPage() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">{c.description}</p>
-              {c.photo_url && <img src={c.photo_url} alt="" className="w-full rounded-lg" />}
+              {c.photo_url && <img src={c.photo_url} alt={c.title} className="w-full rounded-lg" />}
               <SlaBar
                 createdAt={c.created_at}
                 priority={c.priority}
@@ -141,7 +141,13 @@ function TrackPage() {
               <section className="civic-card space-y-3 p-4">
                 <h2 className="text-sm font-bold">{t("track.regionalVote")}</h2>
                 <p className="text-xs text-muted-foreground">{t("track.regionalVoteDesc")}</p>
-                {c.resolution_photo_url && <img src={c.resolution_photo_url} alt="" className="w-full rounded-lg" />}
+                {c.resolution_photo_url && (
+                  <img
+                    src={c.resolution_photo_url}
+                    alt={`Resolution evidence image for ${c.title}`}
+                    className="w-full rounded-lg"
+                  />
+                )}
                 <div className="flex gap-2">
                   <button onClick={() => vote(true)} className="flex-1 rounded-lg bg-success px-3 py-2 text-xs font-semibold text-success-foreground">
                     {t("track.worksMatches")}
