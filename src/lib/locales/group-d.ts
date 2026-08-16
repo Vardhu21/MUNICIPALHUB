@@ -184,4 +184,12 @@ export const groupd: Locale = {
   "intro.skip": { en: "Skip intro", ta: "அறிமுகத்தைத் தவிர்" },
   "intro.ariaZoom": { en: "Zooming from India to Tamil Nadu", ta: "இந்தியாவிலிருந்து தமிழ்நாடு நோக்கி பெரிதாக்கம்" },
   "intro.emblemAlt": { en: "Government of Tamil Nadu emblem", ta: "தமிழ்நாடு அரசு சின்னம்" },
+  "landing.tagline": { en: "Your City. Your Voice. Your Solution.", ta: "உங்கள் நகரம். உங்கள் குரல். உங்கள் தீர்வு." },
+  "landing.skip": { en: "Skip", ta: "தவிர்" },
+  "landing.citizenCentric": { en: "Citizen Centric", ta: "குடிமகன் மையமாக" },
+  "landing.citizenCentricSub": { en: "People First", ta: "மக்கள் முதலில்" },
+  "landing.smartSolutions": { en: "Smart Solutions", ta: "ஸ்மார்ட் தீர்வுகள்" },
+  "landing.smartSolutionsSub": { en: "Technology Led", ta: "தொழில்நுட்ப வழிகாட்டல்" },
+  "landing.transparent": { en: "Transparent", ta: "வெளிப்படைத்தன்மை" },
+  "landing.transparentSub": { en: "Open & Accountable", ta: "திறந்த மற்றும் பொறுப்புள்ள" },
 };
