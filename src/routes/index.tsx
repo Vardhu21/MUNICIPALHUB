@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "preload", as: "image", href: heroAsset.url, fetchpriority: "high" },
+      { rel: "preload", as: "image", href: heroAsset.url, fetchPriority: "high" },
     ],
   }),
   component: Portal,
