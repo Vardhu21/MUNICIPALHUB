@@ -74,7 +74,7 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       `${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST`,
     ];
     rows.forEach((r, i) => ctx.fillText(r, pad, h - line * 3.5 + i * line));
-    ctx.fillStyle = "#8A8A8A";
+    ctx.fillStyle = "#6C4CE8";
     ctx.fillRect(w - pad - line * 5.4, h - line * 4.2, line * 5.4, line * 0.95);
     ctx.fillStyle = "#F8FAFC";
     ctx.font = `700 ${line * 0.5}px system-ui, sans-serif`;

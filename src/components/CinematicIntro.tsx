@@ -66,7 +66,7 @@ export function CinematicIntro() {
       }`}
       role="presentation"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,#3A3A3A18,transparent_62%),radial-gradient(circle_at_50%_95%,#3A3A3A10,transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,#6C4CE822,transparent_62%),radial-gradient(circle_at_50%_95%,#6C4CE814,transparent_55%)]" />
       <div className="grid-noise pointer-events-none absolute inset-0 opacity-[0.14]" />
 
       <svg
@@ -76,12 +76,12 @@ export function CinematicIntro() {
       >
         <defs>
           <linearGradient id="ci-india" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#3F3F3F" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#9A9A9A" stopOpacity="0.22" />
+            <stop offset="0%" stopColor="#9B85F0" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#C3B4F7" stopOpacity="0.22" />
           </linearGradient>
           <linearGradient id="ci-tn" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#2B2B2B" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#6E6E6E" stopOpacity="0.9" />
+            <stop offset="0%" stopColor="#6C4CE8" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#5635C9" stopOpacity="0.9" />
           </linearGradient>
           <filter id="ci-glow" x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="6" result="b" />
@@ -104,7 +104,7 @@ export function CinematicIntro() {
           <path
             d={INDIA_D}
             fill="url(#ci-india)"
-            stroke="#8A8A8A"
+            stroke="#C3B4F7"
             strokeWidth={zooming ? 0.9 : 2}
             strokeLinejoin="round"
             style={{ transition: "stroke-width 2.6s ease" }}
@@ -113,7 +113,7 @@ export function CinematicIntro() {
             d={TN_D}
             filter="url(#ci-glow)"
             fill={stage === "wide" ? "transparent" : "url(#ci-tn)"}
-            stroke="#1F1F1F"
+            stroke="#5635C9"
             strokeWidth={zooming ? 0.7 : 1.4}
             strokeLinejoin="round"
             style={{ transition: "fill 1.2s ease, stroke-width 2.6s ease" }}
@@ -124,7 +124,7 @@ export function CinematicIntro() {
               cy={TN_CY}
               r="26"
               fill="none"
-              stroke="#1F1F1F"
+              stroke="#5635C9"
               strokeWidth="0.8"
               className="animate-pulse-ring"
               style={{ transformBox: "fill-box", transformOrigin: "center" }}
