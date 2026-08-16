@@ -66,7 +66,14 @@ function Portal() {
         role="img"
         aria-label="Ripon Building, Greater Chennai Corporation headquarters"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/40" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/40 to-black/45" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 55% at 50% 45%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.32) 55%, transparent 85%)",
+        }}
+      />
 
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-6">
         <header
@@ -81,7 +88,10 @@ function Portal() {
               height={512}
               className="size-8 object-contain drop-shadow-md sm:size-10"
             />
-            <p className="text-[11px] font-medium uppercase leading-tight tracking-[0.11em] text-white sm:text-[13px] sm:leading-snug">
+            <p
+              className="text-[11px] font-semibold uppercase leading-tight tracking-[0.11em] text-white sm:text-[13px] sm:leading-snug"
+              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.55)" }}
+            >
               <span className="block">Department of Municipal</span>
               <span className="block">Administration & Water Supply</span>
             </p>
@@ -107,10 +117,16 @@ function Portal() {
 
         <div className="flex flex-1 flex-col items-center justify-center gap-6 py-10 text-center">
           <div className="space-y-4" style={fadeUp(120)}>
-            <h1 className="text-4xl font-semibold leading-tight tracking-tight text-white drop-shadow-sm sm:text-6xl">
+            <h1
+              className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-6xl"
+              style={{ textShadow: "0 2px 14px rgba(0,0,0,0.65)" }}
+            >
               TN Smart Municipality
             </h1>
-            <p className="text-lg font-normal text-white/90 sm:text-2xl">
+            <p
+              className="text-lg font-medium text-white/95 sm:text-2xl"
+              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.55)" }}
+            >
               Your City. Your Voice. Your Solution.
             </p>
           </div>
@@ -135,7 +151,8 @@ function Portal() {
 
           <button
             onClick={() => enter("/auth")}
-            className="text-sm text-white/65 underline decoration-white/40 decoration-1 underline-offset-6 transition-colors hover:text-white"
+            className="text-sm font-medium text-white/80 underline decoration-white/50 decoration-1 underline-offset-6 transition-colors hover:text-white"
+            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.45)" }}
             style={fadeUp(320)}
           >
             Skip
@@ -143,7 +160,7 @@ function Portal() {
         </div>
 
         <div
-          className="mb-4 grid grid-cols-1 gap-3 rounded-2xl border border-white/15 bg-black/25 p-4 backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-white/15 sm:p-5"
+          className="mb-4 grid grid-cols-1 gap-3 rounded-2xl border border-white/15 bg-black/30 p-4 backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-white/15 sm:p-5"
           style={fadeUp(400)}
         >
           {[
@@ -166,3 +183,4 @@ function Portal() {
     </main>
   );
 }
+
