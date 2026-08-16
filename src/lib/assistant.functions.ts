@@ -25,7 +25,7 @@ export const REFERENCES = {
   },
   policy_anonymity: {
     to: "/dashboard",
-    label: { en: "Zero-knowledge anonymity & judicial subpoena policy", ta: "அநாமதேய & நீதிமன்ற உத்தரவு கொள்கை" },
+    label: { en: "Zero-knowledge citizen anonymity policy", ta: "அநாமதேய கொள்கை" },
   },
   policy_geotag: {
     to: "/report",

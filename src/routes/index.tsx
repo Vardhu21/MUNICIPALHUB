@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Geotagged grievance reporting with anonymous citizen identity, SLA-driven auto-escalation and judicial oversight for Tamil Nadu urban local bodies.",
+          "Geotagged grievance reporting with anonymous citizen identity, SLA-driven auto-escalation and transparent ward accountability for Tamil Nadu urban local bodies.",
       },
       { property: "og:title", content: "TN SmartMunicipality — Civic Escalation Portal" },
       {
