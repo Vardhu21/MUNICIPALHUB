@@ -14,7 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 import { CinematicIntro } from "@/components/CinematicIntro";
-import { ScoopTransition } from "@/components/ScoopTransition";
+import { PageTransition } from "@/components/PageTransition";
 
 function NotFoundComponent() {
   return (
@@ -123,9 +123,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <ScoopTransition>
+        <PageTransition>
           <Outlet />
-        </ScoopTransition>
+        </PageTransition>
         <CinematicIntro />
         <Toaster position="top-center" richColors />
       </LanguageProvider>

@@ -47,7 +47,6 @@ export const DICT: Dict = {
   capture: { en: "Capture geotagged photo", ta: "புவிக்குறியிட்ட படம் எடு" },
   emergencyBanner: { en: "Emergency hazard near you", ta: "உங்கள் அருகில் அவசர அபாயம்" },
   verifiedResident: { en: "ZKP Ward Resident Token", ta: "ZKP வார்டு குடியிருப்பாளர் அடையாளம்" },
-  judicial: { en: "Judicial Court Subpoena Decryption", ta: "நீதிமன்ற உத்தரவு அடையாள மறைநீக்கம்" },
   voiceAssist: { en: "Civic Voice Assistant", ta: "குடிமை குரல் உதவியாளர்" },
 };
 

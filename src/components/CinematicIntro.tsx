@@ -18,7 +18,7 @@ const TN_D = `M184.2 574.0 L196.7 569.5 L211.1 544.7 L219.4 533.4 L248.4 531.1 L
 const TN_CX = 215;
 const TN_CY = 592;
 
-type Stage = "wide" | "zoom" | "highlight" | "out";
+type Stage = "wide" | "zoom" | "highlight" | "brand" | "out";
 
 export function CinematicIntro() {
   const [visible, setVisible] = useState(false);
@@ -36,9 +36,10 @@ export function CinematicIntro() {
     document.body.style.overflow = "hidden";
     const timers = [
       setTimeout(() => setStage("zoom"), 900),
-      setTimeout(() => setStage("highlight"), 3500),
-      setTimeout(() => setStage("out"), 5400),
-      setTimeout(() => finish(), 6200),
+      setTimeout(() => setStage("highlight"), 3300),
+      setTimeout(() => setStage("brand"), 5100),
+      setTimeout(() => setStage("out"), 6600),
+      setTimeout(() => finish(), 7200),
     ];
     return () => {
       timers.forEach(clearTimeout);
@@ -56,6 +57,7 @@ export function CinematicIntro() {
 
   const zooming = stage !== "wide";
   const scale = stage === "wide" ? 1 : stage === "zoom" ? 4.2 : 5.4;
+  const branding = stage === "brand" || stage === "out";
 
   return (
     <div
@@ -144,13 +146,27 @@ export function CinematicIntro() {
             stage === "highlight" ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
           }`}
         >
-          <h2 className="bg-gradient-to-r from-primary to-success bg-clip-text text-3xl font-extrabold text-transparent sm:text-4xl">
+          <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
             TAMIL NADU
           </h2>
           <p className="mt-1 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
             11.13° N · 78.66° E — Urban Local Bodies
           </p>
         </div>
+      </div>
+
+      <div
+        className={`pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/85 backdrop-blur-sm transition-opacity duration-700 ${
+          branding ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <p className="text-[10px] uppercase tracking-[0.42em] text-muted-foreground">Tamil Nadu · MAWS</p>
+        <h1 className="text-center text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">
+          Smart Municipality
+        </h1>
+        <p className="max-w-md px-6 text-center text-sm text-muted-foreground">
+          Geotagged grievances · SLA-driven escalation · transparent ward accountability
+        </p>
       </div>
 
       <button

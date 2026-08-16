@@ -15,7 +15,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as McpRouteImport } from './routes/mcp'
-import { Route as OversightRouteImport } from './routes/oversight'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -55,11 +54,6 @@ const FeedRoute = FeedRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OversightRoute = OversightRouteImport.update({
-  id: '/oversight',
-  path: '/oversight',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportRoute = ReportRouteImport.update({
@@ -124,7 +118,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/mcp': typeof McpRoute
-  '/oversight': typeof OversightRoute
   '/report': typeof ReportRoute
   '/reports': typeof ReportsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -143,7 +136,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/mcp': typeof McpRoute
-  '/oversight': typeof OversightRoute
   '/report': typeof ReportRoute
   '/reports': typeof ReportsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -163,7 +155,6 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/mcp': typeof McpRoute
-  '/oversight': typeof OversightRoute
   '/report': typeof ReportRoute
   '/reports': typeof ReportsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -184,7 +175,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/mcp'
-    | '/oversight'
     | '/report'
     | '/reports'
     | '/.mcp/list-tools'
@@ -203,7 +193,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/mcp'
-    | '/oversight'
     | '/report'
     | '/reports'
     | '/.mcp/list-tools'
@@ -222,7 +211,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/mcp'
-    | '/oversight'
     | '/report'
     | '/reports'
     | '/.mcp/list-tools'
@@ -242,7 +230,6 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   FeedRoute: typeof FeedRoute
   McpRoute: typeof McpRoute
-  OversightRoute: typeof OversightRoute
   ReportRoute: typeof ReportRoute
   ReportsRoute: typeof ReportsRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -297,13 +284,6 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/oversight': {
-      id: '/oversight'
-      path: '/oversight'
-      fullPath: '/oversight'
-      preLoaderRoute: typeof OversightRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/report': {
@@ -386,7 +366,6 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   FeedRoute: FeedRoute,
   McpRoute: McpRoute,
-  OversightRoute: OversightRoute,
   ReportRoute: ReportRoute,
   ReportsRoute: ReportsRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
