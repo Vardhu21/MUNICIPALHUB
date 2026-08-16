@@ -83,6 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Department of Municipal Administration & Water Supply" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "google-site-verification", content: "UFd46WsYIUkjujuuwjRqOPQIfnlj1kCKyxHLqmsJZLM" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
