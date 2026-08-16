@@ -32,6 +32,8 @@ import {
   type Ward,
 } from "@/lib/data";
 import { EmblemLoader } from "@/components/EmblemLoader";
+import { CitizenVerificationPanel } from "@/components/CitizenVerificationPanel";
+import { LiveComplaintProgress } from "@/components/LiveComplaintProgress";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -245,6 +247,7 @@ function CitizenView({
         </span>
       </div>
 
+      <CitizenVerificationPanel />
       <h2 className="text-sm font-bold">{t("myGrievances")}</h2>
       {complaints.length === 0 && (
         <p className="civic-card p-6 text-center text-sm text-muted-foreground">
@@ -253,6 +256,7 @@ function CitizenView({
       )}
       {complaints.map((c) => (
         <TicketRow key={c.id} c={c} ward={c.ward_id ? wardMap.get(c.ward_id) : undefined}>
+          <LiveComplaintProgress complaintId={c.id} />
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setCalling(c)}
