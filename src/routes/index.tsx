@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { ArrowRight, Globe, ShieldCheck, Settings2, BarChart3, Users } from "lucide-react";
 import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { useLang } from "@/lib/i18n";
@@ -34,13 +35,7 @@ export const Route = createFileRoute("/")({
 function Portal() {
   const { t, lang, setLang } = useLang();
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
-
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setReady(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
 
   const enter = (to: string) => {
     if (leaving) return;
@@ -56,13 +51,16 @@ function Portal() {
     }, 600);
   };
 
-  const fadeUp = (delayMs: number) => ({
-    transitionProperty: "opacity, transform",
-    transitionDuration: "700ms",
-    transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
-    transitionDelay: `${delayMs}ms`,
-    opacity: ready ? 1 : 0,
-    transform: ready ? "translateY(0)" : "translateY(12px)",
+  // Content is visible by default; the entrance is a pure CSS animation so it
+  // never depends on JS state or hydration completing in production.
+  const fadeUp = (delayMs: number): React.CSSProperties => ({
+    opacity: 1,
+    transform: "translateY(0)",
+    animationName: "home-fade-up",
+    animationDuration: "700ms",
+    animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+    animationDelay: `${delayMs}ms`,
+    animationFillMode: "backwards",
   });
 
   return (
