@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -58,6 +58,12 @@ function Dashboard() {
   const { lang, t } = useLang();
   const { role, roles } = useAuthorizedRole();
   const { user } = useSession();
+  const navigate = useNavigate();
+
+  // Workers land on their field console; the citizen dashboard is not their home.
+  useEffect(() => {
+    if (role === "worker" && roles.includes("worker")) navigate({ to: "/worker", replace: true });
+  }, [role, roles, navigate]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
