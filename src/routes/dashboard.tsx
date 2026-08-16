@@ -21,6 +21,7 @@ import { useLang } from "@/lib/i18n";
 import { ROLE_LABEL, useActiveRole, useSession } from "@/lib/session";
 import { computeClock, SLA_MATRIX, TIER_LABEL, type Tier } from "@/lib/sla";
 import {
+import { EmblemLoader } from "@/components/EmblemLoader";
   applyEscalation,
   fastForward,
   fetchComplaints,
@@ -122,7 +123,7 @@ function Dashboard() {
           </span>
         </header>
 
-        {loading && <p className="text-sm text-muted-foreground">Loading console…</p>}
+        {loading && <EmblemLoader label="Loading console…" />}
 
         {role === "citizen" && (
           <CitizenView complaints={mine} wardMap={wardMap} onAdvance={advance} busyId={busyId} onPatch={patch} />

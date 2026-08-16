@@ -9,6 +9,7 @@ import { useSession } from "@/lib/session";
 import { issueWardToken } from "@/lib/civic.functions";
 import { applyEscalation, fetchComplaint, fetchEvents, type Complaint } from "@/lib/data";
 import type { Tier } from "@/lib/sla";
+import { EmblemLoader } from "@/components/EmblemLoader";
 
 export const Route = createFileRoute("/track/$id")({
   head: () => ({
@@ -108,7 +109,7 @@ function TrackPage() {
     <div className="min-h-screen bg-background">
       <TopBar />
       <main className="mx-auto max-w-2xl space-y-4 px-4 py-5">
-        {loading && <p className="text-sm text-muted-foreground">Loading ticket…</p>}
+        {loading && <EmblemLoader label="Loading ticket…" />}
         {!loading && !c && <p className="civic-card p-6 text-center text-sm">This tracking link is not valid.</p>}
 
         {c && (

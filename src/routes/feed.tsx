@@ -16,6 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { useGeolocation } from "@/lib/useGeolocation";
 import {
+import { EmblemLoader } from "@/components/EmblemLoader";
   applyEscalation,
   fastForward,
   fetchComplaints,
@@ -153,7 +154,7 @@ function Feed() {
           totalCount={complaints.length}
         />
 
-        {loading && <p className="text-sm text-muted-foreground">Loading grievances…</p>}
+        {loading && <EmblemLoader label="Loading grievances…" />}
         {!loading && visible.length === 0 && (
           <p className="civic-card p-6 text-center text-sm text-muted-foreground">
             {lang === "ta"

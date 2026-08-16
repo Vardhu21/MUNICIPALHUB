@@ -22,6 +22,7 @@ import { useLang } from "@/lib/i18n";
 import { useSession, writeActiveRole } from "@/lib/session";
 import { computeClock, type Tier } from "@/lib/sla";
 import {
+import { EmblemLoader } from "@/components/EmblemLoader";
   applyEscalation,
   fastForward,
   fetchComplaints,
@@ -205,7 +206,7 @@ function OfficerWorkspace() {
         </p>
 
 
-        {loading && <p className="text-sm text-muted-foreground">Loading ward queue…</p>}
+        {loading && <EmblemLoader label="Loading ward queue…" />}
 
         {!loading && queue.length === 0 && (
           <p className="civic-card p-6 text-center text-sm text-muted-foreground">
