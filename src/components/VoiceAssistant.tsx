@@ -61,7 +61,7 @@ const SCRIPT: {
       en: "Your legal identity is sealed — field engineers only see your pseudonym. Only a court subpoena with dual custody keys can unseal it, and every unseal is audit-logged.",
       ta: "உங்கள் உண்மையான அடையாளம் மறைக்கப்பட்டுள்ளது. இரட்டை பாதுகாப்பு சாவிகளுடன் நீதிமன்ற உத்தரவால் மட்டுமே திறக்க முடியும்.",
     },
-    refs: ["policy_anonymity", "page_oversight"],
+    refs: ["policy_anonymity"],
     action: "none",
   },
   {

@@ -24,7 +24,7 @@ export const REFERENCES = {
     label: { en: "GCC direct-secretariat routing rule", ta: "GCC நேரடி செயலகம் விதி" },
   },
   policy_anonymity: {
-    to: "/oversight",
+    to: "/dashboard",
     label: { en: "Zero-knowledge anonymity & judicial subpoena policy", ta: "அநாமதேய & நீதிமன்ற உத்தரவு கொள்கை" },
   },
   policy_geotag: {
@@ -49,7 +49,6 @@ export const REFERENCES = {
   page_officer: { to: "/officer", label: { en: "Officer task board", ta: "அதிகாரி பணிப் பலகை" } },
   page_analytics: { to: "/analytics", label: { en: "Commissioner SLA analytics", ta: "ஆணையர் SLA பகுப்பாய்வு" } },
   page_reports: { to: "/reports", label: { en: "Scheduled SLA reports archive", ta: "SLA அறிக்கை காப்பகம்" } },
-  page_oversight: { to: "/oversight", label: { en: "Judicial oversight console", ta: "நீதித்துறை மேற்பார்வை" } },
   page_auth: { to: "/auth", label: { en: "Identity verification gateway", ta: "அடையாள சரிபார்ப்பு" } },
 } as const;
 
@@ -65,7 +64,6 @@ export const ACTIONS = {
   verify_identity: { to: "/auth", label: { en: "Verify identity", ta: "அடையாளம் சரிபார்" } },
   officer_tasks: { to: "/officer", label: { en: "Open officer tasks", ta: "அதிகாரி பணிகள்" } },
   view_analytics: { to: "/analytics", label: { en: "Open SLA analytics", ta: "SLA பகுப்பாய்வு" } },
-  judicial_unseal: { to: "/oversight", label: { en: "Judicial unseal console", ta: "நீதித்துறை பலகை" } },
   none: { to: "", label: { en: "", ta: "" } },
 } as const;
 
@@ -82,7 +80,7 @@ const SYSTEM = `You are the Civic Voice Assistant embedded in "TN SmartMunicipal
 
 === ANONYMITY ===
 - Citizens are pseudonymous (e.g. @CivicGuard_42). Real name, Aadhaar and phone are sealed and never visible to field engineers, inspectors or councillors.
-- Only a judicial court subpoena, entered in the Judicial Oversight console with TWO dual-custody security keys, can unseal an identity; every unseal writes an immutable audit log.
+- Citizen legal identity stays sealed; officers only ever see the pseudonym.
 - Citizen↔officer phone calls are masked VoIP; no raw numbers are exchanged.
 
 === FILING A GRIEVANCE ===
@@ -111,7 +109,6 @@ const SYSTEM = `You are the Civic Voice Assistant embedded in "TN SmartMunicipal
 - /officer: ward-scoped task board, proof uploads, masked calls.
 - /analytics: commissioner SLA compliance, resolution time, volume charts by ward/department/officer, with CSV and PNG export.
 - /reports: archive of scheduled SLA reports generated daily at 06:00 IST and delivered to commissioners via the in-app notification bell.
-- /oversight: judicial subpoena decryption console.
 
 === ANSWER RULES ===
 - Reply in Tamil when lang=ta, otherwise English. Be concise: 2-4 sentences, plain text, no markdown.
