@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -18,7 +18,7 @@ import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { GeoCamera, type Capture } from "@/components/GeoCamera";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { ROLE_LABEL, useActiveRole, useSession } from "@/lib/session";
+import { ROLE_LABEL, useAuthorizedRole, useSession } from "@/lib/session";
 import { computeClock, SLA_MATRIX, TIER_LABEL, type Tier } from "@/lib/sla";
 import {
   applyEscalation,
@@ -56,8 +56,14 @@ export const Route = createFileRoute("/dashboard")({
 
 function Dashboard() {
   const { lang, t } = useLang();
-  const [role] = useActiveRole();
+  const { role, roles } = useAuthorizedRole();
   const { user } = useSession();
+  const navigate = useNavigate();
+
+  // Workers land on their field console; the citizen dashboard is not their home.
+  useEffect(() => {
+    if (role === "worker" && roles.includes("worker")) navigate({ to: "/worker", replace: true });
+  }, [role, roles, navigate]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);

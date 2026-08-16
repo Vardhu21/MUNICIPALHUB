@@ -35,6 +35,7 @@ import {
 import { EmblemLoader } from "@/components/EmblemLoader";
 import { AssignWorkerControl } from "@/components/AssignWorkerControl";
 import { OfficerVerificationQueue } from "@/components/OfficerVerificationQueue";
+import { RoleGate } from "@/components/RoleGate";
 
 export const Route = createFileRoute("/officer/")({
   head: () => ({
@@ -52,8 +53,16 @@ export const Route = createFileRoute("/officer/")({
       },
     ],
   }),
-  component: OfficerWorkspace,
+  component: OfficerRoute,
 });
+
+function OfficerRoute() {
+  return (
+    <RoleGate allow={["field_officer", "zonal_commissioner", "commissioner", "councillor", "admin"]}>
+      <OfficerWorkspace />
+    </RoleGate>
+  );
+}
 
 function OfficerWorkspace() {
   const { lang, t } = useLang();

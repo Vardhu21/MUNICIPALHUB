@@ -35,6 +35,13 @@ export const registerWorker = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const h = await import("./workflow.server");
     const sb = await h.admin();
+    // Authorization: only accounts already granted the `worker` role (or an
+    // officer/admin) may create a worker profile. Citizens cannot self-promote.
+    const { data: roleRows } = await sb.from("user_roles").select("role").eq("user_id", context.userId);
+    const held = (roleRows ?? []).map((r: { role: string }) => r.role);
+    if (!held.includes("worker") && !(await h.isOfficer(sb, context.userId))) {
+      throw new Error("Worker access required. Ask your ward officer to enrol you.");
+    }
     const { data: row, error } = await sb
       .from("workers")
       .upsert(

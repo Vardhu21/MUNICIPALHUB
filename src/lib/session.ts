@@ -8,7 +8,8 @@ export type AppRole =
   | "zonal_commissioner"
   | "commissioner"
   | "councillor"
-  | "admin";
+  | "admin"
+  | "worker";
 
 export const ROLE_LABEL: Record<AppRole, { en: string; ta: string }> = {
   citizen: { en: "Citizen", ta: "குடிமகன்" },
@@ -17,16 +18,28 @@ export const ROLE_LABEL: Record<AppRole, { en: string; ta: string }> = {
   commissioner: { en: "Corporation Commissioner (IAS)", ta: "மாநகராட்சி ஆணையர் (IAS)" },
   councillor: { en: "Ward Councillor", ta: "வார்டு கவுன்சிலர்" },
   admin: { en: "Portal Administrator", ta: "தள நிர்வாகி" },
+  worker: { en: "Municipal Worker", ta: "மாநகராட்சி பணியாளர்" },
 };
 
 export const ALL_ROLES: AppRole[] = [
   "citizen",
+  "worker",
   "field_officer",
   "zonal_commissioner",
   "commissioner",
   "councillor",
   "admin",
 ];
+
+export const OFFICER_ROLES: AppRole[] = [
+  "field_officer",
+  "zonal_commissioner",
+  "commissioner",
+  "councillor",
+  "admin",
+];
+
+export const isOfficerRole = (r: AppRole) => OFFICER_ROLES.includes(r);
 
 export type Profile = {
   id: string;
@@ -79,6 +92,60 @@ export function useActiveRole(): [AppRole, (r: AppRole) => void] {
   }, []);
 
   return [role, writeActiveRole];
+}
+
+/**
+ * Authorization source of truth: the roles actually granted to the signed-in
+ * user in Supabase (`public.user_roles`, protected by RLS). The UI role
+ * selector is only a *view* switch inside these roles — it can never grant
+ * permissions the account does not hold.
+ */
+export function useAuthorizedRole() {
+  const { user, loading: sessionLoading } = useSession();
+  const [stored, setStored] = useActiveRole();
+  const [granted, setGranted] = useState<AppRole[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) {
+      setGranted(sessionLoading ? null : ["citizen"]);
+      return;
+    }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const rows = (data ?? []).map((r) => r.role as AppRole).filter((r) => ALL_ROLES.includes(r));
+        setGranted(rows.length ? Array.from(new Set(["citizen", ...rows])) as AppRole[] : ["citizen"]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, sessionLoading]);
+
+  const roles: AppRole[] = granted ?? ["citizen"];
+  const role: AppRole = roles.includes(stored) ? stored : "citizen";
+
+  useEffect(() => {
+    if (granted && !granted.includes(stored)) writeActiveRole("citizen");
+  }, [granted, stored]);
+
+  const setRole = (next: AppRole) => {
+    if (!roles.includes(next)) return;
+    setStored(next);
+  };
+
+  return {
+    role,
+    setRole,
+    roles,
+    loading: sessionLoading || granted === null,
+    isWorker: roles.includes("worker"),
+    isOfficer: roles.some(isOfficerRole),
+    user,
+  };
 }
 
 /** Deterministic pseudonym suggestion, e.g. @CivicGuard_42 */

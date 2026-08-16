@@ -155,6 +155,7 @@ export const groupd: Locale = {
     ta: "ஒரு-தட்டல் டெமோ உள்நுழைவு. மதிப்பீட்டிற்காக மட்டும் ஆதார் / IFHRMS OTP இணைப்பைத் தவிர்க்கிறது.",
   },
   "demo.citizen": { en: "Citizen", ta: "குடிமகன்" },
+  "demo.worker": { en: "Municipal Worker", ta: "மாநகராட்சி பணியாளர்" },
   "demo.fieldOfficer": { en: "Field Officer", ta: "களப்பணி அலுவலர்" },
   "demo.zonalAc": { en: "Zonal AC", ta: "மண்டல உதவி ஆணையர்" },
   "demo.commissioner": { en: "Commissioner", ta: "ஆணையர்" },
