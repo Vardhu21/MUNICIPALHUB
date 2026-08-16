@@ -33,6 +33,8 @@ import {
   type Ward,
 } from "@/lib/data";
 import { EmblemLoader } from "@/components/EmblemLoader";
+import { AssignWorkerControl } from "@/components/AssignWorkerControl";
+import { OfficerVerificationQueue } from "@/components/OfficerVerificationQueue";
 
 export const Route = createFileRoute("/officer/")({
   head: () => ({
@@ -202,6 +204,8 @@ function OfficerWorkspace() {
         </p>
 
 
+        <OfficerVerificationQueue />
+
         {loading && <EmblemLoader label={t("officer.loadingQueue")} />}
 
         {!loading && queue.length === 0 && (
@@ -286,6 +290,7 @@ function OfficerWorkspace() {
               >
                 <FastForward className="size-3.5" /> {t("officer.plusOneHour")}
               </button>
+              <AssignWorkerControl complaintId={c.id} onAssigned={load} />
               <Link
                 to="/track/$id"
                 params={{ id: c.id }}
