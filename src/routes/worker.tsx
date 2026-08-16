@@ -452,7 +452,14 @@ function WorkerConsole() {
                 <button
                   onClick={async () => {
                     try {
-                      await pickup({ data: { complaintId: n.id } });
+                      const pos = await currentPosition().catch(() => null);
+                      await pickup({
+                        data: {
+                          complaintId: n.id,
+                          lat: pos?.coords.latitude,
+                          lng: pos?.coords.longitude,
+                        },
+                      });
                       toast.success(lang === "ta" ? "பணி ஏற்கப்பட்டது." : "Task accepted.");
                       setNearby((p) => p.filter((x) => x.id !== n.id));
                       refresh();
