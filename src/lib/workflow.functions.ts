@@ -179,7 +179,7 @@ async function ownedAssignment(h: typeof import("./workflow.server"), sb: any, u
   if (!assignment || assignment.worker_id !== worker.id) throw new Error("Assignment not found for this worker.");
   const { data: complaint } = await sb
     .from("complaints")
-    .select("id,title,author_id,lat,lng,category,description,status")
+    .select("id,title,author_id,lat,lng,category,description,status,ward_id")
     .eq("id", assignment.complaint_id)
     .maybeSingle();
   if (!complaint) throw new Error("Complaint not found.");
@@ -264,6 +264,13 @@ export const pingWorkerLocation = createServerFn({ method: "POST" })
         await h.moveComplaint(sb, complaint.id, "arrived");
         await h.logEvent(sb, complaint.id, "arrived", worker.display_name, `Worker arrived (${Math.round(distance)} m from the complaint point).`);
         await h.notify(sb, [complaint.author_id, assignment.officer_id], "workflow", "Worker has arrived", `Worker has arrived at the complaint location for "${complaint.title}".`);
+        // Ward councillor is resolved dynamically from the complaint's ward.
+        await h.notifyWardCouncillor(
+          sb,
+          complaint,
+          "Worker arrived in your ward",
+          `A municipal worker has arrived at the complaint location for "${complaint.title}".`,
+        );
       } else if (stage === "approaching") {
         await h.notify(sb, [complaint.author_id], "workflow", "Worker approaching", `The worker is approaching the location for "${complaint.title}".`);
       }
