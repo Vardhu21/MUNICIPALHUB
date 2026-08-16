@@ -61,9 +61,12 @@ export async function fetchWards(): Promise<Ward[]> {
 
 /** Reverse-geocode a GPS fix onto the nearest TN ULB ward boundary centroid. */
 export function resolveWard(wards: Ward[], point: { lat: number; lng: number } | null) {
-  if (!wards.length) return null;
-  if (!point) return wards[0];
-  return wards.reduce((best, w) =>
+  // Official directory wards may have no published centroid; only geo-located
+  // wards can be matched against a GPS fix.
+  const located = wards.filter((w) => w.lat != null && w.lng != null);
+  if (!located.length) return null;
+  if (!point) return located[0];
+  return located.reduce((best, w) =>
     haversineMeters(point, { lat: w.lat, lng: w.lng }) < haversineMeters(point, { lat: best.lat, lng: best.lng })
       ? w
       : best,
