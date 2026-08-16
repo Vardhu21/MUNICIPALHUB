@@ -699,18 +699,47 @@ export const nearbyComplaints = createServerFn({ method: "POST" })
 /** Worker opts in to a nearby complaint — explicit, never automatic. */
 export const acceptNearbyComplaint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => z.object({ complaintId: z.string().uuid() }).parse(raw))
+  .inputValidator((raw: unknown) =>
+    z
+      .object({
+        complaintId: z.string().uuid(),
+        lat: z.number().min(-90).max(90).optional(),
+        lng: z.number().min(-180).max(180).optional(),
+      })
+      .parse(raw),
+  )
   .handler(async ({ data, context }) => {
     const h = await import("./workflow.server");
     const sb = await h.admin();
-    const { data: worker } = await sb.from("workers").select("id,display_name").eq("user_id", context.userId).maybeSingle();
+    const cfg = await h.loadConfig(sb);
+    const { data: worker } = await sb
+      .from("workers")
+      .select("id,display_name,department,active")
+      .eq("user_id", context.userId)
+      .maybeSingle();
     if (!worker) throw new Error("Worker profile required.");
+    if (!worker.active) throw new Error("Your worker profile is inactive. Contact your ward officer.");
     const { data: complaint } = await sb
       .from("complaints")
-      .select("id,title,author_id,lat,lng,sla_hours,status")
+      .select("id,title,author_id,lat,lng,sla_hours,status,category,ward_id,frozen_fake")
       .eq("id", data.complaintId)
       .maybeSingle();
     if (!complaint) throw new Error("Complaint not found.");
+    // --- Server-side authorization: never trust the client list ---
+    if (complaint.frozen_fake) throw new Error("This complaint is frozen and cannot be picked up.");
+    if (["resolved", "resolved_by_citizen", "rejected", "auto_closed_no_response"].includes(complaint.status)) {
+      throw new Error("This complaint is no longer active.");
+    }
+    if (worker.department && worker.department !== "general" && complaint.category !== worker.department) {
+      throw new Error("This complaint belongs to another department.");
+    }
+    if (typeof data.lat === "number" && typeof data.lng === "number") {
+      if (typeof complaint.lat !== "number" || typeof complaint.lng !== "number") {
+        throw new Error("This complaint has no location and cannot be picked up nearby.");
+      }
+      const away = h.distanceM({ lat: data.lat, lng: data.lng }, { lat: complaint.lat, lng: complaint.lng });
+      if (away > cfg.nearby_radius_m) throw new Error("You are outside the nearby pickup radius for this complaint.");
+    }
     const { data: existing } = await sb
       .from("complaint_assignments")
       .select("id")
@@ -719,25 +748,37 @@ export const acceptNearbyComplaint = createServerFn({ method: "POST" })
       .maybeSingle();
     if (existing) throw new Error("This complaint already has an active assignment.");
 
+    // The worker never becomes the officer of record. Resolve (or preserve) the
+    // responsible officer from existing relationships instead.
+    const responsibleOfficerId = await h.resolveResponsibleOfficer(sb, complaint);
+    if (!responsibleOfficerId) {
+      throw new Error("No responsible officer is configured for this ward. Ask an officer to assign this task.");
+    }
+
+    const acceptedAt = new Date().toISOString();
     const { data: assignment, error } = await sb
       .from("complaint_assignments")
       .insert({
         complaint_id: complaint.id,
         worker_id: worker.id,
-        officer_id: context.userId,
+        officer_id: responsibleOfficerId,
+        assignment_source: "NEARBY_PICKUP",
+        accepted_by_worker_at: acceptedAt,
         sla_deadline: new Date(Date.now() + (complaint.sla_hours ?? 24) * 3_600_000).toISOString(),
         dest_lat: complaint.lat,
         dest_lng: complaint.lng,
         stage: "worker_accepted",
-        accepted_at: new Date().toISOString(),
+        accepted_at: acceptedAt,
       })
       .select()
       .maybeSingle();
     if (error) throw new Error(error.message);
     await h.moveComplaint(sb, complaint.id, "assigned", { assigned_officer: worker.display_name });
     await h.moveComplaint(sb, complaint.id, "worker_accepted");
-    await h.logEvent(sb, complaint.id, "worker_accepted", worker.display_name, "Worker picked up this nearby task voluntarily.");
+    await h.logEvent(sb, complaint.id, "nearby_task_accepted", worker.display_name, "Worker picked up this nearby task voluntarily (assignment_source: NEARBY_PICKUP).");
+    await h.logEvent(sb, complaint.id, "worker_assigned", worker.display_name, "Worker assigned through nearby pickup; the responsible officer remains unchanged.");
     await h.notify(sb, [complaint.author_id], "workflow", "Worker assigned", `A nearby worker picked up "${complaint.title}".`);
+    await h.notify(sb, [responsibleOfficerId], "workflow", "Nearby pickup", `${worker.display_name} picked up "${complaint.title}" as a nearby task. You remain the responsible officer.`);
     return assignment;
   });
 
