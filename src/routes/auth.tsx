@@ -273,9 +273,21 @@ function AuthPage() {
 
     const uid = data.user?.id;
     if (uid) {
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+      let { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
       const officerRoles = ["commissioner", "zonal_commissioner", "field_officer", "councillor"] as const;
-      const officer = roles?.map((r) => r.role as AppRole).find((r) => officerRoles.includes(r as typeof officerRoles[number]));
+      let officer = roles?.map((r) => r.role as AppRole).find((r) => officerRoles.includes(r as typeof officerRoles[number]));
+      // Backfill: officer accounts registered before server-side grants exist
+      // in auth but hold no officer row. Re-grant from the IFHRMS identity.
+      if (!officer && /^\d{11}$/.test(raw)) {
+        try {
+          await enrolOfficer({ data: { ifhrms: raw, role: "field_officer", wardId: null } });
+          const refreshed = await supabase.from("user_roles").select("role").eq("user_id", uid);
+          roles = refreshed.data;
+          officer = "field_officer";
+        } catch {
+          /* fall through as citizen */
+        }
+      }
       writeActiveRole((officer as AppRole) ?? "citizen");
       toast.success(officer ? t("auth.toast.welcomeOfficer") : t("auth.toast.welcomeBack"));
       if (next) window.location.assign(next);
