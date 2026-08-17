@@ -113,9 +113,13 @@ function OfficerWorkspace() {
   // Ranked by the health-impact triage engine: odour, sewage, stagnant water and
   // rotting-waste hazards surface at the top regardless of how "small" they look.
   const queue = useMemo(() => {
-    const scoped = officerWardId
-      ? complaints.filter((c) => c.ward_id === officerWardId && c.status !== "resolved")
-      : complaints.filter((c) => c.status !== "resolved");
+    const active = complaints.filter((c) => c.status !== "resolved");
+    // Ward-scoped view first, but never hide work: complaints with no ward and
+    // (when the ward is empty) the wider corporation queue still surface.
+    const inWard = officerWardId
+      ? active.filter((c) => c.ward_id === officerWardId || !c.ward_id)
+      : active;
+    const scoped = inWard.length ? inWard : active;
     return [...scoped].sort((a, b) => queueRank(b) - queueRank(a));
   }, [complaints, officerWardId]);
 
