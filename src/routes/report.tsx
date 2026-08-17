@@ -13,6 +13,8 @@ import { CATEGORIES, slaRow } from "@/lib/sla";
 import { BAND_LABEL, BAND_TONE, triage } from "@/lib/triage";
 import { fetchWards, logEvent, officerForTier, resolveWard, ULB_LABEL, type Ward } from "@/lib/data";
 import { WardAuthorityCard } from "@/components/WardAuthorityCard";
+import { GpsMap } from "@/components/GpsMap";
+import { reverseGeocode } from "@/lib/geocode.functions";
 import {
   fetchCouncillorForWard,
   fetchDirectoryWards,
@@ -55,6 +57,8 @@ function ReportPage() {
   const [description, setDescription] = useState("");
   const [street, setStreet] = useState("");
   const [busy, setBusy] = useState(false);
+  const [geoBusy, setGeoBusy] = useState(false);
+  const point = capture ?? fix;
 
   useEffect(() => {
     fetchWards().then(setWards).catch(() => undefined);
@@ -83,6 +87,23 @@ function ReportPage() {
     [categoryId, title, description],
   );
   const sla = slaRow(assessment.priority);
+
+  /** Auto-fill the street address from the captured/live GPS point. */
+  useEffect(() => {
+    if (!capture || street.trim()) return;
+    let cancelled = false;
+    setGeoBusy(true);
+    reverseGeocode({ data: { lat: capture.lat, lng: capture.lng } })
+      .then((r) => {
+        if (!cancelled && r.address) setStreet(r.address);
+      })
+      .catch(() => undefined)
+      .finally(() => !cancelled && setGeoBusy(false));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capture]);
 
 
   const submit = async () => {
@@ -211,6 +232,13 @@ function ReportPage() {
             </span>
           </div>
 
+          <GpsMap
+            lat={point?.lat ?? null}
+            lng={point?.lng ?? null}
+            accuracy={capture ? 15 : (fix?.accuracy ?? null)}
+            label={ward ? `Ward ${ward.ward_number}` : "Complaint location"}
+          />
+
           <label className="block space-y-1.5">
             <span className="text-xs font-semibold text-muted-foreground">
               {lang === "ta" ? "வார்டு (தேவைப்பட்டால் மாற்றவும்)" : "Ward (override if wrong)"}
@@ -285,7 +313,10 @@ function ReportPage() {
           </label>
 
           <label className="block space-y-1.5">
-            <span className="text-xs font-semibold text-muted-foreground">{t("report.streetLabel")}</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              {t("report.streetLabel")}
+              {geoBusy ? " · locating…" : ""}
+            </span>
             <input
               value={street}
               onChange={(e) => setStreet(e.target.value)}
