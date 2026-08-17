@@ -214,7 +214,7 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
 
         {starting && !camError && (
           <div className="absolute inset-0 grid place-items-center bg-background/70 text-xs font-semibold text-muted-foreground">
-            {t("camera.retry") ? "Starting camera…" : "Starting camera…"}
+            Starting camera…
           </div>
         )}
 
