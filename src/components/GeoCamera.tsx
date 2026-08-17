@@ -32,7 +32,7 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
   const [camError, setCamError] = useState<string | null>(null);
   const [starting, setStarting] = useState(true);
   const [now, setNow] = useState(() => new Date());
-  const { fix, error: geoError } = useGeolocation(true);
+  const { fix, error: geoError, status: geoStatus, retry: retryGps } = useGeolocation(true);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -230,7 +230,11 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
 
         <div className="pointer-events-none absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-success/60 bg-success/20 px-2.5 py-1 text-[11px] font-semibold text-success">
           {fix ? <ShieldCheck className="size-3.5" /> : <Crosshair className="size-3.5 animate-pulse" />}
-          {fix ? `±${Math.round(fix.accuracy)}m GPS lock` : "Acquiring GPS"}
+          {fix
+            ? `±${Math.round(fix.accuracy)}m GPS lock`
+            : geoStatus === "requesting"
+              ? "Acquiring GPS"
+              : "GPS unavailable"}
         </div>
 
         {camError && (
@@ -252,12 +256,25 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
         )}
       </div>
 
-      {geoError && <p className="text-xs text-destructive">{t("camera.locationErrorTemplate").replace("{error}", geoError)}</p>}
+      {geoError && (
+        <div className="flex items-start justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
+          <p className="text-xs text-destructive">
+            {t("camera.locationErrorTemplate").replace("{error}", geoError)}
+          </p>
+          <button
+            type="button"
+            onClick={retryGps}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-semibold text-foreground"
+          >
+            <RefreshCcw className="size-3.5" /> Retry GPS
+          </button>
+        </div>
+      )}
 
       <button
         type="button"
         onClick={capture}
-        disabled={!ready}
+        disabled={!ready || !fix}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         <Camera className="size-4" /> {t("camera.captureButton")}
