@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type GeoFix = {
   lat: number;
@@ -7,28 +7,51 @@ export type GeoFix = {
   timestamp: number;
 };
 
+export type GeoStatus = "idle" | "requesting" | "ready" | "denied" | "unavailable" | "timeout";
+
 /** Live GPS watcher used by the camera telemetry overlay and geofenced alerts. */
 export function useGeolocation(enabled = true) {
   const [fix, setFix] = useState<GeoFix | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<GeoStatus>(enabled ? "requesting" : "idle");
+  const [requestVersion, setRequestVersion] = useState(0);
+  const hasFixRef = useRef(false);
+
+  const retry = useCallback(() => {
+    hasFixRef.current = false;
+    setFix(null);
+    setError(null);
+    setStatus("requesting");
+    setRequestVersion((version) => version + 1);
+  }, []);
 
   useEffect(() => {
-    if (!enabled || typeof navigator === "undefined") return;
+    if (!enabled || typeof navigator === "undefined") {
+      setStatus("idle");
+      return;
+    }
     if (!navigator.geolocation) {
       setError("This browser does not expose location services.");
+      setStatus("unavailable");
       return;
     }
     if (typeof window !== "undefined" && window.isSecureContext === false) {
       setError("Location needs a secure (https) connection.");
+      setStatus("unavailable");
       return;
     }
 
     let cancelled = false;
     const watchIds: number[] = [];
+    let permissionStatus: PermissionStatus | null = null;
+    hasFixRef.current = false;
+    setStatus("requesting");
 
     const accept = (p: GeolocationPosition) => {
       if (cancelled) return;
+      hasFixRef.current = true;
       setError(null);
+      setStatus("ready");
       setFix({
         lat: p.coords.latitude,
         lng: p.coords.longitude,
@@ -37,46 +60,68 @@ export function useGeolocation(enabled = true) {
       });
     };
 
-    const describe = (e: GeolocationPositionError) => {
-      if (e.code === e.PERMISSION_DENIED)
-        return "Location permission is blocked. Allow location for this site in the browser address bar, then retry.";
-      if (e.code === e.POSITION_UNAVAILABLE)
-        return "No location signal available. Turn on device location services and retry.";
-      return "Location request timed out. Move near a window or enable Wi-Fi/GPS and retry.";
+    const reject = (e: GeolocationPositionError) => {
+      if (cancelled || hasFixRef.current) return;
+      if (e.code === e.PERMISSION_DENIED) {
+        setStatus("denied");
+        setError("Location permission is blocked. Allow location for this site in the browser address bar, then tap Retry GPS.");
+        return;
+      }
+      if (e.code === e.POSITION_UNAVAILABLE) {
+        setStatus("unavailable");
+        setError("No device location is available. Turn on Location Services and Wi-Fi, then tap Retry GPS.");
+        return;
+      }
+      setStatus("timeout");
+      setError("The device did not return a location. Turn on Location Services and tap Retry GPS.");
     };
 
-    // 1) Fast, cached/low-accuracy shot so the UI gets a fix quickly.
-    navigator.geolocation.getCurrentPosition(accept, () => undefined, {
+    // Ask for a fast network/Wi-Fi fix and a precise device fix in parallel.
+    // This avoids waiting for a high-accuracy timeout before trying the fallback.
+    navigator.geolocation.getCurrentPosition(accept, reject, {
       enableHighAccuracy: false,
-      maximumAge: 60_000,
-      timeout: 8_000,
+      maximumAge: 300_000,
+      timeout: 15_000,
+    });
+    navigator.geolocation.getCurrentPosition(accept, reject, {
+      enableHighAccuracy: true,
+      maximumAge: 30_000,
+      timeout: 25_000,
     });
 
-    // 2) High-accuracy watch; if it fails, fall back to a low-accuracy watch.
+    // Keep one low-power watch alive so later fixes and movement update the UI.
     watchIds.push(
       navigator.geolocation.watchPosition(
         accept,
-        (e) => {
-          if (cancelled) return;
-          setError(describe(e));
-          if (e.code === e.PERMISSION_DENIED) return;
-          watchIds.push(
-            navigator.geolocation.watchPosition(accept, (e2) => !cancelled && setError(describe(e2)), {
-              enableHighAccuracy: false,
-              maximumAge: 30_000,
-              timeout: 30_000,
-            }),
-          );
-        },
-        { enableHighAccuracy: true, maximumAge: 5_000, timeout: 20_000 },
+        reject,
+        { enableHighAccuracy: false, maximumAge: 60_000, timeout: 30_000 },
       ),
     );
 
+    // React immediately when location permission changes in browser settings.
+    if (navigator.permissions?.query) {
+      void navigator.permissions
+        .query({ name: "geolocation" })
+        .then((permission) => {
+          if (cancelled) return;
+          permissionStatus = permission;
+          permission.onchange = () => {
+            if (permission.state === "granted") retry();
+            if (permission.state === "denied" && !hasFixRef.current) {
+              setStatus("denied");
+              setError("Location permission is blocked. Allow it in the browser address bar, then tap Retry GPS.");
+            }
+          };
+        })
+        .catch(() => undefined);
+    }
+
     return () => {
       cancelled = true;
+      if (permissionStatus) permissionStatus.onchange = null;
       watchIds.forEach((id) => navigator.geolocation.clearWatch(id));
     };
-  }, [enabled]);
+  }, [enabled, requestVersion, retry]);
 
-  return { fix, error };
+  return { fix, error, status, retry };
 }
