@@ -30,6 +30,7 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
   const streamRef = useRef<MediaStream | null>(null);
   const [ready, setReady] = useState(false);
   const [camError, setCamError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(true);
   const [now, setNow] = useState(() => new Date());
   const { fix, error: geoError } = useGeolocation(true);
 
@@ -38,28 +39,88 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
     return () => clearInterval(id);
   }, []);
 
-  const start = useCallback(async () => {
-    setCamError(null);
+  const stop = useCallback(() => {
+    streamRef.current?.getTracks().forEach((tr) => tr.stop());
+    streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+  }, []);
+
+  const attach = useCallback(async (stream: MediaStream) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.srcObject = stream;
+    video.muted = true;
+    video.playsInline = true;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-      setReady(true);
-    } catch (e) {
-      setReady(false);
-      setCamError(e instanceof Error ? e.message : t("camera.unavailable"));
+      await video.play();
+    } catch {
+      /* autoplay can reject once; the loadedmetadata handler retries */
     }
   }, []);
 
+  const start = useCallback(async () => {
+    setCamError(null);
+    setStarting(true);
+    stop();
+
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      setReady(false);
+      setStarting(false);
+      setCamError(
+        window.isSecureContext === false
+          ? "Camera needs a secure (https) connection."
+          : t("camera.unavailable"),
+      );
+      return;
+    }
+
+    const attempts: MediaStreamConstraints[] = [
+      { video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } }, audio: false },
+      { video: true, audio: false },
+    ];
+
+    let lastError: unknown = null;
+    for (const constraints of attempts) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        streamRef.current = stream;
+        await attach(stream);
+        setReady(true);
+        setStarting(false);
+        return;
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    setReady(false);
+    setStarting(false);
+    setCamError(lastError instanceof Error ? lastError.message : t("camera.unavailable"));
+  }, [attach, stop, t]);
+
   useEffect(() => {
-    start();
-    return () => streamRef.current?.getTracks().forEach((t) => t.stop());
+    let cancelled = false;
+    void start().then(() => {
+      // StrictMode double-mount: tear down a stream that arrived after unmount.
+      if (cancelled) stop();
+    });
+    return () => {
+      cancelled = true;
+      stop();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Some browsers pause the track when the tab is hidden — resume on return.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      const live = streamRef.current?.getVideoTracks().some((tr) => tr.readyState === "live");
+      if (!live) void start();
+      else void videoRef.current?.play().catch(() => undefined);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, [start]);
 
   const stamp = (ctx: CanvasRenderingContext2D, w: number, h: number, telemetry: GeoFix | null) => {
@@ -138,8 +199,24 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
   return (
     <div className="space-y-3">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-black">
-        <video ref={videoRef} playsInline muted className="size-full object-cover" />
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          onLoadedMetadata={() => {
+            setReady(true);
+            void videoRef.current?.play().catch(() => undefined);
+          }}
+          className="size-full object-cover"
+        />
         <canvas ref={canvasRef} className="hidden" />
+
+        {starting && !camError && (
+          <div className="absolute inset-0 grid place-items-center bg-background/70 text-xs font-semibold text-muted-foreground">
+            Starting camera…
+          </div>
+        )}
 
         {/* Live telemetry overlay */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 space-y-0.5 bg-gradient-to-t from-background/95 to-transparent p-3 font-mono text-[11px] leading-tight text-foreground">
@@ -180,6 +257,7 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       <button
         type="button"
         onClick={capture}
+        disabled={!ready}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         <Camera className="size-4" /> {t("camera.captureButton")}
