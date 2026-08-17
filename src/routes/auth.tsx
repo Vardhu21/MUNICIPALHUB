@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { suggestPseudonym, useSession, writeActiveRole, type AppRole } from "@/lib/session";
 import { sealIdentity } from "@/lib/civic.functions";
+import { enrolOfficer } from "@/lib/officer.functions";
 import { fetchWards, type Ward } from "@/lib/data";
 import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { DemoBypass } from "@/components/DemoBypass";
@@ -236,9 +237,17 @@ function AuthPage() {
         language: lang,
         digilocker_verified: true,
       });
-      await supabase.from("user_roles").upsert({ user_id: uid, role: officerRole, ward_id: wardId });
-      // Officers can still act as citizens too — persona toggle in TopBar reads this row.
-      await supabase.from("user_roles").upsert({ user_id: uid, role: "citizen", ward_id: wardId });
+      // Officer grants are server-side: the `user_roles` policy only lets an
+      // account self-assign `citizen`. The server fn verifies the signed-in
+      // account is the IFHRMS identity before granting.
+      // Officers can still act as citizens too — persona toggle in TopBar reads that row.
+      await enrolOfficer({
+        data: {
+          ifhrms: digilockerId.trim(),
+          role: officerRole as "field_officer" | "zonal_commissioner" | "commissioner" | "councillor",
+          wardId,
+        },
+      });
 
       writeActiveRole(officerRole);
       toast.success(t("auth.toast.officerRosterCreated"), {
@@ -264,9 +273,21 @@ function AuthPage() {
 
     const uid = data.user?.id;
     if (uid) {
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+      let { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
       const officerRoles = ["commissioner", "zonal_commissioner", "field_officer", "councillor"] as const;
-      const officer = roles?.map((r) => r.role as AppRole).find((r) => officerRoles.includes(r as typeof officerRoles[number]));
+      let officer = roles?.map((r) => r.role as AppRole).find((r) => officerRoles.includes(r as typeof officerRoles[number]));
+      // Backfill: officer accounts registered before server-side grants exist
+      // in auth but hold no officer row. Re-grant from the IFHRMS identity.
+      if (!officer && /^\d{11}$/.test(raw)) {
+        try {
+          await enrolOfficer({ data: { ifhrms: raw, role: "field_officer", wardId: null } });
+          const refreshed = await supabase.from("user_roles").select("role").eq("user_id", uid);
+          roles = refreshed.data;
+          officer = "field_officer";
+        } catch {
+          /* fall through as citizen */
+        }
+      }
       writeActiveRole((officer as AppRole) ?? "citizen");
       toast.success(officer ? t("auth.toast.welcomeOfficer") : t("auth.toast.welcomeBack"));
       if (next) window.location.assign(next);
