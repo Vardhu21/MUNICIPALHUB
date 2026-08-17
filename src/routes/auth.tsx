@@ -236,9 +236,17 @@ function AuthPage() {
         language: lang,
         digilocker_verified: true,
       });
-      await supabase.from("user_roles").upsert({ user_id: uid, role: officerRole, ward_id: wardId });
-      // Officers can still act as citizens too — persona toggle in TopBar reads this row.
-      await supabase.from("user_roles").upsert({ user_id: uid, role: "citizen", ward_id: wardId });
+      // Officer grants are server-side: the `user_roles` policy only lets an
+      // account self-assign `citizen`. The server fn verifies the signed-in
+      // account is the IFHRMS identity before granting.
+      // Officers can still act as citizens too — persona toggle in TopBar reads that row.
+      await enrolOfficer({
+        data: {
+          ifhrms: digilockerId.trim(),
+          role: officerRole as "field_officer" | "zonal_commissioner" | "commissioner" | "councillor",
+          wardId,
+        },
+      });
 
       writeActiveRole(officerRole);
       toast.success(t("auth.toast.officerRosterCreated"), {
