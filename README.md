@@ -522,4 +522,4 @@ This project was built with Lovable. The code is owned by the project creator an
 ---
 
 **Maintained by:** Vardhu21 / Sarvesh
-**Last updated:** August 2026
+
