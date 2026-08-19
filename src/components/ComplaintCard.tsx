@@ -109,6 +109,23 @@ export function ComplaintCard({
           tier={c.current_tier as Tier}
         />
 
+        {(c.resolution_photo_url || c.resolution_note) && (
+          <div className="space-y-2 rounded-lg border border-success/40 bg-success/5 p-3">
+            <p className="text-xs font-semibold text-success">
+              {lang === "ta" ? "பணி முடிக்கப்பட்ட சான்று" : "Work completion proof"}
+            </p>
+            {c.resolution_note && <p className="text-xs text-muted-foreground">{c.resolution_note}</p>}
+            {c.resolution_photo_url && (
+              <img
+                src={c.resolution_photo_url}
+                alt={lang === "ta" ? "பணி முடிவு புகைப்படம்" : "Resolution proof photo"}
+                loading="lazy"
+                className="max-h-64 w-full rounded-lg border border-border object-cover"
+              />
+            )}
+          </div>
+        )}
+
         <p className="text-xs text-muted-foreground">
           <span className="font-semibold text-foreground">{t("card.assigned")}</span>{" "}
           {c.assigned_officer ?? officerForTier(c.current_tier as Tier)}
