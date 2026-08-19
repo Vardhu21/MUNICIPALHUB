@@ -41,6 +41,7 @@ export type Complaint = {
   street_address: string | null;
   photo_url: string | null;
   resolution_photo_url: string | null;
+  resolution_note: string | null;
   geo_verified: boolean;
   frozen_fake: boolean;
   complainant_approved: boolean | null;
