@@ -76,6 +76,7 @@ function OfficerWorkspace() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [proofFor, setProofFor] = useState<Complaint | null>(null);
+  const [proofNote, setProofNote] = useState("");
   const [calling, setCalling] = useState<Complaint | null>(null);
 
   useEffect(() => {
@@ -156,10 +157,15 @@ function OfficerWorkspace() {
   const submitProof = (c: Complaint, cap: Capture) => {
     patch(
       c,
-      { resolution_photo_url: cap.dataUrl, status: "verification" },
+      {
+        resolution_photo_url: cap.dataUrl,
+        status: "verification",
+        resolution_note: proofNote.trim() || null,
+      },
       t("officer.proofUploadedNote"),
     );
     setProofFor(null);
+    setProofNote("");
   };
 
   if (sessionLoading || (!user && !sessionLoading)) {
@@ -284,7 +290,10 @@ function OfficerWorkspace() {
               )}
               {c.status !== "verification" && c.status !== "resolved" && (
                 <button
-                  onClick={() => setProofFor(c)}
+                  onClick={() => {
+                    setProofFor(c);
+                    setProofNote("");
+                  }}
                   className="rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-success-foreground"
                 >
                   {t("officer.uploadProof")}
@@ -316,13 +325,27 @@ function OfficerWorkspace() {
             {proofFor?.id === c.id && (
               <div className="space-y-2 rounded-lg border border-border p-3">
                 <p className="text-xs font-semibold">{t("officer.geotaggedProof")}</p>
+                <textarea
+                  value={proofNote}
+                  onChange={(e) => setProofNote(e.target.value)}
+                  rows={3}
+                  placeholder={
+                    lang === "ta"
+                      ? "செய்யப்பட்ட பணியின் விவரம் (புகார்தாரருக்குத் தெரியும்)"
+                      : "Describe the work completed — the citizen sees this on the feed"
+                  }
+                  className="w-full rounded-lg border border-input bg-background p-2 text-xs outline-none focus:border-primary"
+                />
                 <GeoCamera
                   wardLabel={wardLabel(c.ward_id ? wardMap.get(c.ward_id) : undefined, "en")}
                   zoneLabel={t("officer.completionCapture")}
                   onCapture={(cap) => submitProof(c, cap)}
                 />
                 <button
-                  onClick={() => setProofFor(null)}
+                  onClick={() => {
+                    setProofFor(null);
+                    setProofNote("");
+                  }}
                   className="w-full rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
                 >
                   {t("action.cancel")}

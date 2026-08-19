@@ -439,6 +439,7 @@ export type Database = {
           lng: number | null
           photo_url: string | null
           priority: Database["public"]["Enums"]["complaint_priority"]
+          resolution_note: string | null
           resolution_photo_url: string | null
           routed_councillor_id: string | null
           routed_zone_id: string | null
@@ -468,6 +469,7 @@ export type Database = {
           lng?: number | null
           photo_url?: string | null
           priority?: Database["public"]["Enums"]["complaint_priority"]
+          resolution_note?: string | null
           resolution_photo_url?: string | null
           routed_councillor_id?: string | null
           routed_zone_id?: string | null
@@ -497,6 +499,7 @@ export type Database = {
           lng?: number | null
           photo_url?: string | null
           priority?: Database["public"]["Enums"]["complaint_priority"]
+          resolution_note?: string | null
           resolution_photo_url?: string | null
           routed_councillor_id?: string | null
           routed_zone_id?: string | null
