@@ -85,7 +85,7 @@ export async function fetchDirectoryWards(filter?: { ulbId?: string; zoneId?: st
     .select(
       "id,ward_ref,ward_number,ward_name_en,ward_name_ta,zone_id,ulb_id,ward_status,official_ward_email,official_source,source_checked_at,lat,lng",
     )
-    .not("ward_ref", "is", null)
+    
     .order("ward_number");
   if (filter?.ulbId) q = q.eq("ulb_id", filter.ulbId);
   if (filter?.zoneId) q = q.eq("zone_id", filter.zoneId);
