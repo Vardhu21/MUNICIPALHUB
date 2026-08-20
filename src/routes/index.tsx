@@ -137,22 +137,6 @@ function Portal() {
             >
               {t("landing.tagline", "Your City. Your Voice. Your Solution.")}
             </p>
-            <p
-              className="mx-auto max-w-2xl font-serif text-[19px] italic leading-snug text-white sm:text-[30px]"
-              style={{ textShadow: "0 2px 10px rgba(0,0,0,0.50)" }}
-            >
-              Smart Civic Issue Reporting &amp; Resolution Platform
-            </p>
-            <p
-              className="flex items-center justify-center gap-2.5 text-[15px] font-bold tracking-wide text-chart-3 sm:text-[20px]"
-              style={{ textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}
-            >
-              <span>Report</span>
-              <span aria-hidden className="text-white/50">•</span>
-              <span>Track</span>
-              <span aria-hidden className="text-white/50">•</span>
-              <span>Resolve</span>
-            </p>
           </div>
 
           <div
