@@ -5,7 +5,7 @@ import { ArrowRight, Globe, ShieldCheck, Settings2, BarChart3, Users } from "luc
 import { VoiceAssistant } from "@/components/VoiceAssistantLazy";
 import { useLang } from "@/lib/i18n";
 import emblem from "@/assets/tn-emblem.png";
-import heroAsset from "@/assets/gcc-ripon.png.asset.json";
+import heroAsset from "@/assets/gcc-ripon.webp";
 
 export const Route = createFileRoute("/")({
   head: () => ({
