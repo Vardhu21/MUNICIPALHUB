@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "preload", as: "image", href: heroAsset.url, fetchPriority: "high" },
+      { rel: "preload", as: "image", href: heroAsset, fetchPriority: "high" },
     ],
   }),
   component: Portal,
@@ -71,7 +71,7 @@ function Portal() {
     >
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroAsset.url})` }}
+        style={{ backgroundImage: `url(${heroAsset})` }}
         role="img"
         aria-label="Ripon Building, Greater Chennai Corporation headquarters"
       />
