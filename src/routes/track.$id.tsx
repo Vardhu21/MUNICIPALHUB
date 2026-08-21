@@ -202,6 +202,13 @@ function TrackPage() {
               <p className="text-sm text-muted-foreground">{plainStatus(c.status, ta)}</p>
             </section>
 
+            <section className="civic-card space-y-3 p-4">
+              <h2 className="text-sm font-bold">
+                {ta ? "உங்கள் புகாரின் பயணம்" : "Your complaint journey"}
+              </h2>
+              <ComplaintJourney status={c.status} escalations={c.clock_offset_hours ?? 0} />
+            </section>
+
             {(report || c.resolution_photo_url || c.work_summary || c.resolution_note) && (
               <section className="civic-card space-y-3 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
