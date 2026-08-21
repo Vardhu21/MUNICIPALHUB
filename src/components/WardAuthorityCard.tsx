@@ -92,7 +92,7 @@ export function WardAuthorityCard({ ward, showLeadership = true }: { ward: Direc
           {leaders.map((l) => (
             <p key={l.authority_id}>
               <strong>{l.role}:</strong> {l.name}
-              {l.phone ? ` · ${l.phone}` : ""}
+              {l.office_phone ? ` · ${l.office_phone}` : ""}
               {l.email ? ` · ${l.email}` : ""}
             </p>
           ))}
