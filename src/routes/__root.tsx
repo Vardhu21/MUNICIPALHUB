@@ -14,6 +14,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 import { PageTransition } from "@/components/PageTransition";
+import { installMonitoring } from "@/lib/monitoring";
+
 
 function NotFoundComponent() {
   return (
@@ -118,6 +120,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    installMonitoring(queryClient);
+  }, [queryClient]);
+
+
 
   return (
     <QueryClientProvider client={queryClient}>
