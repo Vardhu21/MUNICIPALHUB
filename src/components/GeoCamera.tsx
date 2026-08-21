@@ -192,20 +192,21 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       });
       return;
     }
-    const video = videoRef.current;
-    const framed = await waitForFrame();
-    if (!video || !framed) {
+    let framed = await waitForFrame();
+    if (!framed) {
       // Try one full restart before giving up — the stream may have been
       // dropped by the browser while the sheet was in the background.
       await start();
-      const retried = await waitForFrame();
-      if (!retried) {
-        toast.error(t("camera.rejectedTitle"), {
-          description: t("camera.rejectedNoStream"),
-        });
-        return;
-      }
+      framed = await waitForFrame();
     }
+    const video = videoRef.current;
+    if (!framed || !video) {
+      toast.error(t("camera.rejectedTitle"), {
+        description: t("camera.rejectedNoStream"),
+      });
+      return;
+    }
+
 
     // -------------------------------------------------------------------
 
