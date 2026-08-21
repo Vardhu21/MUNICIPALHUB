@@ -335,7 +335,7 @@ function AuthPage() {
           id: uid,
           pseudonym: fallbackPseudonym,
           language: lang,
-          digilocker_verified: isOfficerId,
+          digilocker_verified: true,
         });
         if (profileCreateError) {
           setBusy(false);
