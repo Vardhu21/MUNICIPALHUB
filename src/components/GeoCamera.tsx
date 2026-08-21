@@ -31,10 +31,11 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
   const [ready, setReady] = useState(false);
   const [camError, setCamError] = useState<string | null>(null);
   const [starting, setStarting] = useState(true);
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   const { fix, error: geoError, status: geoStatus, retry: retryGps } = useGeolocation(true);
 
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -225,7 +226,9 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
           </p>
           <p className="truncate">{wardLabel}</p>
           <p className="truncate">{zoneLabel}</p>
-          <p>{now.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</p>
+          <p suppressHydrationWarning>
+            {now ? `${now.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST` : "-- : -- IST"}
+          </p>
         </div>
 
         <div className="pointer-events-none absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-success/60 bg-success/20 px-2.5 py-1 text-[11px] font-semibold text-success">
