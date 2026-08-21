@@ -7,7 +7,8 @@ export type Status =
   | "resolved"
   | "escalated"
   | "joint_task_force"
-  | "rejected";
+  | "rejected"
+  | "reopened";
 
 export type EscalationRow = {
   priority: Priority;
