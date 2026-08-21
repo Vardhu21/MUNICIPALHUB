@@ -126,7 +126,7 @@ export function ComplaintCard({
                 {lang === "ta" ? "பணி முடிக்கப்பட்ட சான்று" : "Work completion proof"}
               </p>
               <span className="rounded-full border border-success/40 px-2 py-0.5 text-[11px] font-semibold text-success">
-                {c.status === "resolved" || c.status === "resolved_by_citizen"
+                {String(c.status).startsWith("resolved")
                   ? lang === "ta"
                     ? "தீர்க்கப்பட்டது"
                     : "Resolved"
