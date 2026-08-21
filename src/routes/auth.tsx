@@ -311,7 +311,10 @@ function AuthPage() {
         .select("id")
         .eq("id", uid)
         .maybeSingle();
-      if (profileReadError) return toast.error(profileReadError.message);
+      if (profileReadError) {
+        setBusy(false);
+        return toast.error(profileReadError.message);
+      }
       if (!existingProfile) {
         const fallbackPseudonym = isOfficerId
           ? `@IFHRMS_${raw}`
@@ -322,7 +325,10 @@ function AuthPage() {
           language: lang,
           digilocker_verified: isOfficerId,
         });
-        if (profileCreateError) return toast.error(profileCreateError.message);
+        if (profileCreateError) {
+          setBusy(false);
+          return toast.error(profileCreateError.message);
+        }
       }
 
       let { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
@@ -344,7 +350,10 @@ function AuthPage() {
         const { error: citizenRoleError } = await supabase
           .from("user_roles")
           .insert({ user_id: uid, role: "citizen", ward_id: null });
-        if (citizenRoleError) return toast.error(citizenRoleError.message);
+        if (citizenRoleError) {
+          setBusy(false);
+          return toast.error(citizenRoleError.message);
+        }
       }
       writeActiveRole((officer as AppRole) ?? "citizen");
       toast.success(officer ? t("auth.toast.welcomeOfficer") : t("auth.toast.welcomeBack"));
