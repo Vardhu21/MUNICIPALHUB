@@ -87,6 +87,9 @@ function ReportPage() {
     [categoryId, title, description],
   );
   const sla = slaRow(assessment.priority);
+  // Escalation window comes from the complaint category (garbage 4h, water 2h, ...),
+  // not a flat 24h clock.
+  const slaHours = slaHoursFor(categoryId, assessment.priority);
 
   /** Auto-fill the street address from the captured/live GPS point. */
   useEffect(() => {
@@ -148,7 +151,7 @@ function ReportPage() {
           priority: assessment.priority,
           status: "assigned",
           current_tier: "field",
-          sla_hours: sla.hours,
+          sla_hours: slaHours,
           assigned_officer: officerForTier("field"),
           ward_id: ward?.id ?? null,
           lat: capture.lat,
@@ -168,7 +171,7 @@ function ReportPage() {
           data.id,
           "assignment",
           "Dynamic Spatial Router",
-          `Reverse-geocoded to ${ward ? `Ward ${ward.ward_number}, ${ward.ulb_name_en}` : "nearest ULB"} · assigned to ${sla.fieldTier.en} with a ${sla.hours}h SLA.`,
+          `Reverse-geocoded to ${ward ? `Ward ${ward.ward_number}, ${ward.ulb_name_en}` : "nearest ULB"} · assigned to ${sla.fieldTier.en} with a ${slaHours}h SLA.`,
         );
         if (directoryWard) {
           await logEvent(
@@ -299,7 +302,7 @@ function ReportPage() {
               ))}
             </ul>
             <p className="opacity-80">
-              {t("report.autoAssignedSla")} {sla.hours}h SLA · {t("report.firstResponder")} {sla.fieldTier[lang]} · {t("report.escalatesTo")}{" "}
+              {t("report.autoAssignedSla")} {slaHours}h SLA · {t("report.firstResponder")} {sla.fieldTier[lang]} · {t("report.escalatesTo")}{" "}
               {sla.escalateTo[lang]}. {t("report.autoAssignedNote")}
             </p>
           </div>
