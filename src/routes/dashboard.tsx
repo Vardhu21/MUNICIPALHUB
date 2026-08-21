@@ -294,7 +294,7 @@ function CitizenView({
                 </button>
                 <button
                   onClick={() =>
-                    onPatch(c, { complainant_approved: false, status: "escalated", current_tier: "zonal", assigned_officer: officerForTier("zonal") }, t("dashboard.complainantRejected"), "Complainant")
+                    onPatch(c, { complainant_approved: false, status: "reopened" }, t("dashboard.complainantRejected"), "Complainant")
                   }
                   className="flex-1 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground"
                 >
