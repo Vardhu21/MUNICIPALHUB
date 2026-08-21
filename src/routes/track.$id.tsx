@@ -29,6 +29,39 @@ export const Route = createFileRoute("/track/$id")({
 });
 
 type EventRow = { id: string; event_type: string; actor_label: string; note: string | null; created_at: string };
+type FieldReport = Awaited<ReturnType<typeof complaintFieldReport>>;
+
+/** Plain-language explanation of where the ticket currently stands. */
+function plainStatus(status: string, ta: boolean) {
+  const map: Record<string, { en: string; ta: string }> = {
+    submitted: { en: "Your complaint has been received and is waiting to be assigned to a worker.", ta: "உங்கள் புகார் பெறப்பட்டது; பணியாளர் நியமிக்கப்பட உள்ளது." },
+    assigned: { en: "A field worker has been assigned and will visit the spot soon.", ta: "களப் பணியாளர் நியமிக்கப்பட்டார்; விரைவில் வருவார்." },
+    worker_accepted: { en: "The worker accepted the job and is preparing to travel.", ta: "பணியாளர் பணியை ஏற்றுக்கொண்டார்." },
+    travelling: { en: "The worker is on the way to your location.", ta: "பணியாளர் உங்கள் இடத்திற்கு வந்து கொண்டிருக்கிறார்." },
+    arrived: { en: "The worker has reached the spot.", ta: "பணியாளர் இடத்தை அடைந்துவிட்டார்." },
+    in_progress: { en: "Work is going on at the spot right now.", ta: "இடத்தில் பணி நடைபெற்று வருகிறது." },
+    evidence_submitted: { en: "The worker finished and uploaded a photo of the completed work.", ta: "பணி முடிந்து புகைப்படம் பதிவேற்றப்பட்டது." },
+    officer_review: { en: "The officer is checking the worker's photo and report.", ta: "அலுவலர் புகைப்படத்தையும் அறிக்கையையும் சரிபார்க்கிறார்." },
+    officer_approved: { en: "The officer approved the work. Your confirmation is next.", ta: "அலுவலர் பணியை ஏற்றார். உங்கள் உறுதிப்படுத்தல் தேவை." },
+    citizen_verification: { en: "Please confirm whether the issue is really fixed.", ta: "பிரச்சினை சரிசெய்யப்பட்டதா என்பதை உறுதிப்படுத்தவும்." },
+    verification: { en: "Neighbours in your ward are voting on whether the work is genuine.", ta: "உங்கள் வார்டு மக்கள் பணி குறித்து வாக்களிக்கின்றனர்." },
+    resolved: { en: "This complaint is closed as resolved.", ta: "இந்தப் புகார் தீர்க்கப்பட்டு மூடப்பட்டது." },
+    resolved_by_citizen: { en: "You confirmed the fix, so the complaint is closed.", ta: "நீங்கள் உறுதிப்படுத்தியதால் புகார் மூடப்பட்டது." },
+    reopened: { en: "You were not satisfied, so the complaint was reopened for rework.", ta: "திருப்தி இல்லாததால் புகார் மீண்டும் திறக்கப்பட்டது." },
+    auto_closed_no_response: { en: "No reply was received in time, so the complaint closed automatically.", ta: "பதில் வராததால் புகார் தானாக மூடப்பட்டது." },
+    escalated: { en: "The deadline passed, so a senior officer has taken over.", ta: "கால அவகாசம் முடிந்ததால் மூத்த அலுவலர் பொறுப்பேற்றார்." },
+    joint_task_force: { en: "A joint task force of departments is handling this case.", ta: "கூட்டுப் பணிக்குழு இதைக் கையாள்கிறது." },
+    rejected: { en: "This complaint was rejected after review.", ta: "மறுஆய்வுக்குப் பிறகு புகார் நிராகரிக்கப்பட்டது." },
+  };
+  const e = map[status];
+  return e ? (ta ? e.ta : e.en) : ta ? "நிலை புதுப்பிக்கப்பட்டு வருகிறது." : "Status is being updated.";
+}
+
+function officerDecisionLabel(state: string, ta: boolean) {
+  if (state === "OFFICER_APPROVED") return ta ? "அலுவலர் ஏற்றார்" : "Approved by officer";
+  if (state === "OFFICER_REJECTED") return ta ? "அலுவலர் நிராகரித்தார்" : "Rejected — rework ordered";
+  return ta ? "அலுவலர் சரிபார்ப்பில்" : "Awaiting officer check";
+}
 
 function TrackPage() {
   const { t, lang } = useLang();
