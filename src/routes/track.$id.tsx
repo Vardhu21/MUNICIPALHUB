@@ -10,7 +10,7 @@ import { SlaBar } from "@/components/SlaBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { issueWardToken } from "@/lib/civic.functions";
-import { applyEscalation, fetchComplaint, fetchEvents, type Complaint } from "@/lib/data";
+import { applyEscalation, fetchComplaint, fetchEvents, officerForTier, type Complaint } from "@/lib/data";
 import type { Tier } from "@/lib/sla";
 import { EmblemLoader } from "@/components/EmblemLoader";
 import { ComplaintJourney } from "@/components/ComplaintJourney";
@@ -256,7 +256,7 @@ function TrackPage() {
                   {ta ? "புகார் மூடப்பட்டது ✓" : "Complaint closed ✓"}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  {c.status === "resolved_by_citizen"
+                  {String(c.status) === "resolved_by_citizen"
                     ? ta
                       ? "நீங்கள் பணியை உறுதிப்படுத்தியதால் புகார் தீர்க்கப்பட்டதாக மூடப்பட்டது. இது அலுவலரின் 'தீர்க்கப்பட்ட புகார்கள்' எண்ணிக்கையில் சேர்க்கப்பட்டது."
                       : "You confirmed the work, so this complaint is closed as resolved and counted in the officer's resolved tally."
@@ -430,7 +430,7 @@ function TrackPage() {
               </section>
             )}
 
-            {c.status === "verification" && (
+            {(c.status === "verification" || String(c.status) === "citizen_verification") && !isClosed && (
               <section className="civic-card space-y-3 p-4">
                 <h2 className="text-sm font-bold">{t("track.regionalVote")}</h2>
                 <p className="text-xs text-muted-foreground">{t("track.regionalVoteDesc")}</p>
