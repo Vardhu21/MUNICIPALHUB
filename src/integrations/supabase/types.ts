@@ -966,6 +966,7 @@ export type Database = {
           aadhaar_masked: string
           created_at: string
           digilocker_ref: string
+          id: string
           legal_name: string
           phone_encrypted: string
           user_id: string
@@ -974,6 +975,7 @@ export type Database = {
           aadhaar_masked: string
           created_at?: string
           digilocker_ref: string
+          id?: string
           legal_name: string
           phone_encrypted: string
           user_id: string
@@ -982,6 +984,7 @@ export type Database = {
           aadhaar_masked?: string
           created_at?: string
           digilocker_ref?: string
+          id?: string
           legal_name?: string
           phone_encrypted?: string
           user_id?: string
