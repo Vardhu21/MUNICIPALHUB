@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { ComplaintJourney } from "@/components/ComplaintJourney";
+
 import {
   Heart,
   MessageSquare,
