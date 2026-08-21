@@ -248,11 +248,23 @@ function AuthPage() {
           },
         },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.code === "user_already_exists") {
+          setMode("signin");
+          setSignInId(emailAddr);
+          throw new Error("This officer account already exists. Sign in with the password used during registration.");
+        }
+        throw error;
+      }
       const uid = data.user?.id;
       if (!uid) throw new Error(t("auth.error.accountNotCreated"));
       if (!data.session) {
-        throw new Error("Officer registration requires an immediately active verified account. Please contact the portal administrator.");
+        toast.success("Check your email to confirm your officer account", {
+          description: "After confirming, return here and sign in with your IFHRMS number.",
+        });
+        setMode("signin");
+        setSignInId(digilockerId.trim());
+        return;
       }
 
       const { error: profileError } = await supabase.from("profiles").upsert({
