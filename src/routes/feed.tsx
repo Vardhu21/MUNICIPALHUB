@@ -79,6 +79,14 @@ function Feed() {
       setLoading(false);
       toast.error(e instanceof Error ? e.message : t("feed.couldNotLoad"));
     });
+    // Officer proofs and status changes should surface in the feed quickly.
+    const quiet = () => load().catch(() => undefined);
+    const id = window.setInterval(quiet, 15_000);
+    window.addEventListener("focus", quiet);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", quiet);
+    };
   }, [load]);
 
   const wardMap = useMemo(() => new Map(wards.map((w) => [w.id, w])), [wards]);

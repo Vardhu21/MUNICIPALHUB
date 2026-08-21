@@ -119,12 +119,30 @@ export function ComplaintCard({
           slaHours={c.sla_hours}
         />
 
-        {(c.resolution_photo_url || c.resolution_note) && (
+        {(c.resolution_photo_url || c.resolution_note || c.work_summary || c.proof_caption) && (
           <div className="space-y-2 rounded-lg border border-success/40 bg-success/5 p-3">
-            <p className="text-xs font-semibold text-success">
-              {lang === "ta" ? "பணி முடிக்கப்பட்ட சான்று" : "Work completion proof"}
-            </p>
-            {c.resolution_note && <p className="text-xs text-muted-foreground">{c.resolution_note}</p>}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-semibold text-success">
+                {lang === "ta" ? "பணி முடிக்கப்பட்ட சான்று" : "Work completion proof"}
+              </p>
+              <span className="rounded-full border border-success/40 px-2 py-0.5 text-[11px] font-semibold text-success">
+                {String(c.status).startsWith("resolved")
+                  ? lang === "ta"
+                    ? "தீர்க்கப்பட்டது"
+                    : "Resolved"
+                  : lang === "ta"
+                    ? "குடிமகன் உறுதிப்படுத்தல் நிலுவையில்"
+                    : "Awaiting citizen confirmation"}
+              </span>
+            </div>
+            {(c.work_summary || c.resolution_note) && (
+              <p className="text-xs text-muted-foreground">{c.work_summary ?? c.resolution_note}</p>
+            )}
+            {c.materials_used && (
+              <p className="text-[11px] text-muted-foreground">
+                {lang === "ta" ? "பொருட்கள்" : "Materials"}: {c.materials_used}
+              </p>
+            )}
             {c.resolution_photo_url && (
               <img
                 src={c.resolution_photo_url}
@@ -133,6 +151,10 @@ export function ComplaintCard({
                 className="max-h-64 w-full rounded-lg border border-border object-cover"
               />
             )}
+            {c.proof_caption && <p className="text-[11px] text-muted-foreground">{c.proof_caption}</p>}
+            <Link to="/track/$id" params={{ id: c.id }} className="inline-block text-[11px] font-semibold text-primary underline">
+              {lang === "ta" ? "முழு கண்காணிப்பைப் பார்க்க" : "View full tracking"}
+            </Link>
           </div>
         )}
 

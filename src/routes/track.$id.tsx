@@ -13,6 +13,7 @@ import { issueWardToken } from "@/lib/civic.functions";
 import { applyEscalation, fetchComplaint, fetchEvents, type Complaint } from "@/lib/data";
 import type { Tier } from "@/lib/sla";
 import { EmblemLoader } from "@/components/EmblemLoader";
+import { ComplaintJourney } from "@/components/ComplaintJourney";
 
 export const Route = createFileRoute("/track/$id")({
   head: () => ({
@@ -107,6 +108,13 @@ function TrackPage() {
 
   useEffect(() => {
     refresh().catch(() => setLoading(false));
+    const quiet = () => refresh().catch(() => undefined);
+    const timer = window.setInterval(quiet, 15_000);
+    window.addEventListener("focus", quiet);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", quiet);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -193,6 +201,13 @@ function TrackPage() {
             <section className="civic-card space-y-2 p-4">
               <h2 className="text-sm font-bold">{ta ? "இப்போது என்ன நடக்கிறது?" : "What is happening now?"}</h2>
               <p className="text-sm text-muted-foreground">{plainStatus(c.status, ta)}</p>
+            </section>
+
+            <section className="civic-card space-y-3 p-4">
+              <h2 className="text-sm font-bold">
+                {ta ? "உங்கள் புகாரின் பயணம்" : "Your complaint journey"}
+              </h2>
+              <ComplaintJourney status={c.status} escalations={c.clock_offset_hours ?? 0} />
             </section>
 
             {(report || c.resolution_photo_url || c.work_summary || c.resolution_note) && (

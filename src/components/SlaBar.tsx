@@ -34,6 +34,14 @@ export function SlaBar({
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
         <div className={`h-full rounded-full transition-all duration-500 ${tone}`} style={{ width: `${pct}%` }} />
       </div>
+
+      {offsetHours > 0 && (
+        <p className="text-[11px] font-semibold text-warning">
+          {lang === "ta"
+            ? `அலுவலர் ${offsetHours} முறை நேரத்தை முன்னகர்த்தினார் (−${offsetHours} மணி)`
+            : `Officer fast-forwarded ×${offsetHours} (−${offsetHours}h)`}
+        </p>
+      )}
     </div>
   );
 }
