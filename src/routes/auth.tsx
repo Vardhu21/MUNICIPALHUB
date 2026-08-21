@@ -178,7 +178,14 @@ function AuthPage() {
         password,
         options: { emailRedirectTo: next ? `${window.location.origin}${next}` : window.location.origin },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.code === "user_already_exists") {
+          setMode("signin");
+          setSignInId(email.trim());
+          throw new Error("This account already exists. Sign in with the password used during registration.");
+        }
+        throw error;
+      }
       const uid = data.user?.id;
       if (!uid) throw new Error(t("auth.error.noSession"));
 
@@ -287,8 +294,14 @@ function AuthPage() {
     setBusy(true);
     const email = /^\d{11}$/.test(raw) ? ifhrmsToEmail(raw) : raw;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: signInPassword });
-    setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      setBusy(false);
+      return toast.error(
+        error.code === "invalid_credentials"
+          ? "The email or password is incorrect. Use the same details entered during registration."
+          : error.message,
+      );
+    }
 
     const uid = data.user?.id;
     if (uid) {
@@ -337,10 +350,12 @@ function AuthPage() {
       toast.success(officer ? t("auth.toast.welcomeOfficer") : t("auth.toast.welcomeBack"));
       if (next) window.location.assign(next);
       else navigate({ to: officer ? "/officer" : "/feed" });
+      setBusy(false);
       return;
     }
     if (next) window.location.assign(next);
     else navigate({ to: "/feed" });
+    setBusy(false);
   };
 
   return (

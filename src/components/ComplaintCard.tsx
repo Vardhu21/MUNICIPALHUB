@@ -10,6 +10,7 @@ import {
   MapPin,
   FastForward,
   Lock,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { StatusPill, PriorityPill } from "@/components/StatusPill";
@@ -18,6 +19,7 @@ import { MaskedCallModal } from "@/components/MaskedCallModal";
 import { useLang } from "@/lib/i18n";
 import { officerForTier, wardLabel, type Complaint, type Ward } from "@/lib/data";
 import type { Tier } from "@/lib/sla";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   complaint: Complaint;
@@ -29,6 +31,8 @@ type Props = {
   onRepost: () => void;
   onFlagFake: () => void;
   onFastForward: () => void;
+  canDelete?: boolean;
+  onDelete?: () => void;
   busy?: boolean;
 };
 
@@ -42,6 +46,8 @@ export function ComplaintCard({
   onRepost,
   onFlagFake,
   onFastForward,
+  canDelete,
+  onDelete,
   busy,
 }: Props) {
   const { lang, t } = useLang();
@@ -176,6 +182,20 @@ export function ComplaintCard({
             <Flag className="size-4" />
             <span className="hidden md:inline">{t("reportFake")}</span>
           </button>
+          {canDelete && onDelete ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              disabled={busy}
+              className="h-auto rounded-lg px-2.5 py-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+              title={lang === "ta" ? "புகாரை நீக்கு" : "Delete complaint"}
+            >
+              <Trash2 className="size-4" />
+              <span className="hidden sm:inline">{lang === "ta" ? "நீக்கு" : "Delete"}</span>
+            </Button>
+          ) : null}
           <button
             onClick={onFastForward}
             disabled={busy}
