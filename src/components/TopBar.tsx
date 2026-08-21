@@ -17,7 +17,7 @@ const NAV: {
   { to: "/report", key: "report", allow: ["citizen", ...OFFICER_ROLES] },
   { to: "/dashboard", key: "dashboard", allow: ["citizen", "worker", ...OFFICER_ROLES] },
   { to: "/directory", key: "directory", allow: ["citizen", "worker", ...OFFICER_ROLES] },
-  { to: "/analytics", key: "analytics", allow: ["citizen", ...OFFICER_ROLES] },
+  { to: "/analytics", key: "analytics", allow: OFFICER_ROLES },
   { to: "/reports", key: "reports", allow: ["citizen", ...OFFICER_ROLES] },
   { to: "/officer", key: "officer", allow: OFFICER_ROLES },
   { to: "/worker", key: "worker", allow: ["worker", "admin"] },
@@ -112,7 +112,7 @@ export function TopBar() {
           )}
 
           {/* Role selector — restricted to the roles this account actually holds. */}
-          {!trueOfficerRole && roles.length > 1 && (
+          {roles.length > 2 && (
             <label className="hidden items-center gap-1.5 rounded-lg border border-border bg-card px-2 py-1.5 sm:flex">
               <ShieldCheck className="size-3.5 shrink-0 text-primary" />
               <span className="sr-only">{t("role")}</span>

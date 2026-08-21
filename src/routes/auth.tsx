@@ -180,14 +180,27 @@ function AuthPage() {
       const uid = data.user?.id;
       if (!uid) throw new Error(t("auth.error.noSession"));
 
-      await supabase.from("profiles").upsert({
+      if (!data.session) {
+        toast.success("Check your email to confirm your account", {
+          description: "After confirming, return here and sign in to finish registration.",
+        });
+        setMode("signin");
+        setSignInId(email.trim());
+        return;
+      }
+
+      const { error: profileError } = await supabase.from("profiles").upsert({
         id: uid,
         pseudonym,
         ward_id: wardId || null,
         language: lang,
         digilocker_verified: true,
       });
-      await supabase.from("user_roles").upsert({ user_id: uid, role: "citizen", ward_id: wardId || null });
+      if (profileError) throw profileError;
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .upsert({ user_id: uid, role: "citizen", ward_id: wardId || null });
+      if (roleError) throw roleError;
       await sealIdentity({
         data: { legalName: legalName.trim(), aadhaar: digilockerId.trim(), phone: phone.trim() },
       });
@@ -229,14 +242,18 @@ function AuthPage() {
       if (error) throw error;
       const uid = data.user?.id;
       if (!uid) throw new Error(t("auth.error.accountNotCreated"));
+      if (!data.session) {
+        throw new Error("Officer registration requires an immediately active verified account. Please contact the portal administrator.");
+      }
 
-      await supabase.from("profiles").upsert({
+      const { error: profileError } = await supabase.from("profiles").upsert({
         id: uid,
         pseudonym: `@IFHRMS_${digilockerId.trim()}`,
         ward_id: wardId,
         language: lang,
         digilocker_verified: true,
       });
+      if (profileError) throw profileError;
       // Officer grants are server-side: the `user_roles` policy only lets an
       // account self-assign `citizen`. The server fn verifies the signed-in
       // account is the IFHRMS identity before granting.

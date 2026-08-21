@@ -22,8 +22,8 @@ export function RoleGate({ allow, children }: { allow: AppRole[]; children: Reac
       navigate({ to: "/auth", replace: true });
       return;
     }
-    if (!permitted) navigate({ to: "/dashboard", replace: true });
-  }, [loading, permitted, user, navigate]);
+    if (!permitted) navigate({ to: roles.includes("worker") ? "/worker" : "/dashboard", replace: true });
+  }, [loading, permitted, roles, user, navigate]);
 
   if (loading || !permitted) {
     return (

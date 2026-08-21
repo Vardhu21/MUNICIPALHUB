@@ -19,7 +19,7 @@ import { GeoCamera, type Capture } from "@/components/GeoCamera";
 import { MaskedCallModal } from "@/components/MaskedCallModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { useSession, writeActiveRole } from "@/lib/session";
+import { useSession } from "@/lib/session";
 import { computeClock, type Tier } from "@/lib/sla";
 import {
   applyEscalation,
@@ -84,10 +84,6 @@ function OfficerWorkspace() {
       navigate({ to: "/officer/login", replace: true });
     }
   }, [user, sessionLoading, navigate]);
-
-  useEffect(() => {
-    if (user) writeActiveRole("field_officer");
-  }, [user]);
 
   const load = useCallback(async () => {
     if (!user) return;
