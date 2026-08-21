@@ -15,7 +15,8 @@ import { TopBar } from "@/components/TopBar";
 import { StatusPill } from "@/components/StatusPill";
 import { BAND_LABEL, BAND_TONE, queueRank, triage } from "@/lib/triage";
 import { SlaBar } from "@/components/SlaBar";
-import { GeoCamera, type Capture } from "@/components/GeoCamera";
+import { type Capture } from "@/components/GeoCamera";
+import { WorkReportForm, type WorkReport } from "@/components/WorkReportForm";
 import { MaskedCallModal } from "@/components/MaskedCallModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
@@ -150,13 +151,13 @@ function OfficerWorkspace() {
     }
   };
 
-  const submitProof = (c: Complaint, cap: Capture) => {
+  const submitProof = (c: Complaint, report: WorkReport, cap: Capture) => {
     patch(
       c,
       {
         resolution_photo_url: cap.dataUrl,
         status: "verification",
-        resolution_note: proofNote.trim() || null,
+        ...report,
       },
       t("officer.proofUploadedNote"),
     );
@@ -319,34 +320,15 @@ function OfficerWorkspace() {
             </div>
 
             {proofFor?.id === c.id && (
-              <div className="space-y-2 rounded-lg border border-border p-3">
-                <p className="text-xs font-semibold">{t("officer.geotaggedProof")}</p>
-                <textarea
-                  value={proofNote}
-                  onChange={(e) => setProofNote(e.target.value)}
-                  rows={3}
-                  placeholder={
-                    lang === "ta"
-                      ? "செய்யப்பட்ட பணியின் விவரம் (புகார்தாரருக்குத் தெரியும்)"
-                      : "Describe the work completed — the citizen sees this on the feed"
-                  }
-                  className="w-full rounded-lg border border-input bg-background p-2 text-xs outline-none focus:border-primary"
-                />
-                <GeoCamera
-                  wardLabel={wardLabel(c.ward_id ? wardMap.get(c.ward_id) : undefined, "en")}
-                  zoneLabel={t("officer.completionCapture")}
-                  onCapture={(cap) => submitProof(c, cap)}
-                />
-                <button
-                  onClick={() => {
-                    setProofFor(null);
-                    setProofNote("");
-                  }}
-                  className="w-full rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
-                >
-                  {t("action.cancel")}
-                </button>
-              </div>
+              <WorkReportForm
+                wardLabel={wardLabel(c.ward_id ? wardMap.get(c.ward_id) : undefined, "en")}
+                zoneLabel={t("officer.completionCapture")}
+                onSubmit={(report, cap) => submitProof(c, report, cap)}
+                onCancel={() => {
+                  setProofFor(null);
+                  setProofNote("");
+                }}
+              />
             )}
           </article>
           );

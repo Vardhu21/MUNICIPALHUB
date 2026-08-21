@@ -437,8 +437,10 @@ export type Database = {
           id: string
           lat: number | null
           lng: number | null
+          materials_used: string | null
           photo_url: string | null
           priority: Database["public"]["Enums"]["complaint_priority"]
+          proof_caption: string | null
           resolution_note: string | null
           resolution_photo_url: string | null
           routed_councillor_id: string | null
@@ -449,6 +451,9 @@ export type Database = {
           title: string
           updated_at: string
           ward_id: string | null
+          work_completed_at: string | null
+          work_started_at: string | null
+          work_summary: string | null
         }
         Insert: {
           assigned_officer?: string | null
@@ -467,8 +472,10 @@ export type Database = {
           id?: string
           lat?: number | null
           lng?: number | null
+          materials_used?: string | null
           photo_url?: string | null
           priority?: Database["public"]["Enums"]["complaint_priority"]
+          proof_caption?: string | null
           resolution_note?: string | null
           resolution_photo_url?: string | null
           routed_councillor_id?: string | null
@@ -479,6 +486,9 @@ export type Database = {
           title: string
           updated_at?: string
           ward_id?: string | null
+          work_completed_at?: string | null
+          work_started_at?: string | null
+          work_summary?: string | null
         }
         Update: {
           assigned_officer?: string | null
@@ -497,8 +507,10 @@ export type Database = {
           id?: string
           lat?: number | null
           lng?: number | null
+          materials_used?: string | null
           photo_url?: string | null
           priority?: Database["public"]["Enums"]["complaint_priority"]
+          proof_caption?: string | null
           resolution_note?: string | null
           resolution_photo_url?: string | null
           routed_councillor_id?: string | null
@@ -509,6 +521,9 @@ export type Database = {
           title?: string
           updated_at?: string
           ward_id?: string | null
+          work_completed_at?: string | null
+          work_started_at?: string | null
+          work_summary?: string | null
         }
         Relationships: [
           {

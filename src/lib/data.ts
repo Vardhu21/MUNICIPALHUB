@@ -42,6 +42,11 @@ export type Complaint = {
   photo_url: string | null;
   resolution_photo_url: string | null;
   resolution_note: string | null;
+  work_summary: string | null;
+  materials_used: string | null;
+  work_started_at: string | null;
+  work_completed_at: string | null;
+  proof_caption: string | null;
   geo_verified: boolean;
   frozen_fake: boolean;
   complainant_approved: boolean | null;
