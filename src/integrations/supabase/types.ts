@@ -1203,7 +1203,53 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      ulb_leadership_public: {
+        Row: {
+          authority_id: string | null
+          created_at: string | null
+          email: string | null
+          name: string | null
+          office_phone: string | null
+          official_source: string | null
+          role: string | null
+          source_checked_at: string | null
+          ulb_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          authority_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          name?: string | null
+          office_phone?: string | null
+          official_source?: string | null
+          role?: string | null
+          source_checked_at?: string | null
+          ulb_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          authority_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          name?: string | null
+          office_phone?: string | null
+          official_source?: string | null
+          role?: string | null
+          source_checked_at?: string | null
+          ulb_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ulb_leadership_ulb_id_fkey"
+            columns: ["ulb_id"]
+            isOneToOne: false
+            referencedRelation: "ulbs"
+            referencedColumns: ["ulb_id"]
+          },
+        ]
+      }
     }
     Functions: {
       geo_distance_m: {
