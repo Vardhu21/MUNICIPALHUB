@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { complaintFieldReport } from "@/lib/workflow.functions";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLang } from "@/lib/i18n";
@@ -29,6 +31,39 @@ export const Route = createFileRoute("/track/$id")({
 });
 
 type EventRow = { id: string; event_type: string; actor_label: string; note: string | null; created_at: string };
+type FieldReport = Awaited<ReturnType<typeof complaintFieldReport>>;
+
+/** Plain-language explanation of where the ticket currently stands. */
+function plainStatus(status: string, ta: boolean) {
+  const map: Record<string, { en: string; ta: string }> = {
+    submitted: { en: "Your complaint has been received and is waiting to be assigned to a worker.", ta: "உங்கள் புகார் பெறப்பட்டது; பணியாளர் நியமிக்கப்பட உள்ளது." },
+    assigned: { en: "A field worker has been assigned and will visit the spot soon.", ta: "களப் பணியாளர் நியமிக்கப்பட்டார்; விரைவில் வருவார்." },
+    worker_accepted: { en: "The worker accepted the job and is preparing to travel.", ta: "பணியாளர் பணியை ஏற்றுக்கொண்டார்." },
+    travelling: { en: "The worker is on the way to your location.", ta: "பணியாளர் உங்கள் இடத்திற்கு வந்து கொண்டிருக்கிறார்." },
+    arrived: { en: "The worker has reached the spot.", ta: "பணியாளர் இடத்தை அடைந்துவிட்டார்." },
+    in_progress: { en: "Work is going on at the spot right now.", ta: "இடத்தில் பணி நடைபெற்று வருகிறது." },
+    evidence_submitted: { en: "The worker finished and uploaded a photo of the completed work.", ta: "பணி முடிந்து புகைப்படம் பதிவேற்றப்பட்டது." },
+    officer_review: { en: "The officer is checking the worker's photo and report.", ta: "அலுவலர் புகைப்படத்தையும் அறிக்கையையும் சரிபார்க்கிறார்." },
+    officer_approved: { en: "The officer approved the work. Your confirmation is next.", ta: "அலுவலர் பணியை ஏற்றார். உங்கள் உறுதிப்படுத்தல் தேவை." },
+    citizen_verification: { en: "Please confirm whether the issue is really fixed.", ta: "பிரச்சினை சரிசெய்யப்பட்டதா என்பதை உறுதிப்படுத்தவும்." },
+    verification: { en: "Neighbours in your ward are voting on whether the work is genuine.", ta: "உங்கள் வார்டு மக்கள் பணி குறித்து வாக்களிக்கின்றனர்." },
+    resolved: { en: "This complaint is closed as resolved.", ta: "இந்தப் புகார் தீர்க்கப்பட்டு மூடப்பட்டது." },
+    resolved_by_citizen: { en: "You confirmed the fix, so the complaint is closed.", ta: "நீங்கள் உறுதிப்படுத்தியதால் புகார் மூடப்பட்டது." },
+    reopened: { en: "You were not satisfied, so the complaint was reopened for rework.", ta: "திருப்தி இல்லாததால் புகார் மீண்டும் திறக்கப்பட்டது." },
+    auto_closed_no_response: { en: "No reply was received in time, so the complaint closed automatically.", ta: "பதில் வராததால் புகார் தானாக மூடப்பட்டது." },
+    escalated: { en: "The deadline passed, so a senior officer has taken over.", ta: "கால அவகாசம் முடிந்ததால் மூத்த அலுவலர் பொறுப்பேற்றார்." },
+    joint_task_force: { en: "A joint task force of departments is handling this case.", ta: "கூட்டுப் பணிக்குழு இதைக் கையாள்கிறது." },
+    rejected: { en: "This complaint was rejected after review.", ta: "மறுஆய்வுக்குப் பிறகு புகார் நிராகரிக்கப்பட்டது." },
+  };
+  const e = map[status];
+  return e ? (ta ? e.ta : e.en) : ta ? "நிலை புதுப்பிக்கப்பட்டு வருகிறது." : "Status is being updated.";
+}
+
+function officerDecisionLabel(state: string, ta: boolean) {
+  if (state === "OFFICER_APPROVED") return ta ? "அலுவலர் ஏற்றார்" : "Approved by officer";
+  if (state === "OFFICER_REJECTED") return ta ? "அலுவலர் நிராகரித்தார்" : "Rejected — rework ordered";
+  return ta ? "அலுவலர் சரிபார்ப்பில்" : "Awaiting officer check";
+}
 
 function TrackPage() {
   const { t, lang } = useLang();
@@ -41,6 +76,8 @@ function TrackPage() {
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(true);
   const [votes, setVotes] = useState<{ approve: boolean; voter_id: string }[]>([]);
+  const [report, setReport] = useState<FieldReport>(null);
+  const loadReport = useServerFn(complaintFieldReport);
 
   const refresh = async () => {
     const found = await fetchComplaint(id);
@@ -62,6 +99,9 @@ function TrackPage() {
       .select("approve,voter_id")
       .eq("complaint_id", id);
     setVotes(voteRows ?? []);
+    await loadReport({ data: { complaintId: id } })
+      .then((r) => setReport(r))
+      .catch(() => undefined);
     setLoading(false);
   };
 
@@ -149,43 +189,97 @@ function TrackPage() {
               />
             </article>
 
-            {(c.resolution_photo_url || c.work_summary || c.resolution_note) && (
+            <section className="civic-card space-y-2 p-4">
+              <h2 className="text-sm font-bold">{ta ? "இப்போது என்ன நடக்கிறது?" : "What is happening now?"}</h2>
+              <p className="text-sm text-muted-foreground">{plainStatus(c.status, ta)}</p>
+            </section>
+
+            {(report || c.resolution_photo_url || c.work_summary || c.resolution_note) && (
               <section className="civic-card space-y-3 p-4">
-                <h2 className="text-sm font-bold">{ta ? "பணி நிறைவு அறிக்கை" : "Work completion report"}</h2>
-                {(c.work_summary || c.resolution_note) && (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      {ta ? "செய்யப்பட்ட பணி" : "Work performed"}
-                    </p>
-                    <p className="text-sm">{c.work_summary ?? c.resolution_note}</p>
-                  </div>
-                )}
+                <h2 className="text-sm font-bold">
+                  {ta ? "அலுவலர் அளித்த பணி அறிக்கை" : "Officer-verified work report"}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {ta
+                    ? "களப் பணியாளர் அனுப்பிய விவரம், புகைப்படம் மற்றும் அலுவலர் முடிவு."
+                    : "What the field worker did, the photo they took on site, and the officer's decision."}
+                </p>
+
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {ta ? "செய்யப்பட்ட பணி" : "Work done"}
+                  </p>
+                  <p className="text-sm">
+                    {report?.description ??
+                      c.work_summary ??
+                      c.resolution_note ??
+                      (ta ? "விவரம் பதிவு செய்யப்படவில்லை." : "No description was added.")}
+                  </p>
+                </div>
+
                 <dl className="grid gap-2 sm:grid-cols-3">
-                  {c.materials_used && (
-                    <Detail label={ta ? "பொருட்கள்" : "Materials used"} value={c.materials_used} />
-                  )}
-                  {c.work_started_at && (
+                  {(report?.workerName || c.assigned_officer) && (
                     <Detail
-                      label={ta ? "தொடங்கியது" : "Started"}
-                      value={new Date(c.work_started_at).toLocaleString("en-IN")}
+                      label={ta ? "பணி செய்தவர்" : "Done by"}
+                      value={
+                        report?.workerName
+                          ? `${report.workerName}${report.workerDepartment ? ` · ${report.workerDepartment}` : ""}`
+                          : (c.assigned_officer as string)
+                      }
                     />
                   )}
-                  {c.work_completed_at && (
+                  {c.materials_used && (
+                    <Detail label={ta ? "பயன்படுத்திய பொருட்கள்" : "Materials used"} value={c.materials_used} />
+                  )}
+                  {(report?.workStartedAt ?? c.work_started_at) && (
                     <Detail
-                      label={ta ? "நிறைவு" : "Completed"}
-                      value={new Date(c.work_completed_at).toLocaleString("en-IN")}
+                      label={ta ? "தொடங்கியது" : "Started"}
+                      value={new Date((report?.workStartedAt ?? c.work_started_at) as string).toLocaleString("en-IN")}
+                    />
+                  )}
+                  {(report?.workCompletedAt ?? c.work_completed_at) && (
+                    <Detail
+                      label={ta ? "முடிந்தது" : "Finished"}
+                      value={new Date((report?.workCompletedAt ?? c.work_completed_at) as string).toLocaleString("en-IN")}
+                    />
+                  )}
+                  {report && (
+                    <Detail
+                      label={ta ? "இட சரிபார்ப்பு" : "Location check"}
+                      value={
+                        report.locationVerified
+                          ? ta
+                            ? "புகார் இடத்தில் எடுக்கப்பட்டது"
+                            : "Photo taken at the complaint spot"
+                          : ta
+                            ? "சரிபார்க்கப்படவில்லை"
+                            : "Not confirmed"
+                      }
+                    />
+                  )}
+                  {report && (
+                    <Detail
+                      label={ta ? "அலுவலர் முடிவு" : "Officer decision"}
+                      value={officerDecisionLabel(report.officerState, ta)}
                     />
                   )}
                 </dl>
-                {c.resolution_photo_url && (
+
+                {report?.officerReason && (
+                  <p className="rounded-lg border border-border bg-secondary/40 p-2 text-xs">
+                    {ta ? "அலுவலர் குறிப்பு" : "Officer note"}: {report.officerReason}
+                  </p>
+                )}
+
+                {(report?.photoUrl || c.resolution_photo_url) && (
                   <figure className="space-y-1.5">
                     <img
-                      src={c.resolution_photo_url}
-                      alt={`Resolution evidence image for ${c.title}`}
+                      src={(report?.photoUrl ?? c.resolution_photo_url) as string}
+                      alt={`Work completion photo for ${c.title}`}
                       className="w-full rounded-lg"
                     />
                     <figcaption className="text-xs text-muted-foreground">
-                      {c.proof_caption ?? (ta ? "புவிக்குறியிடப்பட்ட நிறைவு சான்று" : "Geotagged completion proof")}
+                      {c.proof_caption ?? (ta ? "இடத்தில் எடுக்கப்பட்ட புகைப்படம்" : "Photo captured on site")}
                     </figcaption>
                   </figure>
                 )}
