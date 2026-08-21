@@ -41,6 +41,8 @@ function TrackPage() {
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(true);
   const [votes, setVotes] = useState<{ approve: boolean; voter_id: string }[]>([]);
+  const [report, setReport] = useState<FieldReport>(null);
+  const loadReport = useServerFn(complaintFieldReport);
 
   const refresh = async () => {
     const found = await fetchComplaint(id);
