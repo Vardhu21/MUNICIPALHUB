@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { ComplaintJourney } from "@/components/ComplaintJourney";
+
 import {
   Heart,
   MessageSquare,
@@ -157,6 +159,14 @@ export function ComplaintCard({
             </Link>
           </div>
         )}
+
+        <div className="rounded-lg border border-border bg-secondary/30 p-3">
+          <p className="mb-2 text-xs font-semibold">
+            {lang === "ta" ? "புகார் நிலை பயணம்" : "Complaint progress"}
+          </p>
+          <ComplaintJourney status={String(c.status)} escalations={c.clock_offset_hours ?? 0} compact />
+        </div>
+
 
         <p className="text-xs text-muted-foreground">
           <span className="font-semibold text-foreground">{t("card.assigned")}</span>{" "}
