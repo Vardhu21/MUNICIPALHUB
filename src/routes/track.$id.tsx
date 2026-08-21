@@ -99,6 +99,9 @@ function TrackPage() {
       .select("approve,voter_id")
       .eq("complaint_id", id);
     setVotes(voteRows ?? []);
+    await loadReport({ data: { complaintId: id } })
+      .then((r) => setReport(r))
+      .catch(() => undefined);
     setLoading(false);
   };
 
