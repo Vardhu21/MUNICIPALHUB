@@ -124,6 +124,32 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [start]);
 
+  // Keep `ready` honest: a stream can attach while the element still has no
+  // decoded frame (paused autoplay, throttled tab). Poll until frames arrive.
+  useEffect(() => {
+    const id = setInterval(() => {
+      const video = videoRef.current;
+      const live = streamRef.current?.getVideoTracks().some((tr) => tr.readyState === "live") ?? false;
+      const framing = !!video && video.videoWidth > 0 && video.readyState >= 2;
+      if (live && !framing) void video?.play().catch(() => undefined);
+      setReady(live && framing);
+    }, 500);
+    return () => clearInterval(id);
+  }, []);
+
+  /** Give the element a moment to produce a frame before rejecting a capture. */
+  const waitForFrame = async () => {
+    const video = videoRef.current;
+    if (!video) return false;
+    for (let i = 0; i < 12; i += 1) {
+      if (video.videoWidth > 0 && video.readyState >= 2) return true;
+      await video.play().catch(() => undefined);
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    return video.videoWidth > 0;
+  };
+
+
   const stamp = (ctx: CanvasRenderingContext2D, w: number, h: number, telemetry: GeoFix | null) => {
     const pad = Math.round(w * 0.025);
     const line = Math.round(w * 0.032);
@@ -145,7 +171,7 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
     ctx.fillText("GEOTAG VERIFIED", w - pad - line * 5.1, h - line * 3.52);
   };
 
-  const capture = () => {
+  const capture = async () => {
     // --- AI EXIF anti-spoofing inspector -------------------------------
     if (!fix) {
       toast.error(t("camera.rejectedTitle"), {
@@ -166,13 +192,22 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       });
       return;
     }
+    let framed = await waitForFrame();
+    if (!framed) {
+      // Try one full restart before giving up — the stream may have been
+      // dropped by the browser while the sheet was in the background.
+      await start();
+      framed = await waitForFrame();
+    }
     const video = videoRef.current;
-    if (!ready || !video || video.videoWidth === 0) {
+    if (!framed || !video) {
       toast.error(t("camera.rejectedTitle"), {
         description: t("camera.rejectedNoStream"),
       });
       return;
     }
+
+
     // -------------------------------------------------------------------
 
     const w = Math.min(video.videoWidth, 960);
