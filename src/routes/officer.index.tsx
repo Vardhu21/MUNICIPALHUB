@@ -24,6 +24,7 @@ import { useSession } from "@/lib/session";
 import { computeClock, type Tier } from "@/lib/sla";
 import {
   applyEscalation,
+  escalateNow,
   fastForward,
   fetchComplaints,
   fetchWards,
