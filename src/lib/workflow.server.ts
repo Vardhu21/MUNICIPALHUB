@@ -84,7 +84,7 @@ export async function moveComplaint(
 export async function isOfficer(sb: AnyClient, userId: string) {
   const { data } = await sb.from("user_roles").select("role").eq("user_id", userId);
   return (data ?? []).some((r: { role: string }) =>
-    ["field_officer", "zonal_commissioner", "commissioner", "admin"].includes(r.role),
+    ["field_officer", "zonal_commissioner", "commissioner", "councillor", "admin"].includes(r.role),
   );
 }
 
