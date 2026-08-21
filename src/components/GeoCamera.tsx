@@ -171,7 +171,7 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
     ctx.fillText("GEOTAG VERIFIED", w - pad - line * 5.1, h - line * 3.52);
   };
 
-  const capture = () => {
+  const capture = async () => {
     // --- AI EXIF anti-spoofing inspector -------------------------------
     if (!fix) {
       toast.error(t("camera.rejectedTitle"), {
