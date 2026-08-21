@@ -63,11 +63,12 @@ export async function lookupDirectory(question: string): Promise<string | null> 
   }
 
   if (/mayor|மேயர்|commissioner|ஆணையர்|leadership/i.test(question)) {
-    const { data: leaders } = await sb.from("ulb_leadership").select("role,name,phone,office_phone,email");
+    // Only official office contacts are shared; personal mobile numbers stay private.
+    const { data: leaders } = await sb.from("ulb_leadership").select("role,name,office_phone,email");
     if (leaders?.length)
       lines.push(
         `LEADERSHIP: ${leaders
-          .map((l) => `${l.role} — ${l.name}${l.phone || l.office_phone ? `, ${l.phone ?? l.office_phone}` : ""}${l.email ? `, ${l.email}` : ""}`)
+          .map((l) => `${l.role} — ${l.name}${l.office_phone ? `, ${l.office_phone}` : ""}${l.email ? `, ${l.email}` : ""}`)
           .join(" | ")}`,
       );
   }

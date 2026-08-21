@@ -67,7 +67,6 @@ export type UlbLeader = {
   ulb_id: string;
   role: string;
   name: string;
-  phone: string | null;
   office_phone: string | null;
   email: string | null;
   official_source: string;
@@ -218,7 +217,10 @@ export async function fetchLeadership(
 ): Promise<UlbLeader[]> {
   const { data, error } = await supabase
     .from("ulb_leadership")
-    .select("*")
+    // "phone" (personal mobile) is intentionally excluded — only official contacts are public.
+    .select(
+      "authority_id,ulb_id,role,name,office_phone,email,official_source,source_checked_at,created_at,updated_at",
+    )
     .eq("ulb_id", ulbId)
     .order("role");
 
