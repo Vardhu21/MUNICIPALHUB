@@ -149,43 +149,97 @@ function TrackPage() {
               />
             </article>
 
-            {(c.resolution_photo_url || c.work_summary || c.resolution_note) && (
+            <section className="civic-card space-y-2 p-4">
+              <h2 className="text-sm font-bold">{ta ? "இப்போது என்ன நடக்கிறது?" : "What is happening now?"}</h2>
+              <p className="text-sm text-muted-foreground">{plainStatus(c.status, ta)}</p>
+            </section>
+
+            {(report || c.resolution_photo_url || c.work_summary || c.resolution_note) && (
               <section className="civic-card space-y-3 p-4">
-                <h2 className="text-sm font-bold">{ta ? "பணி நிறைவு அறிக்கை" : "Work completion report"}</h2>
-                {(c.work_summary || c.resolution_note) && (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      {ta ? "செய்யப்பட்ட பணி" : "Work performed"}
-                    </p>
-                    <p className="text-sm">{c.work_summary ?? c.resolution_note}</p>
-                  </div>
-                )}
+                <h2 className="text-sm font-bold">
+                  {ta ? "அலுவலர் அளித்த பணி அறிக்கை" : "Officer-verified work report"}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {ta
+                    ? "களப் பணியாளர் அனுப்பிய விவரம், புகைப்படம் மற்றும் அலுவலர் முடிவு."
+                    : "What the field worker did, the photo they took on site, and the officer's decision."}
+                </p>
+
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {ta ? "செய்யப்பட்ட பணி" : "Work done"}
+                  </p>
+                  <p className="text-sm">
+                    {report?.description ??
+                      c.work_summary ??
+                      c.resolution_note ??
+                      (ta ? "விவரம் பதிவு செய்யப்படவில்லை." : "No description was added.")}
+                  </p>
+                </div>
+
                 <dl className="grid gap-2 sm:grid-cols-3">
-                  {c.materials_used && (
-                    <Detail label={ta ? "பொருட்கள்" : "Materials used"} value={c.materials_used} />
-                  )}
-                  {c.work_started_at && (
+                  {(report?.workerName || c.assigned_officer) && (
                     <Detail
-                      label={ta ? "தொடங்கியது" : "Started"}
-                      value={new Date(c.work_started_at).toLocaleString("en-IN")}
+                      label={ta ? "பணி செய்தவர்" : "Done by"}
+                      value={
+                        report?.workerName
+                          ? `${report.workerName}${report.workerDepartment ? ` · ${report.workerDepartment}` : ""}`
+                          : (c.assigned_officer as string)
+                      }
                     />
                   )}
-                  {c.work_completed_at && (
+                  {c.materials_used && (
+                    <Detail label={ta ? "பயன்படுத்திய பொருட்கள்" : "Materials used"} value={c.materials_used} />
+                  )}
+                  {(report?.workStartedAt ?? c.work_started_at) && (
                     <Detail
-                      label={ta ? "நிறைவு" : "Completed"}
-                      value={new Date(c.work_completed_at).toLocaleString("en-IN")}
+                      label={ta ? "தொடங்கியது" : "Started"}
+                      value={new Date((report?.workStartedAt ?? c.work_started_at) as string).toLocaleString("en-IN")}
+                    />
+                  )}
+                  {(report?.workCompletedAt ?? c.work_completed_at) && (
+                    <Detail
+                      label={ta ? "முடிந்தது" : "Finished"}
+                      value={new Date((report?.workCompletedAt ?? c.work_completed_at) as string).toLocaleString("en-IN")}
+                    />
+                  )}
+                  {report && (
+                    <Detail
+                      label={ta ? "இட சரிபார்ப்பு" : "Location check"}
+                      value={
+                        report.locationVerified
+                          ? ta
+                            ? "புகார் இடத்தில் எடுக்கப்பட்டது"
+                            : "Photo taken at the complaint spot"
+                          : ta
+                            ? "சரிபார்க்கப்படவில்லை"
+                            : "Not confirmed"
+                      }
+                    />
+                  )}
+                  {report && (
+                    <Detail
+                      label={ta ? "அலுவலர் முடிவு" : "Officer decision"}
+                      value={officerDecisionLabel(report.officerState, ta)}
                     />
                   )}
                 </dl>
-                {c.resolution_photo_url && (
+
+                {report?.officerReason && (
+                  <p className="rounded-lg border border-border bg-secondary/40 p-2 text-xs">
+                    {ta ? "அலுவலர் குறிப்பு" : "Officer note"}: {report.officerReason}
+                  </p>
+                )}
+
+                {(report?.photoUrl || c.resolution_photo_url) && (
                   <figure className="space-y-1.5">
                     <img
-                      src={c.resolution_photo_url}
-                      alt={`Resolution evidence image for ${c.title}`}
+                      src={(report?.photoUrl ?? c.resolution_photo_url) as string}
+                      alt={`Work completion photo for ${c.title}`}
                       className="w-full rounded-lg"
                     />
                     <figcaption className="text-xs text-muted-foreground">
-                      {c.proof_caption ?? (ta ? "புவிக்குறியிடப்பட்ட நிறைவு சான்று" : "Geotagged completion proof")}
+                      {c.proof_caption ?? (ta ? "இடத்தில் எடுக்கப்பட்ட புகைப்படம்" : "Photo captured on site")}
                     </figcaption>
                   </figure>
                 )}
