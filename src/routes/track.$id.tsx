@@ -156,40 +156,58 @@ function TrackPage() {
         .insert({ complaint_id: c.id, voter_id: user.id, approve, zkp_token: token });
       if (error) throw error;
 
-      // The complainant's own vote is the final word: yes closes the ticket,
-      // no reopens it for officer rework.
-      if (user.id === c.author_id) {
+      // A single approving vote finalises the ticket: it is marked resolved and
+      // closed. A rejecting vote from the complainant reopens it for rework.
+      const proofUploaded = !!(
+        c.resolution_photo_url ||
+        c.work_summary ||
+        c.resolution_note ||
+        c.proof_caption ||
+        ["evidence_submitted", "officer_review", "officer_approved", "citizen_verification", "verification"].includes(
+          String(c.status),
+        )
+      );
+
+      if (approve && proofUploaded) {
         const { data: updated } = await supabase
           .from("complaints")
-          .update(
-            approve
-              ? { status: "resolved_by_citizen", complainant_approved: true }
-              : { status: "reopened", complainant_approved: false },
-          )
+          .update({ status: "resolved_by_citizen", complainant_approved: true })
           .eq("id", c.id)
           .select()
           .maybeSingle();
         await supabase.from("complaint_events").insert({
           complaint_id: c.id,
-          event_type: approve ? "citizen_closed" : "citizen_reopened",
+          event_type: "citizen_closed",
           actor_label: c.author_pseudonym,
-          note: approve
-            ? "Complainant confirmed the fix — complaint closed as resolved."
-            : "Complainant was not satisfied — complaint reopened for rework.",
+          note: "Resolution vote confirmed the fix — complaint closed as resolved.",
         });
         if (updated) setC(updated as Complaint);
         toast.success(
-          approve
-            ? ta
-              ? "நன்றி! புகார் தீர்க்கப்பட்டு மூடப்பட்டது."
-              : "Thank you! The complaint is now closed as resolved."
-            : ta
-              ? "புகார் மீண்டும் திறக்கப்பட்டது — அலுவலருக்கு அனுப்பப்பட்டது."
-              : "Complaint reopened and sent back to the officer.",
+          ta ? "நன்றி! புகார் தீர்க்கப்பட்டு மூடப்பட்டது." : "Thank you! The complaint is now closed as resolved.",
+        );
+      } else if (!approve && user.id === c.author_id) {
+        const { data: updated } = await supabase
+          .from("complaints")
+          .update({ status: "reopened", complainant_approved: false })
+          .eq("id", c.id)
+          .select()
+          .maybeSingle();
+        await supabase.from("complaint_events").insert({
+          complaint_id: c.id,
+          event_type: "citizen_reopened",
+          actor_label: c.author_pseudonym,
+          note: "Complainant was not satisfied — complaint reopened for rework.",
+        });
+        if (updated) setC(updated as Complaint);
+        toast.success(
+          ta
+            ? "புகார் மீண்டும் திறக்கப்பட்டது — அலுவலருக்கு அனுப்பப்பட்டது."
+            : "Complaint reopened and sent back to the officer.",
         );
       } else {
         toast.success(approve ? t("track.voteApproved") : t("track.voteRejected"));
       }
+
       refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("track.zkpProofFailed"));
