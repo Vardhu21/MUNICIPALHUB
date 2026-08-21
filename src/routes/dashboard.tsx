@@ -133,7 +133,7 @@ function Dashboard() {
         {loading && <EmblemLoader label={t("dashboard.loadingConsole")} />}
 
         {role === "citizen" && (
-          <CitizenView complaints={mine} wardMap={wardMap} onAdvance={advance} busyId={busyId} onPatch={patch} />
+          <CitizenView complaints={mine} wardMap={wardMap} onPatch={patch} />
         )}
         {role === "field_officer" && (
           <FieldView complaints={complaints} wardMap={wardMap} onPatch={patch} onAdvance={advance} busyId={busyId} />
@@ -219,14 +219,10 @@ function Stat({ label, value, icon: Icon }: { label: string; value: string | num
 function CitizenView({
   complaints,
   wardMap,
-  onAdvance,
-  busyId,
   onPatch,
 }: {
   complaints: Complaint[];
   wardMap: Map<string, Ward>;
-  onAdvance: (c: Complaint) => void;
-  busyId: string | null;
   onPatch: (c: Complaint, v: Partial<Complaint>, note: string, actor: string) => void;
 }) {
   const { t } = useLang();
