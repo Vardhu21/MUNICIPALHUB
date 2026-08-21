@@ -124,6 +124,15 @@ function OfficerWorkspace() {
   }, [complaints, officerWardId]);
 
 
+  // Proof uploaded by the officer → waiting for the complainant's confirmation.
+  const awaitingVerification = useMemo(
+    () => queue.filter((c) => c.status === "verification"),
+    [queue],
+  );
+
+  const citizenReopened = useMemo(() => queue.filter((c) => c.status === "reopened"), [queue]);
+
+
   const breachedCount = useMemo(
     () =>
       queue.filter((c) => computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached).length,
