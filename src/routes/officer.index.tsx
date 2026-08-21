@@ -142,10 +142,18 @@ function OfficerWorkspace() {
   const patch = async (c: Complaint, values: Partial<Complaint>, note: string) => {
     const { data, error } = await supabase.from("complaints").update(values).eq("id", c.id).select().maybeSingle();
     if (error) return toast.error(error.message);
+    if (!data) {
+      return toast.error(
+        lang === "ta"
+          ? "புதுப்பிக்க முடியவில்லை — உங்கள் கணக்கிற்கு அலுவலர் அனுமதி இல்லை."
+          : "Update blocked — your account does not have officer permission for this ticket.",
+      );
+    }
     await logEvent(c.id, "update", officerName || "Field Officer", note);
     setComplaints((prev) => prev.map((x) => (x.id === c.id ? ((data ?? x) as Complaint) : x)));
     toast.success(note);
   };
+
 
   const advance = async (c: Complaint) => {
     setBusyId(c.id);
