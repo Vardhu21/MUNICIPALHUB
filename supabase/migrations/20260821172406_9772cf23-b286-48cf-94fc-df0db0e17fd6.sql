@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.protect_complaint_escalation() FROM PUBLIC, anon, authenticated;

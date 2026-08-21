@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
+  ArrowUpRight,
   Activity,
   AlertTriangle,
   BarChart3,
@@ -24,6 +25,7 @@ import { useSession } from "@/lib/session";
 import { computeClock, type Tier } from "@/lib/sla";
 import {
   applyEscalation,
+  escalateNow,
   fastForward,
   fetchComplaints,
   fetchWards,
@@ -124,7 +126,7 @@ function OfficerWorkspace() {
 
   const breachedCount = useMemo(
     () =>
-      queue.filter((c) => computeClock(c.created_at, c.priority, c.clock_offset_hours).breached).length,
+      queue.filter((c) => computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached).length,
     [queue],
   );
 
@@ -146,6 +148,20 @@ function OfficerWorkspace() {
       } else {
         toast.info(t("officer.slaClockPlusOne"));
       }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  /** Officer-only: push the ticket up one authority tier immediately. */
+  const escalate = async (c: Complaint) => {
+    setBusyId(c.id);
+    try {
+      const updated = await escalateNow(c);
+      setComplaints((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+      toast.success(`${t("officer.autoEscalated")} ${updated.assigned_officer ?? t("officer.nextTier")}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Escalation failed");
     } finally {
       setBusyId(null);
     }
@@ -267,6 +283,7 @@ function OfficerWorkspace() {
               priority={c.priority}
               offsetHours={c.clock_offset_hours}
               tier={c.current_tier as Tier}
+              slaHours={c.sla_hours}
             />
 
 
@@ -308,6 +325,14 @@ function OfficerWorkspace() {
                 className="flex items-center gap-1.5 rounded-lg border border-warning/50 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning disabled:opacity-50"
               >
                 <FastForward className="size-3.5" /> {t("officer.plusOneHour")}
+              </button>
+              <button
+                onClick={() => escalate(c)}
+                disabled={busyId === c.id}
+                className="flex items-center gap-1.5 rounded-lg border border-destructive/50 bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive disabled:opacity-50"
+              >
+                <ArrowUpRight className="size-3.5" />
+                {lang === "ta" ? "மேல் அதிகாரிக்கு அனுப்பு" : "Escalate to higher authority"}
               </button>
               <AssignWorkerControl complaintId={c.id} onAssigned={load} />
               <Link

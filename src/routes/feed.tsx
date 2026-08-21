@@ -13,7 +13,7 @@ import {
 } from "@/components/TicketFilters";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { useSession } from "@/lib/session";
+import { useAuthorizedRole, useSession } from "@/lib/session";
 import { useGeolocation } from "@/lib/useGeolocation";
 import {
   applyEscalation,
@@ -52,6 +52,11 @@ export const Route = createFileRoute("/feed")({
 function Feed() {
   const { lang, t } = useLang();
   const { user } = useSession();
+  const { roles } = useAuthorizedRole();
+  // Escalation is an officer power only.
+  const isOfficer = roles.some((r) =>
+    ["field_officer", "zonal_commissioner", "commissioner", "admin"].includes(r),
+  );
   const { fix } = useGeolocation(true);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
@@ -202,6 +207,7 @@ function Feed() {
             onRepost={() => toggleRepost(c)}
             onFlagFake={() => flagFake(c)}
             onFastForward={() => onFastForward(c)}
+            canEscalate={isOfficer}
             canDelete={user?.id === c.author_id}
             onDelete={() => deleteComplaint(c)}
             busy={busyId === c.id}

@@ -113,7 +113,7 @@ function Dashboard() {
 
   const mine = complaints.filter((c) => c.author_id === user?.id);
   const breached = complaints.filter((c) =>
-    computeClock(c.created_at, c.priority, c.clock_offset_hours).breached,
+    computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached,
   );
 
   return (
@@ -133,7 +133,7 @@ function Dashboard() {
         {loading && <EmblemLoader label={t("dashboard.loadingConsole")} />}
 
         {role === "citizen" && (
-          <CitizenView complaints={mine} wardMap={wardMap} onAdvance={advance} busyId={busyId} onPatch={patch} />
+          <CitizenView complaints={mine} wardMap={wardMap} onPatch={patch} />
         )}
         {role === "field_officer" && (
           <FieldView complaints={complaints} wardMap={wardMap} onPatch={patch} onAdvance={advance} busyId={busyId} />
@@ -193,6 +193,7 @@ function TicketRow({
         priority={c.priority}
         offsetHours={c.clock_offset_hours}
         tier={c.current_tier as Tier}
+        slaHours={c.sla_hours}
       />
       {children}
     </article>
@@ -218,14 +219,10 @@ function Stat({ label, value, icon: Icon }: { label: string; value: string | num
 function CitizenView({
   complaints,
   wardMap,
-  onAdvance,
-  busyId,
   onPatch,
 }: {
   complaints: Complaint[];
   wardMap: Map<string, Ward>;
-  onAdvance: (c: Complaint) => void;
-  busyId: string | null;
   onPatch: (c: Complaint, v: Partial<Complaint>, note: string, actor: string) => void;
 }) {
   const { t } = useLang();
@@ -278,13 +275,6 @@ function CitizenView({
             >
               {t("dashboard.trackingPage")}
             </Link>
-            <button
-              onClick={() => onAdvance(c)}
-              disabled={busyId === c.id}
-              className="flex items-center gap-1.5 rounded-lg border border-warning/50 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning disabled:opacity-50"
-            >
-              <FastForward className="size-3.5" /> {t("fastForward")}
-            </button>
           </div>
 
           {c.status === "verification" && (
@@ -446,7 +436,7 @@ function ZonalView({
       const zone = (c.ward_id && wardMap.get(c.ward_id)?.zone) || "Unassigned";
       const row = map.get(zone) ?? { total: 0, breached: 0 };
       row.total += 1;
-      if (computeClock(c.created_at, c.priority, c.clock_offset_hours).breached) row.breached += 1;
+      if (computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached) row.breached += 1;
       map.set(zone, row);
     });
     return [...map.entries()];
@@ -577,7 +567,7 @@ function CommissionerView({
   }, [complaints]);
 
   const deadlockCandidates = complaints.filter((c) => {
-    const clock = computeClock(c.created_at, c.priority, c.clock_offset_hours);
+    const clock = computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours });
     return c.current_tier === "commissioner" && clock.deadlockHours >= 48;
   });
 

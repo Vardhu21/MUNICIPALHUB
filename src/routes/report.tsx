@@ -9,12 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { useGeolocation } from "@/lib/useGeolocation";
-import { CATEGORIES, slaRow } from "@/lib/sla";
+import { CATEGORIES, slaHoursFor, slaRow } from "@/lib/sla";
 import { BAND_LABEL, BAND_TONE, triage } from "@/lib/triage";
 import { fetchWards, logEvent, officerForTier, resolveWard, ULB_LABEL, type Ward } from "@/lib/data";
 import { WardAuthorityCard } from "@/components/WardAuthorityCard";
 import { GpsMap } from "@/components/GpsMap";
 import { reverseGeocode } from "@/lib/geocode.functions";
+import { uploadComplaintPhoto } from "@/lib/media.functions";
 import {
   fetchCouncillorForWard,
   fetchDirectoryWards,
@@ -87,6 +88,9 @@ function ReportPage() {
     [categoryId, title, description],
   );
   const sla = slaRow(assessment.priority);
+  // Escalation window comes from the complaint category (garbage 4h, water 2h, ...),
+  // not a flat 24h clock.
+  const slaHours = slaHoursFor(categoryId, assessment.priority);
 
   /** Auto-fill the street address from the captured/live GPS point. */
   useEffect(() => {
@@ -137,6 +141,9 @@ function ReportPage() {
       if (profile.frozen) throw new Error(t("report.error.accountFrozen"));
 
 
+      // Photos live in the private evidence bucket, not as base64 in the row.
+      const uploaded = await uploadComplaintPhoto({ data: { imageDataUrl: capture.dataUrl } });
+
       const { data, error } = await supabase
         .from("complaints")
         .insert({
@@ -148,13 +155,13 @@ function ReportPage() {
           priority: assessment.priority,
           status: "assigned",
           current_tier: "field",
-          sla_hours: sla.hours,
+          sla_hours: slaHours,
           assigned_officer: officerForTier("field"),
           ward_id: ward?.id ?? null,
           lat: capture.lat,
           lng: capture.lng,
           street_address: street.trim() || null,
-          photo_url: capture.dataUrl,
+          photo_url: uploaded.url,
           captured_at: capture.capturedAt,
           geo_verified: capture.geoVerified,
         })
@@ -168,7 +175,7 @@ function ReportPage() {
           data.id,
           "assignment",
           "Dynamic Spatial Router",
-          `Reverse-geocoded to ${ward ? `Ward ${ward.ward_number}, ${ward.ulb_name_en}` : "nearest ULB"} · assigned to ${sla.fieldTier.en} with a ${sla.hours}h SLA.`,
+          `Reverse-geocoded to ${ward ? `Ward ${ward.ward_number}, ${ward.ulb_name_en}` : "nearest ULB"} · assigned to ${sla.fieldTier.en} with a ${slaHours}h SLA.`,
         );
         if (directoryWard) {
           await logEvent(
@@ -299,7 +306,7 @@ function ReportPage() {
               ))}
             </ul>
             <p className="opacity-80">
-              {t("report.autoAssignedSla")} {sla.hours}h SLA · {t("report.firstResponder")} {sla.fieldTier[lang]} · {t("report.escalatesTo")}{" "}
+              {t("report.autoAssignedSla")} {slaHours}h SLA · {t("report.firstResponder")} {sla.fieldTier[lang]} · {t("report.escalatesTo")}{" "}
               {sla.escalateTo[lang]}. {t("report.autoAssignedNote")}
             </p>
           </div>
