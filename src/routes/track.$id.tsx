@@ -107,6 +107,13 @@ function TrackPage() {
 
   useEffect(() => {
     refresh().catch(() => setLoading(false));
+    const quiet = () => refresh().catch(() => undefined);
+    const timer = window.setInterval(quiet, 15_000);
+    window.addEventListener("focus", quiet);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", quiet);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
