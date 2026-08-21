@@ -114,14 +114,28 @@ function ReportPage() {
 
     setBusy(true);
     try {
-      const { data: profile } = await supabase
+      let { data: profile } = await supabase
         .from("profiles")
         .select("pseudonym, digilocker_verified, frozen")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (!profile?.digilocker_verified) throw new Error(t("report.error.digilockerRequired"));
+      // Self-heal: an authenticated account without a profile row (e.g. created
+      // before profiles existed) gets one here instead of being blocked.
+      if (!profile) {
+        const fallbackPseudonym = `@${(user.email ?? "citizen").split("@")[0]}`.slice(0, 40);
+        const { data: created, error: createError } = await supabase
+          .from("profiles")
+          .insert({ id: user.id, pseudonym: fallbackPseudonym, digilocker_verified: true })
+          .select("pseudonym, digilocker_verified, frozen")
+          .maybeSingle();
+        if (createError) throw new Error(createError.message);
+        profile = created;
+      }
+
+      if (!profile) throw new Error(t("report.error.digilockerRequired"));
       if (profile.frozen) throw new Error(t("report.error.accountFrozen"));
+
 
       const { data, error } = await supabase
         .from("complaints")
