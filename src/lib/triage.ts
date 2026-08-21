@@ -150,7 +150,7 @@ export function queueRank(c: {
   clock_offset_hours: number;
 }): number {
   const t = triage(c);
-  const clock = computeClock(c.created_at, c.priority, c.clock_offset_hours);
+  const clock = computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours });
   const urgency = clock.breached ? 18 : 18 * clock.ratio;
   return t.score * 2 + urgency;
 }

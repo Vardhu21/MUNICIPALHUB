@@ -124,7 +124,7 @@ function OfficerWorkspace() {
 
   const breachedCount = useMemo(
     () =>
-      queue.filter((c) => computeClock(c.created_at, c.priority, c.clock_offset_hours).breached).length,
+      queue.filter((c) => computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached).length,
     [queue],
   );
 

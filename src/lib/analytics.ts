@@ -50,7 +50,7 @@ function accumulate(bucket: BucketMetrics & { _res: number[] }, c: Complaint) {
     if (Number.isFinite(hours) && hours >= 0) bucket._res.push(hours);
   }
   if (ESCALATED_STATUSES.has(c.status)) bucket.escalated += 1;
-  if (computeClock(c.created_at, c.priority, c.clock_offset_hours).breached) bucket.breached += 1;
+  if (computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached) bucket.breached += 1;
 }
 
 export function byWard(complaints: Complaint[], wards: Ward[]): BucketMetrics[] {
@@ -91,7 +91,7 @@ export function overallStats(complaints: Complaint[]) {
   const resolved = complaints.filter((c) => RESOLVED_STATUSES.has(c.status)).length;
   const escalated = complaints.filter((c) => ESCALATED_STATUSES.has(c.status)).length;
   const breached = complaints.filter((c) =>
-    computeClock(c.created_at, c.priority, c.clock_offset_hours).breached,
+    computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached,
   ).length;
   const resTimes = complaints
     .filter((c) => RESOLVED_STATUSES.has(c.status))

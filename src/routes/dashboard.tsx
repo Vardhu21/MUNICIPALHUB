@@ -113,7 +113,7 @@ function Dashboard() {
 
   const mine = complaints.filter((c) => c.author_id === user?.id);
   const breached = complaints.filter((c) =>
-    computeClock(c.created_at, c.priority, c.clock_offset_hours).breached,
+    computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached,
   );
 
   return (
@@ -447,7 +447,7 @@ function ZonalView({
       const zone = (c.ward_id && wardMap.get(c.ward_id)?.zone) || "Unassigned";
       const row = map.get(zone) ?? { total: 0, breached: 0 };
       row.total += 1;
-      if (computeClock(c.created_at, c.priority, c.clock_offset_hours).breached) row.breached += 1;
+      if (computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached) row.breached += 1;
       map.set(zone, row);
     });
     return [...map.entries()];
@@ -578,7 +578,7 @@ function CommissionerView({
   }, [complaints]);
 
   const deadlockCandidates = complaints.filter((c) => {
-    const clock = computeClock(c.created_at, c.priority, c.clock_offset_hours);
+    const clock = computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours });
     return c.current_tier === "commissioner" && clock.deadlockHours >= 48;
   });
 
