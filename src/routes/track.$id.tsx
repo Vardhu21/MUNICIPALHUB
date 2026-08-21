@@ -31,7 +31,8 @@ export const Route = createFileRoute("/track/$id")({
 type EventRow = { id: string; event_type: string; actor_label: string; note: string | null; created_at: string };
 
 function TrackPage() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const ta = lang === "ta";
   const { id } = Route.useParams();
   const { user } = useSession();
   const [c, setC] = useState<Complaint | null>(null);
