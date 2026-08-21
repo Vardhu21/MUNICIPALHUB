@@ -216,11 +216,7 @@ function OfficerWorkspace() {
         <div className="grid gap-3 sm:grid-cols-3">
           <Stat label={t("officer.myWardTasks")} value={queue.length} icon={Activity} />
           <Stat label={t("officer.slaBreaches")} value={breachedCount} icon={AlertTriangle} />
-          <Stat
-            label={t("officer.awaitingVerification")}
-            value={complaints.filter((c) => c.status === "verification" && c.ward_id === officerWardId).length}
-            icon={ShieldCheck}
-          />
+          <Stat label={t("officer.awaitingVerification")} value={awaitingVerification.length} icon={ShieldCheck} />
         </div>
 
         <p className="civic-card flex items-start gap-2 border-warning/40 p-3 text-xs">
