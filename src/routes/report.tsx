@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { useGeolocation } from "@/lib/useGeolocation";
-import { CATEGORIES, slaRow } from "@/lib/sla";
+import { CATEGORIES, slaHoursFor, slaRow } from "@/lib/sla";
 import { BAND_LABEL, BAND_TONE, triage } from "@/lib/triage";
 import { fetchWards, logEvent, officerForTier, resolveWard, ULB_LABEL, type Ward } from "@/lib/data";
 import { WardAuthorityCard } from "@/components/WardAuthorityCard";
