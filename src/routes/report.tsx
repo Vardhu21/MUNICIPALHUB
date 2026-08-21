@@ -15,6 +15,7 @@ import { fetchWards, logEvent, officerForTier, resolveWard, ULB_LABEL, type Ward
 import { WardAuthorityCard } from "@/components/WardAuthorityCard";
 import { GpsMap } from "@/components/GpsMap";
 import { reverseGeocode } from "@/lib/geocode.functions";
+import { uploadComplaintPhoto } from "@/lib/media.functions";
 import {
   fetchCouncillorForWard,
   fetchDirectoryWards,
@@ -140,6 +141,9 @@ function ReportPage() {
       if (profile.frozen) throw new Error(t("report.error.accountFrozen"));
 
 
+      // Photos live in the private evidence bucket, not as base64 in the row.
+      const uploaded = await uploadComplaintPhoto({ data: { imageDataUrl: capture.dataUrl } });
+
       const { data, error } = await supabase
         .from("complaints")
         .insert({
@@ -157,7 +161,7 @@ function ReportPage() {
           lat: capture.lat,
           lng: capture.lng,
           street_address: street.trim() || null,
-          photo_url: capture.dataUrl,
+          photo_url: uploaded.url,
           captured_at: capture.capturedAt,
           geo_verified: capture.geoVerified,
         })
