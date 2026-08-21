@@ -196,14 +196,43 @@ function TrackPage() {
 
             {(report || c.resolution_photo_url || c.work_summary || c.resolution_note) && (
               <section className="civic-card space-y-3 p-4">
-                <h2 className="text-sm font-bold">
-                  {ta ? "அலுவலர் அளித்த பணி அறிக்கை" : "Officer-verified work report"}
-                </h2>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-sm font-bold">
+                    {ta ? "அலுவலர் அளித்த பணி அறிக்கை" : "Officer-verified work report"}
+                  </h2>
+                  {(() => {
+                    const st = report?.officerState ?? (c.resolution_photo_url ? "OFFICER_APPROVED" : "PENDING");
+                    const map: Record<string, { en: string; ta: string; cls: string }> = {
+                      OFFICER_APPROVED: {
+                        en: "Approved & published",
+                        ta: "அங்கீகரிக்கப்பட்டு வெளியிடப்பட்டது",
+                        cls: "bg-primary/10 text-primary border-primary/30",
+                      },
+                      OFFICER_REJECTED: {
+                        en: "Rejected by officer",
+                        ta: "அலுவலரால் நிராகரிக்கப்பட்டது",
+                        cls: "bg-destructive/10 text-destructive border-destructive/30",
+                      },
+                      PENDING: {
+                        en: "Proof uploaded — awaiting officer approval",
+                        ta: "ஆதாரம் பதிவேற்றப்பட்டது — அலுவலர் ஒப்புதலுக்கு காத்திருக்கிறது",
+                        cls: "bg-muted text-muted-foreground border-border",
+                      },
+                    };
+                    const badge = map[st] ?? map.PENDING;
+                    return (
+                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${badge.cls}`}>
+                        {ta ? badge.ta : badge.en}
+                      </span>
+                    );
+                  })()}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {ta
                     ? "களப் பணியாளர் அனுப்பிய விவரம், புகைப்படம் மற்றும் அலுவலர் முடிவு."
                     : "What the field worker did, the photo they took on site, and the officer's decision."}
                 </p>
+
 
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
