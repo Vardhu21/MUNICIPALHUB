@@ -184,18 +184,28 @@ export function officerForTier(tier: Tier, isGCC = false) {
   }
 }
 
-export async function fastForward(c: Complaint, hours = 1) {
-  const { data, error } = await supabase
-    .from("complaints")
-    .update({ clock_offset_hours: c.clock_offset_hours + hours })
-    .eq("id", c.id)
-    .select()
-    .maybeSingle();
-  if (error) throw error;
-  const updated = (data ?? c) as Complaint;
-  await logEvent(c.id, "simulation", "Demo Console", `SLA clock fast-forwarded by ${hours}h`);
-  return applyEscalation(updated);
+/**
+ * Officer-only SLA control. Shortens the remaining window (and optionally jumps
+ * the ticket to a higher authority tier). The server function rejects anyone
+ * who is not a municipal officer, and a database trigger blocks direct writes.
+ */
+export async function fastForward(c: Complaint, hours = 1, targetTier?: Tier) {
+  const { officerEscalate } = await import("@/lib/officer.functions");
+  await officerEscalate({
+    data: { complaintId: c.id, fastForwardHours: hours, ...(targetTier ? { targetTier } : {}) },
+  });
+  const fresh = await fetchComplaint(c.id);
+  return applyEscalation((fresh ?? c) as Complaint);
 }
+
+/** Officer action: push a ticket straight to the next (or a chosen) authority tier. */
+export async function escalateNow(c: Complaint, targetTier?: Tier) {
+  const { officerEscalate } = await import("@/lib/officer.functions");
+  await officerEscalate({ data: { complaintId: c.id, fastForwardHours: 0, ...(targetTier ? { targetTier } : {}) } });
+  const fresh = await fetchComplaint(c.id);
+  return (fresh ?? c) as Complaint;
+}
+
 
 type Tally = Record<string, number>;
 export type Engagement = {
