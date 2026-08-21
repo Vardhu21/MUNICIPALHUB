@@ -493,6 +493,21 @@ export const officerDecision = createServerFn({ method: "POST" })
       const deadline = new Date(Date.now() + cfg.citizen_window_hours * 3_600_000).toISOString();
       await h.moveComplaint(sb, complaint.id, "officer_approved");
       await h.moveComplaint(sb, complaint.id, "citizen_verification");
+
+      // Publish the approved field report onto the complaint so the citizen sees
+      // it on the feed card and the tracking page without any extra lookup.
+      const signed = await sb.storage.from("evidence").createSignedUrl(evidence.image_path, 60 * 60 * 24 * 365);
+      await sb
+        .from("complaints")
+        .update({
+          resolution_photo_url: signed.data?.signedUrl ?? null,
+          resolution_note: evidence.description || "Work completed and verified by the officer.",
+          work_summary: evidence.description || "Work completed and verified by the officer.",
+          proof_caption: `Geotagged proof by ${worker?.display_name ?? "field worker"}`,
+          work_completed_at: evidence.created_at,
+        })
+        .eq("id", complaint.id);
+
       await sb.from("citizen_verifications").insert({
         complaint_id: complaint.id,
         evidence_id: evidence.id,
