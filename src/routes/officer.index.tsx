@@ -6,6 +6,7 @@ import {
   Activity,
   AlertTriangle,
   BarChart3,
+  CheckCircle2,
   FastForward,
   HardHat,
   MapPin,
@@ -58,6 +59,8 @@ export const Route = createFileRoute("/officer/")({
   }),
   component: OfficerRoute,
 });
+
+const CLOSED_STATUSES = ["resolved", "resolved_by_citizen", "auto_closed_no_response"];
 
 function OfficerRoute() {
   return (
@@ -113,7 +116,9 @@ function OfficerWorkspace() {
   // Ranked by the health-impact triage engine: odour, sewage, stagnant water and
   // rotting-waste hazards surface at the top regardless of how "small" they look.
   const queue = useMemo(() => {
-    const active = complaints.filter((c) => c.status !== "resolved");
+    const active = complaints.filter(
+      (c) => !CLOSED_STATUSES.includes(String(c.status)),
+    );
     // Ward-scoped view first, but never hide work: complaints with no ward and
     // (when the ward is empty) the wider corporation queue still surface.
     const inWard = officerWardId
@@ -128,6 +133,17 @@ function OfficerWorkspace() {
   const awaitingVerification = useMemo(
     () => queue.filter((c) => c.status === "verification"),
     [queue],
+  );
+
+  /** Closed tickets — counted as problems resolved for this officer's ward. */
+  const resolvedList = useMemo(
+    () =>
+      complaints.filter(
+        (c) =>
+          CLOSED_STATUSES.includes(String(c.status)) &&
+          (!officerWardId || c.ward_id === officerWardId || !c.ward_id),
+      ),
+    [complaints, officerWardId],
   );
 
   const citizenReopened = useMemo(() => queue.filter((c) => c.status === "reopened"), [queue]);
@@ -230,10 +246,15 @@ function OfficerWorkspace() {
           </Link>
         </header>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-4">
           <Stat label={t("officer.myWardTasks")} value={queue.length} icon={Activity} />
           <Stat label={t("officer.slaBreaches")} value={breachedCount} icon={AlertTriangle} />
           <Stat label={t("officer.awaitingVerification")} value={awaitingVerification.length} icon={ShieldCheck} />
+          <Stat
+            label={lang === "ta" ? "தீர்க்கப்பட்ட புகார்கள்" : "Problems resolved"}
+            value={resolvedList.length}
+            icon={CheckCircle2}
+          />
         </div>
 
         <p className="civic-card flex items-start gap-2 border-warning/40 p-3 text-xs">
