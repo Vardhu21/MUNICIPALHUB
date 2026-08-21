@@ -114,6 +114,11 @@ function TrackPage() {
     }
   };
 
+  const approveCount = votes.filter((v) => v.approve).length;
+  const rejectCount = votes.length - approveCount;
+  const totalVotes = votes.length;
+  const hasVoted = !!user && votes.some((v) => v.voter_id === user.id);
+
   return (
     <div className="min-h-screen bg-background">
       <TopBar />
@@ -276,6 +281,15 @@ function TrackPage() {
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border p-2">
+      <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dd className="text-xs">{value}</dd>
     </div>
   );
 }
