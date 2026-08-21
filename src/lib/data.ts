@@ -144,8 +144,10 @@ export async function applyEscalation(c: Complaint) {
     tier: c.current_tier,
     priority: c.priority,
     elapsedHours: elapsed,
+    slaHours: c.sla_hours,
     isGCC,
   });
+
   if (!next.changed) return c;
 
   const { data, error } = await supabase
