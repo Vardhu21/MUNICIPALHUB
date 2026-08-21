@@ -143,25 +143,85 @@ function TrackPage() {
               />
             </article>
 
+            {(c.resolution_photo_url || c.work_summary || c.resolution_note) && (
+              <section className="civic-card space-y-3 p-4">
+                <h2 className="text-sm font-bold">{ta ? "பணி நிறைவு அறிக்கை" : "Work completion report"}</h2>
+                {(c.work_summary || c.resolution_note) && (
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {ta ? "செய்யப்பட்ட பணி" : "Work performed"}
+                    </p>
+                    <p className="text-sm">{c.work_summary ?? c.resolution_note}</p>
+                  </div>
+                )}
+                <dl className="grid gap-2 sm:grid-cols-3">
+                  {c.materials_used && (
+                    <Detail label={ta ? "பொருட்கள்" : "Materials used"} value={c.materials_used} />
+                  )}
+                  {c.work_started_at && (
+                    <Detail
+                      label={ta ? "தொடங்கியது" : "Started"}
+                      value={new Date(c.work_started_at).toLocaleString("en-IN")}
+                    />
+                  )}
+                  {c.work_completed_at && (
+                    <Detail
+                      label={ta ? "நிறைவு" : "Completed"}
+                      value={new Date(c.work_completed_at).toLocaleString("en-IN")}
+                    />
+                  )}
+                </dl>
+                {c.resolution_photo_url && (
+                  <figure className="space-y-1.5">
+                    <img
+                      src={c.resolution_photo_url}
+                      alt={`Resolution evidence image for ${c.title}`}
+                      className="w-full rounded-lg"
+                    />
+                    <figcaption className="text-xs text-muted-foreground">
+                      {c.proof_caption ?? (ta ? "புவிக்குறியிடப்பட்ட நிறைவு சான்று" : "Geotagged completion proof")}
+                    </figcaption>
+                  </figure>
+                )}
+              </section>
+            )}
+
             {c.status === "verification" && (
               <section className="civic-card space-y-3 p-4">
                 <h2 className="text-sm font-bold">{t("track.regionalVote")}</h2>
                 <p className="text-xs text-muted-foreground">{t("track.regionalVoteDesc")}</p>
-                {c.resolution_photo_url && (
-                  <img
-                    src={c.resolution_photo_url}
-                    alt={`Resolution evidence image for ${c.title}`}
-                    className="w-full rounded-lg"
-                  />
-                )}
-                <div className="flex gap-2">
-                  <button onClick={() => vote(true)} className="flex-1 rounded-lg bg-success px-3 py-2 text-xs font-semibold text-success-foreground">
-                    {t("track.worksMatches")}
-                  </button>
-                  <button onClick={() => vote(false)} className="flex-1 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground">
-                    {t("track.doesNotMatch")}
-                  </button>
+
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-success">
+                      {approveCount} {ta ? "ஆம்" : "yes"}
+                    </span>
+                    <span className="text-destructive">
+                      {rejectCount} {ta ? "இல்லை" : "no"}
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full bg-success transition-all"
+                      style={{ width: `${totalVotes ? (approveCount / totalVotes) * 100 : 0}%` }}
+                    />
+                  </div>
                 </div>
+
+                {hasVoted ? (
+                  <p className="rounded-lg border border-border bg-secondary/40 p-2 text-center text-xs font-semibold">
+                    {ta ? "உங்கள் வாக்கு பதிவு செய்யப்பட்டது" : "Your vote has been recorded"}
+                  </p>
+                ) : (
+                  <div className="flex gap-2">
+                    <button onClick={() => vote(true)} className="flex-1 rounded-lg bg-success px-3 py-2 text-xs font-semibold text-success-foreground">
+                      {t("track.worksMatches")}
+                    </button>
+                    <button onClick={() => vote(false)} className="flex-1 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground">
+                      {t("track.doesNotMatch")}
+                    </button>
+                  </div>
+                )}
               </section>
             )}
 
