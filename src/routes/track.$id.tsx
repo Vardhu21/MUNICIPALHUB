@@ -10,7 +10,7 @@ import { SlaBar } from "@/components/SlaBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { issueWardToken } from "@/lib/civic.functions";
-import { applyEscalation, fetchComplaint, fetchEvents, type Complaint } from "@/lib/data";
+import { applyEscalation, fetchComplaint, fetchEvents, officerForTier, type Complaint } from "@/lib/data";
 import type { Tier } from "@/lib/sla";
 import { EmblemLoader } from "@/components/EmblemLoader";
 import { ComplaintJourney } from "@/components/ComplaintJourney";
@@ -155,7 +155,41 @@ function TrackPage() {
         .from("resolution_votes")
         .insert({ complaint_id: c.id, voter_id: user.id, approve, zkp_token: token });
       if (error) throw error;
-      toast.success(approve ? t("track.voteApproved") : t("track.voteRejected"));
+
+      // The complainant's own vote is the final word: yes closes the ticket,
+      // no reopens it for officer rework.
+      if (user.id === c.author_id) {
+        const { data: updated } = await supabase
+          .from("complaints")
+          .update(
+            approve
+              ? { status: "resolved_by_citizen", complainant_approved: true }
+              : { status: "reopened", complainant_approved: false },
+          )
+          .eq("id", c.id)
+          .select()
+          .maybeSingle();
+        await supabase.from("complaint_events").insert({
+          complaint_id: c.id,
+          event_type: approve ? "citizen_closed" : "citizen_reopened",
+          actor_label: c.author_pseudonym,
+          note: approve
+            ? "Complainant confirmed the fix — complaint closed as resolved."
+            : "Complainant was not satisfied — complaint reopened for rework.",
+        });
+        if (updated) setC(updated as Complaint);
+        toast.success(
+          approve
+            ? ta
+              ? "நன்றி! புகார் தீர்க்கப்பட்டு மூடப்பட்டது."
+              : "Thank you! The complaint is now closed as resolved."
+            : ta
+              ? "புகார் மீண்டும் திறக்கப்பட்டது — அலுவலருக்கு அனுப்பப்பட்டது."
+              : "Complaint reopened and sent back to the officer.",
+        );
+      } else {
+        toast.success(approve ? t("track.voteApproved") : t("track.voteRejected"));
+      }
       refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("track.zkpProofFailed"));
@@ -166,6 +200,19 @@ function TrackPage() {
   const rejectCount = votes.length - approveCount;
   const totalVotes = votes.length;
   const hasVoted = !!user && votes.some((v) => v.voter_id === user.id);
+  const isAuthor = !!user && !!c && user.id === c.author_id;
+  const isClosed =
+    !!c && ["resolved", "resolved_by_citizen", "auto_closed_no_response"].includes(String(c.status));
+  const isEscalated =
+    !!c && (c.current_tier !== "field" || c.status === "escalated" || c.status === "joint_task_force");
+  const tierLabel = (tier: string) =>
+    ({
+      field: ta ? "கள அலுவலர்" : "Field officer",
+      zonal: ta ? "மண்டல உதவி ஆணையர்" : "Zonal Assistant Commissioner",
+      commissioner: ta ? "மாநகராட்சி ஆணையர்" : "Corporation Commissioner",
+      jtf: ta ? "கூட்டுப் பணிக்குழு" : "Joint Task Force",
+    })[tier] ?? tier;
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -202,6 +249,58 @@ function TrackPage() {
               <h2 className="text-sm font-bold">{ta ? "இப்போது என்ன நடக்கிறது?" : "What is happening now?"}</h2>
               <p className="text-sm text-muted-foreground">{plainStatus(c.status, ta)}</p>
             </section>
+
+            {isClosed && (
+              <section className="civic-card space-y-1 border-success/50 bg-success/5 p-4">
+                <h2 className="text-sm font-bold text-success">
+                  {ta ? "புகார் மூடப்பட்டது ✓" : "Complaint closed ✓"}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {String(c.status) === "resolved_by_citizen"
+                    ? ta
+                      ? "நீங்கள் பணியை உறுதிப்படுத்தியதால் புகார் தீர்க்கப்பட்டதாக மூடப்பட்டது. இது அலுவலரின் 'தீர்க்கப்பட்ட புகார்கள்' எண்ணிக்கையில் சேர்க்கப்பட்டது."
+                      : "You confirmed the work, so this complaint is closed as resolved and counted in the officer's resolved tally."
+                    : ta
+                      ? "இந்தப் புகார் தீர்க்கப்பட்டு மூடப்பட்டது."
+                      : "This complaint has been resolved and closed."}
+                </p>
+              </section>
+            )}
+
+            {isEscalated && (
+              <section className="civic-card space-y-2 border-warning/50 bg-warning/5 p-4">
+                <h2 className="text-sm font-bold text-warning">
+                  {ta ? "மேல் அதிகாரிக்கு அனுப்பப்பட்டது" : "Escalated to a higher authority"}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {ta
+                    ? "காலக்கெடு / அலுவலர் முடிவின்படி இந்தப் புகார் மேல் நிலை அதிகாரிக்கு மாற்றப்பட்டது."
+                    : "This complaint has been moved up to a senior authority, who is now responsible for closing it."}
+                </p>
+                <dl className="grid gap-2 sm:grid-cols-2">
+                  <Detail label={ta ? "தற்போதைய நிலை" : "Authority level"} value={tierLabel(String(c.current_tier))} />
+                  <Detail
+                    label={ta ? "பொறுப்பு அலுவலர்" : "Officer in charge"}
+                    value={c.assigned_officer ?? officerForTier(c.current_tier as Tier)}
+                  />
+                  {(() => {
+                    const last = [...events].reverse().find((e) => e.event_type === "escalation");
+                    return last ? (
+                      <Detail
+                        label={ta ? "அனுப்பப்பட்ட நேரம்" : "Escalated on"}
+                        value={new Date(last.created_at).toLocaleString("en-IN")}
+                      />
+                    ) : null;
+                  })()}
+                  {(c.clock_offset_hours ?? 0) > 0 && (
+                    <Detail
+                      label={ta ? "நேரம் முன்னகர்த்தல்" : "Clock fast-forwarded"}
+                      value={`${c.clock_offset_hours}h`}
+                    />
+                  )}
+                </dl>
+              </section>
+            )}
 
             <section className="civic-card space-y-3 p-4">
               <h2 className="text-sm font-bold">
@@ -331,7 +430,7 @@ function TrackPage() {
               </section>
             )}
 
-            {c.status === "verification" && (
+            {(c.status === "verification" || String(c.status) === "citizen_verification") && !isClosed && (
               <section className="civic-card space-y-3 p-4">
                 <h2 className="text-sm font-bold">{t("track.regionalVote")}</h2>
                 <p className="text-xs text-muted-foreground">{t("track.regionalVoteDesc")}</p>
