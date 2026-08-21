@@ -826,3 +826,49 @@ export const complaintWorkflow = createServerFn({ method: "POST" })
       evidence: evidence ?? [],
     };
   });
+
+/**
+ * Public, read-only field report for one complaint: what the worker did, the
+ * geotagged proof photo and the officer's verification decision. Safe columns
+ * only — no worker coordinates, no user ids.
+ */
+export const complaintFieldReport = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) => z.object({ complaintId: z.string().uuid() }).parse(raw))
+  .handler(async ({ data }) => {
+    const h = await import("./workflow.server");
+    const sb = await h.admin();
+    const { data: evidence } = await sb
+      .from("complaint_evidence")
+      .select("id,description,image_path,created_at,gps_state,officer_state,officer_reason,officer_decided_at,worker_id,assignment_id")
+      .eq("complaint_id", data.complaintId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!evidence) return null;
+
+    const [{ data: worker }, { data: assignment }, signed] = await Promise.all([
+      sb.from("workers").select("display_name,department").eq("id", evidence.worker_id).maybeSingle(),
+      evidence.assignment_id
+        ? sb
+            .from("complaint_assignments")
+            .select("work_started_at,completed_at")
+            .eq("id", evidence.assignment_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      sb.storage.from("evidence").createSignedUrl(evidence.image_path, 60 * 60),
+    ]);
+
+    return {
+      description: evidence.description || null,
+      photoUrl: signed.data?.signedUrl ?? null,
+      submittedAt: evidence.created_at,
+      workStartedAt: assignment?.work_started_at ?? null,
+      workCompletedAt: assignment?.completed_at ?? evidence.created_at,
+      locationVerified: evidence.gps_state === "GPS_VERIFIED",
+      officerState: evidence.officer_state as string,
+      officerReason: evidence.officer_reason ?? null,
+      officerDecidedAt: evidence.officer_decided_at ?? null,
+      workerName: worker?.display_name ?? null,
+      workerDepartment: worker?.department ?? null,
+    };
+  });
