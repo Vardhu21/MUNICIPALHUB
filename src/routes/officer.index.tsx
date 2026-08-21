@@ -151,6 +151,20 @@ function OfficerWorkspace() {
     }
   };
 
+  /** Officer-only: push the ticket up one authority tier immediately. */
+  const escalate = async (c: Complaint) => {
+    setBusyId(c.id);
+    try {
+      const updated = await escalateNow(c);
+      setComplaints((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+      toast.success(`${t("officer.autoEscalated")} ${updated.assigned_officer ?? t("officer.nextTier")}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Escalation failed");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const submitProof = (c: Complaint, report: WorkReport, cap: Capture) => {
     patch(
       c,
@@ -309,6 +323,14 @@ function OfficerWorkspace() {
                 className="flex items-center gap-1.5 rounded-lg border border-warning/50 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning disabled:opacity-50"
               >
                 <FastForward className="size-3.5" /> {t("officer.plusOneHour")}
+              </button>
+              <button
+                onClick={() => escalate(c)}
+                disabled={busyId === c.id}
+                className="flex items-center gap-1.5 rounded-lg border border-destructive/50 bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive disabled:opacity-50"
+              >
+                <ArrowUpRight className="size-3.5" />
+                {lang === "ta" ? "மேல் அதிகாரிக்கு அனுப்பு" : "Escalate to higher authority"}
               </button>
               <AssignWorkerControl complaintId={c.id} onAssigned={load} />
               <Link

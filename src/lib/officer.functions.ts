@@ -65,8 +65,10 @@ export const officerEscalate = createServerFn({ method: "POST" })
     z
       .object({
         complaintId: z.string().uuid(),
-        /** Jump straight to this tier. Omit to advance one tier. */
+        /** Jump straight to this tier. Omit (with escalate) to advance one tier. */
         targetTier: z.enum(TIER_ORDER).optional(),
+        /** Move the ticket up the authority chain. False = SLA clock only. */
+        escalate: z.boolean().default(false),
         /** Hours to shave off the remaining SLA window. */
         fastForwardHours: z.number().int().min(0).max(240).default(0),
         reason: z.string().max(500).default(""),
@@ -93,7 +95,9 @@ export const officerEscalate = createServerFn({ method: "POST" })
     const currentIndex = TIER_ORDER.indexOf(complaint.current_tier as (typeof TIER_ORDER)[number]);
     const nextIndex = data.targetTier
       ? TIER_ORDER.indexOf(data.targetTier)
-      : Math.min(currentIndex + 1, TIER_ORDER.length - 1);
+      : data.escalate
+        ? Math.min(currentIndex + 1, TIER_ORDER.length - 1)
+        : currentIndex;
     if (nextIndex < currentIndex) throw new Error("A complaint cannot be de-escalated to a lower tier.");
 
     const tier = TIER_ORDER[nextIndex];

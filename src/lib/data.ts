@@ -201,7 +201,9 @@ export async function fastForward(c: Complaint, hours = 1, targetTier?: Tier) {
 /** Officer action: push a ticket straight to the next (or a chosen) authority tier. */
 export async function escalateNow(c: Complaint, targetTier?: Tier) {
   const { officerEscalate } = await import("@/lib/officer.functions");
-  await officerEscalate({ data: { complaintId: c.id, fastForwardHours: 0, ...(targetTier ? { targetTier } : {}) } });
+  await officerEscalate({
+    data: { complaintId: c.id, fastForwardHours: 0, escalate: true, ...(targetTier ? { targetTier } : {}) },
+  });
   const fresh = await fetchComplaint(c.id);
   return (fresh ?? c) as Complaint;
 }
