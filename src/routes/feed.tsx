@@ -120,6 +120,26 @@ function Feed() {
     });
   };
 
+  const deleteComplaint = async (c: Complaint) => {
+    if (!user || c.author_id !== user.id) return;
+    const confirmed = window.confirm(
+      lang === "ta"
+        ? "இந்தப் புகாரை நிரந்தரமாக நீக்க வேண்டுமா? இதை மீட்டெடுக்க முடியாது."
+        : "Delete this complaint permanently? This cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    setBusyId(c.id);
+    const { error } = await supabase.from("complaints").delete().eq("id", c.id).eq("author_id", user.id);
+    setBusyId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setComplaints((current) => current.filter((item) => item.id !== c.id));
+    toast.success(lang === "ta" ? "புகார் நீக்கப்பட்டது" : "Complaint deleted");
+  };
+
   const onFastForward = async (c: Complaint) => {
     setBusyId(c.id);
     try {
@@ -182,6 +202,8 @@ function Feed() {
             onRepost={() => toggleRepost(c)}
             onFlagFake={() => flagFake(c)}
             onFastForward={() => onFastForward(c)}
+            canDelete={user?.id === c.author_id}
+            onDelete={() => deleteComplaint(c)}
             busy={busyId === c.id}
           />
         ))}

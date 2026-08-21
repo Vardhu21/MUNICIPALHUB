@@ -178,7 +178,14 @@ function AuthPage() {
         password,
         options: { emailRedirectTo: next ? `${window.location.origin}${next}` : window.location.origin },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.code === "user_already_exists") {
+          setMode("signin");
+          setSignInId(email.trim());
+          throw new Error("This account already exists. Sign in with the password used during registration.");
+        }
+        throw error;
+      }
       const uid = data.user?.id;
       if (!uid) throw new Error(t("auth.error.noSession"));
 
@@ -241,11 +248,23 @@ function AuthPage() {
           },
         },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.code === "user_already_exists") {
+          setMode("signin");
+          setSignInId(emailAddr);
+          throw new Error("This officer account already exists. Sign in with the password used during registration.");
+        }
+        throw error;
+      }
       const uid = data.user?.id;
       if (!uid) throw new Error(t("auth.error.accountNotCreated"));
       if (!data.session) {
-        throw new Error("Officer registration requires an immediately active verified account. Please contact the portal administrator.");
+        toast.success("Check your email to confirm your officer account", {
+          description: "After confirming, return here and sign in with your IFHRMS number.",
+        });
+        setMode("signin");
+        setSignInId(digilockerId.trim());
+        return;
       }
 
       const { error: profileError } = await supabase.from("profiles").upsert({
@@ -287,8 +306,14 @@ function AuthPage() {
     setBusy(true);
     const email = /^\d{11}$/.test(raw) ? ifhrmsToEmail(raw) : raw;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: signInPassword });
-    setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      setBusy(false);
+      return toast.error(
+        error.code === "invalid_credentials"
+          ? "The email or password is incorrect. Use the same details entered during registration."
+          : error.message,
+      );
+    }
 
     const uid = data.user?.id;
     if (uid) {
@@ -298,7 +323,10 @@ function AuthPage() {
         .select("id")
         .eq("id", uid)
         .maybeSingle();
-      if (profileReadError) return toast.error(profileReadError.message);
+      if (profileReadError) {
+        setBusy(false);
+        return toast.error(profileReadError.message);
+      }
       if (!existingProfile) {
         const fallbackPseudonym = isOfficerId
           ? `@IFHRMS_${raw}`
@@ -309,7 +337,10 @@ function AuthPage() {
           language: lang,
           digilocker_verified: isOfficerId,
         });
-        if (profileCreateError) return toast.error(profileCreateError.message);
+        if (profileCreateError) {
+          setBusy(false);
+          return toast.error(profileCreateError.message);
+        }
       }
 
       let { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
@@ -331,16 +362,21 @@ function AuthPage() {
         const { error: citizenRoleError } = await supabase
           .from("user_roles")
           .insert({ user_id: uid, role: "citizen", ward_id: null });
-        if (citizenRoleError) return toast.error(citizenRoleError.message);
+        if (citizenRoleError) {
+          setBusy(false);
+          return toast.error(citizenRoleError.message);
+        }
       }
       writeActiveRole((officer as AppRole) ?? "citizen");
       toast.success(officer ? t("auth.toast.welcomeOfficer") : t("auth.toast.welcomeBack"));
       if (next) window.location.assign(next);
       else navigate({ to: officer ? "/officer" : "/feed" });
+      setBusy(false);
       return;
     }
     if (next) window.location.assign(next);
     else navigate({ to: "/feed" });
+    setBusy(false);
   };
 
   return (
