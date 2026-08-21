@@ -341,6 +341,41 @@ function OfficerWorkspace() {
 
 
 
+        {resolvedList.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="flex items-center gap-2 text-sm font-bold">
+              <CheckCircle2 className="size-4 text-success" />
+              {lang === "ta" ? "தீர்க்கப்பட்ட புகார்கள்" : "Problems resolved"}
+              <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] text-success">
+                {resolvedList.length}
+              </span>
+            </h2>
+            {resolvedList.slice(0, 8).map((c) => (
+              <article key={c.id} className="civic-card flex items-center justify-between gap-3 border-success/40 p-3">
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold">{c.title}</h3>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {String(c.status) === "resolved_by_citizen"
+                      ? lang === "ta"
+                        ? "குடிமகன் உறுதிப்படுத்தி மூடினார்"
+                        : "Closed after the complainant confirmed the fix"
+                      : lang === "ta"
+                        ? "மூடப்பட்டது"
+                        : "Closed"}
+                  </p>
+                </div>
+                <Link
+                  to="/track/$id"
+                  params={{ id: c.id }}
+                  className="shrink-0 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
+                >
+                  {t("officer.trackingPage")}
+                </Link>
+              </article>
+            ))}
+          </section>
+        )}
+
         {loading && <EmblemLoader label={t("officer.loadingQueue")} />}
 
         {!loading && queue.length === 0 && (
