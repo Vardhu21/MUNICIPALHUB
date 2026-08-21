@@ -142,15 +142,20 @@ export function resolveEscalation(input: {
    * of 48h to reflect the shortened metro chain of command.
    */
   isGCC?: boolean;
+  /** Category-specific SLA window; falls back to the priority band when absent. */
+  slaHours?: number | null;
 }): { tier: Tier; status: Status; changed: boolean; note: string | null } {
   const terminal: Status[] = ["resolved", "verification", "rejected"];
   if (terminal.includes(input.status)) {
     return { tier: input.tier, status: input.status, changed: false, note: null };
   }
 
-  const limit = slaRow(input.priority).hours;
+  const limit = input.slaHours && input.slaHours > 0 ? input.slaHours : slaRow(input.priority).hours;
   const over = input.elapsedHours - limit;
-  const deadlockThreshold = input.isGCC ? 24 : 48;
+  // Deadlock breaker scales with the ticket window: 2x the SLA (1x for GCC),
+  // clamped so fast categories still get a sane human window.
+  const deadlockThreshold = Math.max(2, Math.min(input.isGCC ? limit : limit * 2, input.isGCC ? 24 : 48));
+
 
   // Deadlock breaker: >threshold hours sitting at Commissioner tier.
   if (input.tier === "commissioner" && over >= deadlockThreshold) {
