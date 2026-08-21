@@ -41,13 +41,7 @@ function Portal() {
     if (leaving) return;
     setLeaving(true);
     window.setTimeout(() => {
-      void Promise.resolve(navigate({ to })).catch(() => {
-        window.location.href = to;
-      });
-      // Safety net: if client navigation silently fails, force a full load.
-      window.setTimeout(() => {
-        if (window.location.pathname !== to) window.location.href = to;
-      }, 800);
+      void navigate({ to });
     }, 600);
   };
 

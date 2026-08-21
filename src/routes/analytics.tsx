@@ -29,7 +29,9 @@ import {
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
 import { TopBar } from "@/components/TopBar";
+import { RoleGate } from "@/components/RoleGate";
 import { useLang } from "@/lib/i18n";
+import { OFFICER_ROLES } from "@/lib/session";
 import { applyEscalation, fetchComplaints, fetchWards, type Complaint, type Ward } from "@/lib/data";
 import {
   byDepartment,
@@ -54,10 +56,20 @@ export const Route = createFileRoute("/analytics")({
         property: "og:description",
         content: "Commissioner-grade oversight dashboards: compliance %, resolution time, leaderboards.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: AnalyticsPage,
+  component: AnalyticsRoute,
 });
+
+function AnalyticsRoute() {
+  return (
+    <RoleGate allow={OFFICER_ROLES}>
+      <AnalyticsPage />
+    </RoleGate>
+  );
+}
 
 type Scope = "ward" | "department" | "officer";
 
