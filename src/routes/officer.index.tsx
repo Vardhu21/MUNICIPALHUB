@@ -267,6 +267,7 @@ function OfficerWorkspace() {
               priority={c.priority}
               offsetHours={c.clock_offset_hours}
               tier={c.current_tier as Tier}
+              slaHours={c.sla_hours}
             />
 
 

@@ -113,6 +113,7 @@ export function ComplaintCard({
           priority={c.priority}
           offsetHours={c.clock_offset_hours}
           tier={c.current_tier as Tier}
+          slaHours={c.sla_hours}
         />
 
         {(c.resolution_photo_url || c.resolution_note) && (
