@@ -250,6 +250,58 @@ function TrackPage() {
               <p className="text-sm text-muted-foreground">{plainStatus(c.status, ta)}</p>
             </section>
 
+            {isClosed && (
+              <section className="civic-card space-y-1 border-success/50 bg-success/5 p-4">
+                <h2 className="text-sm font-bold text-success">
+                  {ta ? "புகார் மூடப்பட்டது ✓" : "Complaint closed ✓"}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {c.status === "resolved_by_citizen"
+                    ? ta
+                      ? "நீங்கள் பணியை உறுதிப்படுத்தியதால் புகார் தீர்க்கப்பட்டதாக மூடப்பட்டது. இது அலுவலரின் 'தீர்க்கப்பட்ட புகார்கள்' எண்ணிக்கையில் சேர்க்கப்பட்டது."
+                      : "You confirmed the work, so this complaint is closed as resolved and counted in the officer's resolved tally."
+                    : ta
+                      ? "இந்தப் புகார் தீர்க்கப்பட்டு மூடப்பட்டது."
+                      : "This complaint has been resolved and closed."}
+                </p>
+              </section>
+            )}
+
+            {isEscalated && (
+              <section className="civic-card space-y-2 border-warning/50 bg-warning/5 p-4">
+                <h2 className="text-sm font-bold text-warning">
+                  {ta ? "மேல் அதிகாரிக்கு அனுப்பப்பட்டது" : "Escalated to a higher authority"}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {ta
+                    ? "காலக்கெடு / அலுவலர் முடிவின்படி இந்தப் புகார் மேல் நிலை அதிகாரிக்கு மாற்றப்பட்டது."
+                    : "This complaint has been moved up to a senior authority, who is now responsible for closing it."}
+                </p>
+                <dl className="grid gap-2 sm:grid-cols-2">
+                  <Detail label={ta ? "தற்போதைய நிலை" : "Authority level"} value={tierLabel(String(c.current_tier))} />
+                  <Detail
+                    label={ta ? "பொறுப்பு அலுவலர்" : "Officer in charge"}
+                    value={c.assigned_officer ?? officerForTier(c.current_tier as Tier)}
+                  />
+                  {(() => {
+                    const last = [...events].reverse().find((e) => e.event_type === "escalation");
+                    return last ? (
+                      <Detail
+                        label={ta ? "அனுப்பப்பட்ட நேரம்" : "Escalated on"}
+                        value={new Date(last.created_at).toLocaleString("en-IN")}
+                      />
+                    ) : null;
+                  })()}
+                  {(c.clock_offset_hours ?? 0) > 0 && (
+                    <Detail
+                      label={ta ? "நேரம் முன்னகர்த்தல்" : "Clock fast-forwarded"}
+                      value={`${c.clock_offset_hours}h`}
+                    />
+                  )}
+                </dl>
+              </section>
+            )}
+
             <section className="civic-card space-y-3 p-4">
               <h2 className="text-sm font-bold">
                 {ta ? "உங்கள் புகாரின் பயணம்" : "Your complaint journey"}
