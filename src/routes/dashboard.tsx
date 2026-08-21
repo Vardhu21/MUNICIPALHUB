@@ -343,15 +343,16 @@ function FieldView({
   const [calling, setCalling] = useState<Complaint | null>(null);
   const queue = complaints.filter((c) => c.current_tier === "field" && c.status !== "resolved");
 
-  const submitProof = (c: Complaint, cap: Capture) => {
+  const submitProof = (c: Complaint, report: WorkReport, cap: Capture) => {
     onPatch(
       c,
-      { resolution_photo_url: cap.dataUrl, status: "verification" },
+      { resolution_photo_url: cap.dataUrl, status: "verification", ...report },
       t("dashboard.proofUploadedNote"),
       "Field Officer",
     );
     setProofFor(null);
   };
+
 
   return (
     <div className="space-y-4">
@@ -404,14 +405,12 @@ function FieldView({
           </div>
 
           {proofFor?.id === c.id && (
-            <div className="space-y-2 rounded-lg border border-border p-3">
-              <p className="text-xs font-semibold">{t("dashboard.geotaggedProof")}</p>
-              <GeoCamera
-                wardLabel={wardLabel(c.ward_id ? wardMap.get(c.ward_id) : undefined, "en")}
-                zoneLabel={t("dashboard.officerCaptureLabel")}
-                onCapture={(cap) => submitProof(c, cap)}
-              />
-            </div>
+            <WorkReportForm
+              wardLabel={wardLabel(c.ward_id ? wardMap.get(c.ward_id) : undefined, "en")}
+              zoneLabel={t("dashboard.officerCaptureLabel")}
+              onSubmit={(report, cap) => submitProof(c, report, cap)}
+              onCancel={() => setProofFor(null)}
+            />
           )}
         </TicketRow>
       ))}
