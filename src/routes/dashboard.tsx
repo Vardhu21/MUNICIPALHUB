@@ -279,13 +279,6 @@ function CitizenView({
             >
               {t("dashboard.trackingPage")}
             </Link>
-            <button
-              onClick={() => onAdvance(c)}
-              disabled={busyId === c.id}
-              className="flex items-center gap-1.5 rounded-lg border border-warning/50 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning disabled:opacity-50"
-            >
-              <FastForward className="size-3.5" /> {t("fastForward")}
-            </button>
           </div>
 
           {c.status === "verification" && (
