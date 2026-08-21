@@ -124,6 +124,15 @@ function OfficerWorkspace() {
   }, [complaints, officerWardId]);
 
 
+  // Proof uploaded by the officer → waiting for the complainant's confirmation.
+  const awaitingVerification = useMemo(
+    () => queue.filter((c) => c.status === "verification"),
+    [queue],
+  );
+
+  const citizenReopened = useMemo(() => queue.filter((c) => c.status === "reopened"), [queue]);
+
+
   const breachedCount = useMemo(
     () =>
       queue.filter((c) => computeClock(c.created_at, c.priority, c.clock_offset_hours, { slaHours: c.sla_hours }).breached).length,
@@ -216,11 +225,7 @@ function OfficerWorkspace() {
         <div className="grid gap-3 sm:grid-cols-3">
           <Stat label={t("officer.myWardTasks")} value={queue.length} icon={Activity} />
           <Stat label={t("officer.slaBreaches")} value={breachedCount} icon={AlertTriangle} />
-          <Stat
-            label={t("officer.awaitingVerification")}
-            value={complaints.filter((c) => c.status === "verification" && c.ward_id === officerWardId).length}
-            icon={ShieldCheck}
-          />
+          <Stat label={t("officer.awaitingVerification")} value={awaitingVerification.length} icon={ShieldCheck} />
         </div>
 
         <p className="civic-card flex items-start gap-2 border-warning/40 p-3 text-xs">
@@ -237,6 +242,75 @@ function OfficerWorkspace() {
 
 
         <OfficerVerificationQueue />
+
+        {(awaitingVerification.length > 0 || citizenReopened.length > 0) && (
+          <section className="space-y-3">
+            <h2 className="flex items-center gap-2 text-sm font-bold">
+              <ShieldCheck className="size-4 text-primary" />
+              {lang === "ta" ? "குடிமகன் உறுதிப்படுத்தல் நிலுவையில்" : "Awaiting citizen confirmation"}
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+                {awaitingVerification.length}
+              </span>
+            </h2>
+
+            {awaitingVerification.map((c) => (
+              <article key={c.id} className="civic-card space-y-2 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-bold">{c.title}</h3>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {c.author_pseudonym} · {wardLabel(c.ward_id ? wardMap.get(c.ward_id) : undefined, lang)}
+                    </p>
+                  </div>
+                  <StatusPill status={c.status} />
+                </div>
+                {c.resolution_photo_url && (
+                  <img src={c.resolution_photo_url} alt="" className="max-h-48 w-full rounded-lg object-cover" />
+                )}
+                {(c.work_summary || c.resolution_note) && (
+                  <p className="text-xs text-muted-foreground">{c.work_summary ?? c.resolution_note}</p>
+                )}
+                <p className="rounded-lg border border-border bg-secondary/40 p-2 text-[11px] text-muted-foreground">
+                  {lang === "ta"
+                    ? "சான்று பதிவேற்றப்பட்டது. குடிமகன் 'சரி' என்றால் புகார் தானாக 'தீர்க்கப்பட்டது' நிலைக்கு மாறும்."
+                    : "Proof uploaded. When the complainant confirms, the ticket moves automatically to Resolved."}
+                </p>
+                <Link
+                  to="/track/$id"
+                  params={{ id: c.id }}
+                  className="inline-block rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
+                >
+                  {t("officer.trackingPage")}
+                </Link>
+              </article>
+            ))}
+
+            {citizenReopened.map((c) => (
+              <article key={c.id} className="civic-card space-y-2 border-destructive/40 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-bold">{c.title}</h3>
+                    <p className="text-xs text-destructive">
+                      {lang === "ta"
+                        ? "குடிமகன் திருப்தி அடையவில்லை — மீண்டும் பணி தேவை."
+                        : "Citizen not satisfied — rework required."}
+                    </p>
+                  </div>
+                  <StatusPill status={c.status} />
+                </div>
+                <Link
+                  to="/track/$id"
+                  params={{ id: c.id }}
+                  className="inline-block rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold"
+                >
+                  {t("officer.trackingPage")}
+                </Link>
+              </article>
+            ))}
+          </section>
+        )}
+
+
 
         {loading && <EmblemLoader label={t("officer.loadingQueue")} />}
 

@@ -7,7 +7,8 @@ export type Status =
   | "resolved"
   | "escalated"
   | "joint_task_force"
-  | "rejected";
+  | "rejected"
+  | "reopened";
 
 export type EscalationRow = {
   priority: Priority;
@@ -208,6 +209,7 @@ export const STATUS_TONE: Record<Status, string> = {
   escalated: "bg-destructive/15 text-destructive border-destructive/50",
   joint_task_force: "bg-destructive/25 text-destructive border-destructive/70",
   rejected: "bg-muted text-muted-foreground border-border",
+  reopened: "bg-warning/20 text-warning border-warning/50",
 };
 
 export const PRIORITY_TONE: Record<Priority, string> = {
