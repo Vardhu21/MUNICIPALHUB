@@ -39,6 +39,7 @@ function TrackPage() {
   const [comments, setComments] = useState<{ id: string; pseudonym: string; body: string; ward_verified: boolean }[]>([]);
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(true);
+  const [votes, setVotes] = useState<{ approve: boolean; voter_id: string }[]>([]);
 
   const refresh = async () => {
     const found = await fetchComplaint(id);
@@ -55,6 +56,11 @@ function TrackPage() {
       .eq("complaint_id", id)
       .order("created_at");
     setComments(data ?? []);
+    const { data: voteRows } = await supabase
+      .from("resolution_votes")
+      .select("approve,voter_id")
+      .eq("complaint_id", id);
+    setVotes(voteRows ?? []);
     setLoading(false);
   };
 
