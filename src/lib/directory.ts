@@ -67,7 +67,6 @@ export type UlbLeader = {
   ulb_id: string;
   role: string;
   name: string;
-  phone: string | null;
   office_phone: string | null;
   email: string | null;
   official_source: string;
