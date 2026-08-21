@@ -42,6 +42,8 @@ export const Route = createFileRoute("/auth")({
         property: "og:description",
         content: "One gateway, two identities: Aadhaar citizens and IFHRMS-verified municipal officers.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
@@ -290,12 +292,32 @@ function AuthPage() {
 
     const uid = data.user?.id;
     if (uid) {
+      const isOfficerId = /^\d{11}$/.test(raw);
+      const { data: existingProfile, error: profileReadError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", uid)
+        .maybeSingle();
+      if (profileReadError) return toast.error(profileReadError.message);
+      if (!existingProfile) {
+        const fallbackPseudonym = isOfficerId
+          ? `@IFHRMS_${raw}`
+          : `@CivicGuard_${uid.replace(/-/g, "").slice(0, 8)}`;
+        const { error: profileCreateError } = await supabase.from("profiles").insert({
+          id: uid,
+          pseudonym: fallbackPseudonym,
+          language: lang,
+          digilocker_verified: isOfficerId,
+        });
+        if (profileCreateError) return toast.error(profileCreateError.message);
+      }
+
       let { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
       const officerRoles = ["commissioner", "zonal_commissioner", "field_officer", "councillor"] as const;
       let officer = roles?.map((r) => r.role as AppRole).find((r) => officerRoles.includes(r as typeof officerRoles[number]));
       // Backfill: officer accounts registered before server-side grants exist
       // in auth but hold no officer row. Re-grant from the IFHRMS identity.
-      if (!officer && /^\d{11}$/.test(raw)) {
+      if (!officer && isOfficerId) {
         try {
           await enrolOfficer({ data: { ifhrms: raw, role: "field_officer", wardId: null } });
           const refreshed = await supabase.from("user_roles").select("role").eq("user_id", uid);
@@ -304,6 +326,12 @@ function AuthPage() {
         } catch {
           /* fall through as citizen */
         }
+      }
+      if (!roles?.some((entry) => entry.role === "citizen")) {
+        const { error: citizenRoleError } = await supabase
+          .from("user_roles")
+          .insert({ user_id: uid, role: "citizen", ward_id: null });
+        if (citizenRoleError) return toast.error(citizenRoleError.message);
       }
       writeActiveRole((officer as AppRole) ?? "citizen");
       toast.success(officer ? t("auth.toast.welcomeOfficer") : t("auth.toast.welcomeBack"));
