@@ -31,6 +31,8 @@ type Props = {
   onRepost: () => void;
   onFlagFake: () => void;
   onFastForward: () => void;
+  /** Only municipal officers may change escalation / the SLA clock. */
+  canEscalate?: boolean;
   canDelete?: boolean;
   onDelete?: () => void;
   busy?: boolean;
@@ -46,6 +48,7 @@ export function ComplaintCard({
   onRepost,
   onFlagFake,
   onFastForward,
+  canEscalate = false,
   canDelete,
   onDelete,
   busy,
@@ -197,6 +200,7 @@ export function ComplaintCard({
               <span className="hidden sm:inline">{lang === "ta" ? "நீக்கு" : "Delete"}</span>
             </Button>
           ) : null}
+          {canEscalate && (
           <button
             onClick={onFastForward}
             disabled={busy}
@@ -205,6 +209,7 @@ export function ComplaintCard({
             <FastForward className="size-4" />
             <span className="hidden sm:inline">{t("card.plusOneHour")}</span>
           </button>
+          )}
         </div>
       </div>
 

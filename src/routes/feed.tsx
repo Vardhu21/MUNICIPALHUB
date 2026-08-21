@@ -202,6 +202,7 @@ function Feed() {
             onRepost={() => toggleRepost(c)}
             onFlagFake={() => flagFake(c)}
             onFastForward={() => onFastForward(c)}
+            canEscalate={isOfficer}
             canDelete={user?.id === c.author_id}
             onDelete={() => deleteComplaint(c)}
             busy={busyId === c.id}
