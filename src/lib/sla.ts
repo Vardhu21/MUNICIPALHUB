@@ -47,6 +47,38 @@ export function slaRow(priority: Priority): EscalationRow {
   return SLA_MATRIX.find((r) => r.priority === priority) ?? SLA_MATRIX[2];
 }
 
+/**
+ * Category-specific resolution windows (hours). Escalation is NOT a flat 24h:
+ * each civic category carries its own statutory response time.
+ */
+export const CATEGORY_SLA_HOURS: Record<string, number> = {
+  electrical: 1,
+  water: 2,
+  sanitation: 4,
+  drainage: 6,
+  streetlight: 12,
+  roads: 24,
+  encroachment: 48,
+  parks: 72,
+};
+
+export const CATEGORY_SLA_LABEL: Record<string, { en: string; ta: string }> = {
+  electrical: { en: "Hazardous electrical line", ta: "ஆபத்தான மின் கம்பி" },
+  water: { en: "Water supply / pipeline burst", ta: "குடிநீர் / குழாய் உடைப்பு" },
+  sanitation: { en: "Garbage / sanitation", ta: "குப்பை / துப்புரவு" },
+  drainage: { en: "Sewage & storm drain", ta: "கழிவுநீர் & வடிகால்" },
+  streetlight: { en: "Street light", ta: "தெரு விளக்கு" },
+  roads: { en: "Road / pothole", ta: "சாலை / பள்ளம்" },
+  encroachment: { en: "Encroachment / town planning", ta: "ஆக்கிரமிப்பு / நகர அமைப்பு" },
+  parks: { en: "Parks & public spaces", ta: "பூங்காக்கள் & பொது இடங்கள்" },
+};
+
+/** Resolution window for a ticket: category window first, priority band as fallback. */
+export function slaHoursFor(category?: string | null, priority: Priority = "medium"): number {
+  const byCategory = category ? CATEGORY_SLA_HOURS[category] : undefined;
+  return byCategory ?? slaRow(priority).hours;
+}
+
 export type ClockState = {
   elapsedHours: number;
   totalHours: number;
@@ -61,9 +93,11 @@ export function computeClock(
   createdAt: string,
   priority: Priority,
   offsetHours: number,
-  now: number = Date.now(),
+  opts: number | { now?: number; slaHours?: number | null } = {},
 ): ClockState {
-  const total = slaRow(priority).hours;
+  const o = typeof opts === "number" ? { now: opts } : opts;
+  const now = o.now ?? Date.now();
+  const total = o.slaHours && o.slaHours > 0 ? o.slaHours : slaRow(priority).hours;
   const realElapsed = (now - new Date(createdAt).getTime()) / 3_600_000;
   const elapsed = Math.max(0, realElapsed) + offsetHours;
   const ratio = Math.min(elapsed / total, 1);
@@ -81,6 +115,7 @@ export function computeClock(
     deadlockHours: Math.max(0, elapsed - total),
   };
 }
+
 
 export type Tier = "field" | "zonal" | "commissioner" | "jtf";
 
