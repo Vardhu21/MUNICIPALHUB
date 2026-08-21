@@ -13,6 +13,7 @@ import { issueWardToken } from "@/lib/civic.functions";
 import { applyEscalation, fetchComplaint, fetchEvents, type Complaint } from "@/lib/data";
 import type { Tier } from "@/lib/sla";
 import { EmblemLoader } from "@/components/EmblemLoader";
+import { ComplaintJourney } from "@/components/ComplaintJourney";
 
 export const Route = createFileRoute("/track/$id")({
   head: () => ({
