@@ -155,7 +155,41 @@ function TrackPage() {
         .from("resolution_votes")
         .insert({ complaint_id: c.id, voter_id: user.id, approve, zkp_token: token });
       if (error) throw error;
-      toast.success(approve ? t("track.voteApproved") : t("track.voteRejected"));
+
+      // The complainant's own vote is the final word: yes closes the ticket,
+      // no reopens it for officer rework.
+      if (user.id === c.author_id) {
+        const { data: updated } = await supabase
+          .from("complaints")
+          .update(
+            approve
+              ? { status: "resolved_by_citizen", complainant_approved: true }
+              : { status: "reopened", complainant_approved: false },
+          )
+          .eq("id", c.id)
+          .select()
+          .maybeSingle();
+        await supabase.from("complaint_events").insert({
+          complaint_id: c.id,
+          event_type: approve ? "citizen_closed" : "citizen_reopened",
+          actor_label: c.author_pseudonym,
+          note: approve
+            ? "Complainant confirmed the fix — complaint closed as resolved."
+            : "Complainant was not satisfied — complaint reopened for rework.",
+        });
+        if (updated) setC(updated as Complaint);
+        toast.success(
+          approve
+            ? ta
+              ? "நன்றி! புகார் தீர்க்கப்பட்டு மூடப்பட்டது."
+              : "Thank you! The complaint is now closed as resolved."
+            : ta
+              ? "புகார் மீண்டும் திறக்கப்பட்டது — அலுவலருக்கு அனுப்பப்பட்டது."
+              : "Complaint reopened and sent back to the officer.",
+        );
+      } else {
+        toast.success(approve ? t("track.voteApproved") : t("track.voteRejected"));
+      }
       refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("track.zkpProofFailed"));
@@ -166,6 +200,19 @@ function TrackPage() {
   const rejectCount = votes.length - approveCount;
   const totalVotes = votes.length;
   const hasVoted = !!user && votes.some((v) => v.voter_id === user.id);
+  const isAuthor = !!user && !!c && user.id === c.author_id;
+  const isClosed =
+    !!c && ["resolved", "resolved_by_citizen", "auto_closed_no_response"].includes(String(c.status));
+  const isEscalated =
+    !!c && (c.current_tier !== "field" || c.status === "escalated" || c.status === "joint_task_force");
+  const tierLabel = (tier: string) =>
+    ({
+      field: ta ? "கள அலுவலர்" : "Field officer",
+      zonal: ta ? "மண்டல உதவி ஆணையர்" : "Zonal Assistant Commissioner",
+      commissioner: ta ? "மாநகராட்சி ஆணையர்" : "Corporation Commissioner",
+      jtf: ta ? "கூட்டுப் பணிக்குழு" : "Joint Task Force",
+    })[tier] ?? tier;
+
 
   return (
     <div className="min-h-screen bg-background">
