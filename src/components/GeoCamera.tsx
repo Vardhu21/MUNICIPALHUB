@@ -70,7 +70,9 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       setCamError(
         window.isSecureContext === false
           ? "Camera needs a secure (https) connection."
-          : t("camera.unavailable"),
+          : inIframe()
+            ? "The editor preview blocks camera access. Open the app in a new tab."
+            : t("camera.unavailable"),
       );
       return;
     }
