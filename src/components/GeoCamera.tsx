@@ -12,6 +12,14 @@ export type Capture = {
   geoVerified: boolean;
 };
 
+function inIframe() {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
 type Props = {
   wardLabel: string;
   zoneLabel: string;
@@ -70,7 +78,9 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
       setCamError(
         window.isSecureContext === false
           ? "Camera needs a secure (https) connection."
-          : t("camera.unavailable"),
+          : inIframe()
+            ? "The editor preview blocks camera access. Open the app in a new tab."
+            : t("camera.unavailable"),
       );
       return;
     }
@@ -96,7 +106,15 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
 
     setReady(false);
     setStarting(false);
-    setCamError(lastError instanceof Error ? lastError.message : t("camera.unavailable"));
+    const name = lastError instanceof Error ? lastError.name : "";
+    const blockedByFrame = inIframe() && (name === "NotAllowedError" || name === "SecurityError");
+    setCamError(
+      blockedByFrame
+        ? "The editor preview blocks camera access. Open the app in a new tab, or use the device camera button below."
+        : lastError instanceof Error
+          ? lastError.message
+          : t("camera.unavailable"),
+    );
   }, [attach, stop, t]);
 
   useEffect(() => {
@@ -232,6 +250,32 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
     });
   };
 
+  /** Fallback: OS camera app (only offered when the live stream is blocked). */
+  const captureFromDevice = async (file: File) => {
+    if (!fix) {
+      toast.error(t("camera.rejectedTitle"), { description: t("camera.rejectedNoFix") });
+      return;
+    }
+    const bitmap = await createImageBitmap(file);
+    const w = Math.min(bitmap.width, 960);
+    const h = Math.round((bitmap.height / bitmap.width) * w);
+    const canvas = canvasRef.current ?? document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    stamp(ctx, w, h, fix);
+    onCapture({
+      dataUrl: canvas.toDataURL("image/jpeg", 0.72),
+      lat: fix.lat,
+      lng: fix.lng,
+      capturedAt: new Date().toISOString(),
+      geoVerified: true,
+    });
+    toast.success(t("camera.acceptedTitle"), { description: t("camera.acceptedDesc") });
+  };
+
   return (
     <div className="space-y-3">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-black">
@@ -283,12 +327,38 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
               <p className="text-xs text-muted-foreground">
                 {t("camera.disabledDescTemplate").replace("{error}", String(camError))}
               </p>
-              <button
-                onClick={start}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
-              >
-                <RefreshCcw className="size-4" /> {t("camera.retry")}
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  onClick={start}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
+                >
+                  <RefreshCcw className="size-4" /> {t("camera.retry")}
+                </button>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
+                  <Camera className="size-4" /> Use device camera
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void captureFromDevice(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                {inIframe() && (
+                  <a
+                    href={window.location.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground"
+                  >
+                    Open in new tab
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         )}
