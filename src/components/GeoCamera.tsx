@@ -106,7 +106,15 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
 
     setReady(false);
     setStarting(false);
-    setCamError(lastError instanceof Error ? lastError.message : t("camera.unavailable"));
+    const name = lastError instanceof Error ? lastError.name : "";
+    const blockedByFrame = inIframe() && (name === "NotAllowedError" || name === "SecurityError");
+    setCamError(
+      blockedByFrame
+        ? "The editor preview blocks camera access. Open the app in a new tab, or use the device camera button below."
+        : lastError instanceof Error
+          ? lastError.message
+          : t("camera.unavailable"),
+    );
   }, [attach, stop, t]);
 
   useEffect(() => {
