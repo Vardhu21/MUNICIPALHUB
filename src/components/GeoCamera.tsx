@@ -250,6 +250,32 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
     });
   };
 
+  /** Fallback: OS camera app (only offered when the live stream is blocked). */
+  const captureFromDevice = async (file: File) => {
+    if (!fix) {
+      toast.error(t("camera.rejectedTitle"), { description: t("camera.rejectedNoFix") });
+      return;
+    }
+    const bitmap = await createImageBitmap(file);
+    const w = Math.min(bitmap.width, 960);
+    const h = Math.round((bitmap.height / bitmap.width) * w);
+    const canvas = canvasRef.current ?? document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    stamp(ctx, w, h, fix);
+    onCapture({
+      dataUrl: canvas.toDataURL("image/jpeg", 0.72),
+      lat: fix.lat,
+      lng: fix.lng,
+      capturedAt: new Date().toISOString(),
+      geoVerified: true,
+    });
+    toast.success(t("camera.acceptedTitle"), { description: t("camera.acceptedDesc") });
+  };
+
   return (
     <div className="space-y-3">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-black">
