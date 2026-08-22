@@ -12,6 +12,14 @@ export type Capture = {
   geoVerified: boolean;
 };
 
+function inIframe() {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
 type Props = {
   wardLabel: string;
   zoneLabel: string;
