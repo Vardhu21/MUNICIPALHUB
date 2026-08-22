@@ -153,15 +153,6 @@
   --dur-slow: 450ms;
 }
 
-  /* Motion system — calm, professional */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-scoop: cubic-bezier(0.4, 0, 0.2, 1);
-  --dur-fast: 200ms;
-  --dur-mid: 300ms;
-  --dur-slow: 450ms;
-}
-
 @layer base {
   * {
     border-color: var(--color-border);
