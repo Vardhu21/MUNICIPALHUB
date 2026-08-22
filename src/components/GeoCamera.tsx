@@ -327,12 +327,38 @@ export function GeoCamera({ wardLabel, zoneLabel, onCapture }: Props) {
               <p className="text-xs text-muted-foreground">
                 {t("camera.disabledDescTemplate").replace("{error}", String(camError))}
               </p>
-              <button
-                onClick={start}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
-              >
-                <RefreshCcw className="size-4" /> {t("camera.retry")}
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  onClick={start}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
+                >
+                  <RefreshCcw className="size-4" /> {t("camera.retry")}
+                </button>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
+                  <Camera className="size-4" /> Use device camera
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void captureFromDevice(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                {inIframe() && (
+                  <a
+                    href={window.location.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground"
+                  >
+                    Open in new tab
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         )}
